@@ -26,9 +26,32 @@ function stateClasses(state: ParrotState): string {
   }
 }
 
-export function ParrotOverlay() {
+/** No panel / rings — subtle motion only for stream compositing */
+function parrotOnlyStateClasses(state: ParrotState): string {
+  switch (state) {
+    case "talking":
+      return "animate-squawk-bob";
+    case "hype":
+      return "animate-hype-pulse";
+    case "chaos":
+      return "animate-chaos-shake";
+    case "idle":
+    default:
+      return "";
+  }
+}
+
+export type ParrotOverlayVariant = "widget" | "parrot-only";
+
+type Props = {
+  /** `parrot-only`: transparent canvas with just the looping WEBM (no box, badges, or subtitles). */
+  variant?: ParrotOverlayVariant;
+};
+
+export function ParrotOverlay({ variant = "widget" }: Props) {
   const { connected, state, subtitle } = useParrotBridge();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const parrotOnly = variant === "parrot-only";
 
   useEffect(() => {
     const v = videoRef.current;
@@ -38,7 +61,6 @@ export function ParrotOverlay() {
     });
   }, []);
 
-  /** OBS: pin transparent html/body without a separate route layout (avoids Next 15 dev RSC/devtools bugs). */
   useEffect(() => {
     const root = document.documentElement;
     root.classList.add("overlay-transparent");
@@ -48,6 +70,31 @@ export function ParrotOverlay() {
       document.body.classList.remove("overlay-transparent");
     };
   }, []);
+
+  if (parrotOnly) {
+    return (
+      <div
+        className="flex min-h-0 w-full items-center justify-center bg-transparent p-2"
+        data-state={state}
+        data-variant="parrot-only"
+        data-connected={connected ? "1" : "0"}
+      >
+        <div
+          className={`relative inline-block transition-all duration-300 ${parrotOnlyStateClasses(state)}`}
+        >
+          <video
+            ref={videoRef}
+            className="h-auto max-h-[min(85vh,520px)] w-[min(90vw,280px)] max-w-full object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
+            src={PARROT_WEBM_PATH}
+            autoPlay
+            loop
+            muted
+            playsInline
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div

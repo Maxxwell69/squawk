@@ -13,7 +13,15 @@ export default function HomePage() {
         <ul className="list-inside list-disc space-y-2 font-body text-sm">
           <li>
             <Link className="text-squawk-gold underline" href="/overlay/parrot">
-              Overlay (browser source)
+              Overlay — full widget (browser source)
+            </Link>
+          </li>
+          <li>
+            <Link
+              className="text-squawk-gold underline"
+              href="/overlay/parrot-only"
+            >
+              Overlay — parrot only (no box)
             </Link>
           </li>
           <li>
