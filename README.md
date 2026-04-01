@@ -84,7 +84,7 @@ Copy `apps/local-bridge/.env.example` to `apps/local-bridge/.env` for TTS and pu
 
 ## Voice pipeline (TTS + browser playback)
 
-1. **Bridge** builds a line with the rule-based brain, runs the configured **voice provider** (default: mock WAV), writes a file under `apps/local-bridge/tmp/audio/`, and serves it at **`GET /audio/<file>`**.
+1. **Bridge** builds a line with the rule-based brain, runs the configured **voice provider** (default: mock WAV), caches clips by text+voice settings (so repeats are reused), writes files under `apps/local-bridge/tmp/audio/`, and serves them at **`GET /audio/<file>`**.
 2. **WebSocket** sends **`PARROT_SPEAK`** with `text`, `state`, optional `audioUrl` (absolute URL), `durationMs`, `holdMs`, `eventType`.
 3. **Overlay** queues messages (FIFO, one line at a time), shows subtitles, drives parrot state, and plays `audioUrl` after you click **Enable audio** (browser autoplay policy).
 4. If TTS fails or `FEATURE_TTS=false`, the same message is sent **without** `audioUrl`; the UI uses `holdMs` / `durationMs` / estimated read time, then returns to idle.

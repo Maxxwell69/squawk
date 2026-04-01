@@ -27,13 +27,37 @@ export async function processParrotReaction(params: {
 
   if (config.featureTts) {
     try {
-      const spoken = await voice.speak(base.subtitle);
-      const saved = await audioStore.saveAudio(
-        spoken.audioBuffer,
-        spoken.extension
-      );
-      audioUrl = saved.publicUrl;
-      durationMs = spoken.durationMs;
+      const cacheKey = JSON.stringify({
+        text: base.subtitle,
+        provider: config.ttsProvider,
+        elevenlabsVoiceId: process.env.ELEVENLABS_VOICE_ID ?? "",
+        elevenlabsModelId: process.env.ELEVENLABS_MODEL_ID ?? "",
+        elevenlabsOutputFormat: process.env.ELEVENLABS_OUTPUT_FORMAT ?? "",
+        elevenlabsBaseUrl: process.env.ELEVENLABS_BASE_URL ?? "",
+        elevenlabsVoiceSettings: process.env.ELEVENLABS_VOICE_SETTINGS ?? "",
+      });
+
+      const cached = await audioStore.getCachedAudio(cacheKey);
+      if (cached) {
+        audioUrl = cached.saved.publicUrl;
+        durationMs = cached.durationMs;
+      } else {
+        const spoken = await voice.speak(base.subtitle);
+        const stored = await audioStore.saveAudioCached(
+          cacheKey,
+          spoken.audioBuffer,
+          spoken.extension,
+          spoken.durationMs
+        );
+        audioUrl = stored.saved.publicUrl;
+        durationMs = stored.durationMs;
+        if (process.env.NODE_ENV !== "production") {
+          log.info(
+            { cacheHit: stored.cacheHit, lineId: base.lineId },
+            "TTS cache write"
+          );
+        }
+      }
     } catch (err) {
       log.warn({ err }, "TTS or audio save failed; sending text-only PARROT_SPEAK");
     }
