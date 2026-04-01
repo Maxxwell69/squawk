@@ -1,10 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect } from "react";
 import type { ParrotState } from "@captain-squawks/shared";
-import { PARROT_WEBM_PATH } from "@/lib/parrot-media";
 import { useParrotBridge } from "@/hooks/useParrotBridge";
 import { AudioUnlockButton } from "@/components/AudioUnlockButton";
+import { ParrotMedia } from "@/components/ParrotMedia";
 
 const BADGE: Record<ParrotState, string> = {
   idle: "IDLE",
@@ -57,16 +57,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
     requestAudioUnlock,
     showAudioUnlockButton,
   } = useParrotBridge();
-  const videoRef = useRef<HTMLVideoElement>(null);
   const parrotOnly = variant === "parrot-only";
-
-  useEffect(() => {
-    const v = videoRef.current;
-    if (!v) return;
-    v.play().catch(() => {
-      /* autoplay policies */
-    });
-  }, []);
 
   useEffect(() => {
     const root = document.documentElement;
@@ -93,14 +84,9 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
         <div
           className={`relative inline-block transition-all duration-300 ${parrotOnlyStateClasses(state)}`}
         >
-          <video
-            ref={videoRef}
+          <ParrotMedia
+            state={state}
             className="h-auto max-h-[min(85vh,520px)] w-[min(90vw,280px)] max-w-full object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
-            src={PARROT_WEBM_PATH}
-            autoPlay
-            loop
-            muted
-            playsInline
           />
         </div>
         {subtitle ? (
@@ -146,14 +132,9 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
 
           <div className="flex justify-center px-4 pb-2 pt-1">
             <div className="relative aspect-square w-[200px] max-w-full">
-              <video
-                ref={videoRef}
+              <ParrotMedia
+                state={state}
                 className="h-full w-full object-contain drop-shadow-lg"
-                src={PARROT_WEBM_PATH}
-                autoPlay
-                loop
-                muted
-                playsInline
               />
             </div>
           </div>

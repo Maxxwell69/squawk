@@ -116,16 +116,16 @@ Audio is returned as **MP3** and served under `/audio/*.mp3` like the mock WAV p
 
 **Hosted bridge (Railway):** set `AUDIO_PUBLIC_BASE_URL` to your bridge’s public origin (no trailing slash) so `audioUrl` in WebSocket is reachable from the browser.
 
-## Parrot media (WEBM + GIFs)
+## Parrot media (WEBM + GIFs per state)
 
-Place assets under **`apps/overlay/public/parrot/`**:
-
-- **`pirate_parrot.webm`** — main looping overlay (required for the default route).
-- Optional GIFs for future alerts: e.g. `emotes/pirate_parrot_56px.gif`.
-
-The repo includes a working WEBM copied from `public/parrot/` at the workspace root; you can replace it anytime. To change the filename, edit:
+Place assets under **`apps/overlay/public/parrot/`**. The overlay picks a file per **`ParrotState`** (`idle`, `talking`, `hype`, `chaos`) — see `PARROT_ASSETS` in:
 
 `apps/overlay/src/lib/parrot-media.ts`
+
+- **`pirate_parrot.webm`** — default loop (all states point here until you override).
+- Add e.g. **`idle.gif`**, **`talking.gif`**, **`hype.gif`**, **`chaos.gif`** (or `.webm`), then set each entry in `PARROT_ASSETS` to `/parrot/your-file.gif`. Paths ending in `.gif` render as `<img>`; otherwise `<video loop>`.
+
+Rendering is in `apps/overlay/src/components/ParrotMedia.tsx`.
 
 ## Trigger test events
 
@@ -162,7 +162,7 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8787/api/test/chaos" -Method POST -Cont
 | **Voice / TTS** | `apps/local-bridge/src/services/tts/` — providers + `openai-tts-provider.ts` stub |
 | **Audio files** | `apps/local-bridge/src/services/audio/audio-file-store.ts` |
 | **Overlay look (Tailwind)** | `apps/overlay/src/components/ParrotOverlay.tsx`, `tailwind.config.ts` |
-| **WEBM path** | `apps/overlay/src/lib/parrot-media.ts` |
+| **Parrot visuals per state** | `apps/overlay/src/lib/parrot-media.ts` + `ParrotMedia.tsx` |
 
 ## Production build
 
