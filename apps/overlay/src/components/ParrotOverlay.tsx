@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import type { ParrotState } from "@captain-squawks/shared";
 import { PARROT_WEBM_PATH } from "@/lib/parrot-media";
 import { useParrotBridge } from "@/hooks/useParrotBridge";
+import { AudioUnlockButton } from "@/components/AudioUnlockButton";
 
 const BADGE: Record<ParrotState, string> = {
   idle: "IDLE",
@@ -49,7 +50,13 @@ type Props = {
 };
 
 export function ParrotOverlay({ variant = "widget" }: Props) {
-  const { connected, state, subtitle } = useParrotBridge();
+  const {
+    connected,
+    state,
+    subtitle,
+    requestAudioUnlock,
+    showAudioUnlockButton,
+  } = useParrotBridge();
   const videoRef = useRef<HTMLVideoElement>(null);
   const parrotOnly = variant === "parrot-only";
 
@@ -74,11 +81,15 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
   if (parrotOnly) {
     return (
       <div
-        className="flex min-h-0 w-full items-center justify-center bg-transparent p-2"
+        className="relative flex min-h-0 w-full flex-col items-center justify-center bg-transparent p-2"
         data-state={state}
         data-variant="parrot-only"
         data-connected={connected ? "1" : "0"}
       >
+        <AudioUnlockButton
+          visible={showAudioUnlockButton}
+          onUnlock={requestAudioUnlock}
+        />
         <div
           className={`relative inline-block transition-all duration-300 ${parrotOnlyStateClasses(state)}`}
         >
@@ -92,16 +103,25 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
             playsInline
           />
         </div>
+        {subtitle ? (
+          <p className="mt-2 max-w-[min(90vw,320px)] text-center font-body text-xs leading-snug text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
+            {subtitle}
+          </p>
+        ) : null}
       </div>
     );
   }
 
   return (
     <div
-      className="min-h-0 w-full bg-transparent p-4 text-squawk-ink"
+      className="relative min-h-0 w-full bg-transparent p-4 text-squawk-ink"
       data-state={state}
       data-connected={connected ? "1" : "0"}
     >
+      <AudioUnlockButton
+        visible={showAudioUnlockButton}
+        onUnlock={requestAudioUnlock}
+      />
       <div className="mx-auto flex max-w-[320px] flex-col gap-3">
         <div
           className={`relative overflow-hidden rounded-2xl border-2 border-parchment-dark/80 bg-gradient-to-b from-parchment/95 to-parchment/85 shadow-panel transition-all duration-500 ${stateClasses(state)}`}

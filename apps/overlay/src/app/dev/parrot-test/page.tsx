@@ -49,8 +49,26 @@ export default function ParrotTestPage() {
         </div>
         <p className="font-body text-sm text-parchment/80">
           Bridge: <code className="text-squawk-gold">{bridge}</code> — start{" "}
-          <code className="text-parchment">pnpm dev:bridge</code> first.
+          <code className="text-parchment">pnpm dev:bridge</code> first. Open the
+          overlay and click <strong>Enable audio</strong> once, then trigger
+          events below (response includes <code className="text-squawk-gold">message.audioUrl</code>
+          when TTS is on).
         </p>
+        <div className="flex flex-wrap gap-2 text-sm">
+          <Link
+            className="text-squawk-gold underline"
+            href="/overlay/parrot"
+          >
+            Full widget
+          </Link>
+          <span className="text-parchment/50">|</span>
+          <Link
+            className="text-squawk-gold underline"
+            href="/overlay/parrot-only"
+          >
+            Parrot only
+          </Link>
+        </div>
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-3">
           <button
             type="button"

@@ -1,6 +1,7 @@
 import Fastify from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
+import fastifyStatic from "@fastify/static";
 import {
   type NormalizedStreamEvent,
   testChaosBodySchema,
@@ -13,14 +14,15 @@ import {
 import { loadConfig } from "./config.js";
 import { BrainService } from "./brain/service.js";
 import { makeTestEvent, normalizeTikfinityPayload } from "./normalize.js";
-import { createMockTts } from "./tts/mock-tts.js";
-import { TtsQueue } from "./tts/queue.js";
+import { createVoiceProvider } from "./services/tts/index.js";
+import { AudioFileStore } from "./services/audio/audio-file-store.js";
+import { processParrotReaction } from "./services/parrot-reaction.js";
 import { WsHub } from "./ws-hub.js";
 
 const config = loadConfig();
 const brain = new BrainService();
-const tts = createMockTts();
-const ttsQueue = new TtsQueue(tts);
+const voice = createVoiceProvider(config.ttsProvider);
+const audioStore = new AudioFileStore(config.audioTempDir, config.publicBaseUrl);
 const hub = new WsHub();
 
 const app = Fastify({
@@ -33,26 +35,40 @@ const app = Fastify({
   },
 });
 
-await app.register(cors, {
-  origin: true,
+await app.register(cors, { origin: true });
+
+await audioStore.ensureDir();
+await app.register(fastifyStatic, {
+  root: config.audioTempDir,
+  prefix: "/audio/",
+  decorateReply: false,
 });
 
 await app.register(websocket);
 
-function handleNormalizedEvent(event: NormalizedStreamEvent) {
-  const payload = brain.buildOverlayPayload(event);
-  ttsQueue.enqueue(payload.subtitle);
-  hub.broadcastParrotUpdate(payload);
-  return payload;
+async function handleNormalizedEvent(event: NormalizedStreamEvent) {
+  return processParrotReaction({
+    event,
+    brain,
+    voice,
+    audioStore,
+    hub,
+    config,
+    log: app.log,
+  });
 }
 
-app.get("/health", async () => ({ ok: true, service: "captain-squawks-bridge" }));
+app.get("/health", async () => ({
+  ok: true,
+  service: "captain-squawks-bridge",
+  tts: config.featureTts ? config.ttsProvider : "off",
+}));
 
 app.get("/ws", { websocket: true }, (socket) => {
   hub.add(socket);
   hub.broadcastJson({
     type: "server_hello",
-    payload: { version: "0.1.0" },
+    payload: { version: "0.2.0" },
   });
   socket.on("message", (raw: Buffer) => {
     try {
@@ -71,8 +87,8 @@ app.post("/api/test/follow", async (req) => {
   const ev = makeTestEvent("follow", {
     actorLabel: body.username,
   });
-  const payload = handleNormalizedEvent(ev);
-  return { ok: true, payload };
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
 });
 
 app.post("/api/test/gift", async (req) => {
@@ -81,8 +97,8 @@ app.post("/api/test/gift", async (req) => {
     actorLabel: body.username,
     detail: body.giftName,
   });
-  const payload = handleNormalizedEvent(ev);
-  return { ok: true, payload };
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
 });
 
 app.post("/api/test/like-milestone", async (req) => {
@@ -91,15 +107,15 @@ app.post("/api/test/like-milestone", async (req) => {
     detail:
       body.milestone !== undefined ? `likes:${body.milestone}` : undefined,
   });
-  const payload = handleNormalizedEvent(ev);
-  return { ok: true, payload };
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
 });
 
 app.post("/api/test/share", async (req) => {
   const body = testShareBodySchema.parse(req.body ?? {});
   const ev = makeTestEvent("share", { actorLabel: body.username });
-  const payload = handleNormalizedEvent(ev);
-  return { ok: true, payload };
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
 });
 
 app.post("/api/test/comment", async (req) => {
@@ -108,15 +124,15 @@ app.post("/api/test/comment", async (req) => {
     actorLabel: body.username,
     detail: body.text,
   });
-  const payload = handleNormalizedEvent(ev);
-  return { ok: true, payload };
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
 });
 
 app.post("/api/test/chaos", async (req) => {
   const body = testChaosBodySchema.parse(req.body ?? {});
   const ev = makeTestEvent("chaos", { detail: body.note });
-  const payload = handleNormalizedEvent(ev);
-  return { ok: true, payload };
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
 });
 
 app.post("/api/webhooks/tikfinity", async (req, reply) => {
@@ -124,14 +140,14 @@ app.post("/api/webhooks/tikfinity", async (req, reply) => {
   if (!normalized) {
     return reply.code(400).send({ ok: false, error: "invalid_payload" });
   }
-  const payload = handleNormalizedEvent(normalized);
-  return { ok: true, payload };
+  const message = await handleNormalizedEvent(normalized);
+  return { ok: true, message };
 });
 
 try {
   await app.listen({ host: config.host, port: config.port });
   app.log.info(
-    `Captain Squawks bridge listening on http://${config.host}:${config.port}`
+    `Captain Squawks bridge listening on http://${config.host}:${config.port} (audio: ${config.publicBaseUrl}/audio/)`
   );
 } catch (err) {
   app.log.error(err);

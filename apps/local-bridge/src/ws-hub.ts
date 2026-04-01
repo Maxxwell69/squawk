@@ -1,4 +1,7 @@
-import type { ParrotOverlayPayload } from "@captain-squawks/shared";
+import type {
+  ParrotOverlayPayload,
+  ParrotSpeakMessage,
+} from "@captain-squawks/shared";
 import type { WebSocket } from "ws";
 
 /**
@@ -14,20 +17,26 @@ export class WsHub {
     });
   }
 
+  /** @deprecated Prefer PARROT_SPEAK */
   broadcastParrotUpdate(payload: ParrotOverlayPayload): void {
     const msg = JSON.stringify({
       type: "parrot_update",
       payload,
     });
-    for (const s of this.sockets) {
-      if (s.readyState === 1) {
-        s.send(msg);
-      }
-    }
+    this.sendRaw(msg);
+  }
+
+  broadcastParrotSpeak(message: ParrotSpeakMessage): void {
+    const msg = JSON.stringify(message);
+    this.sendRaw(msg);
   }
 
   broadcastJson(obj: unknown): void {
     const msg = JSON.stringify(obj);
+    this.sendRaw(msg);
+  }
+
+  private sendRaw(msg: string): void {
     for (const s of this.sockets) {
       if (s.readyState === 1) {
         s.send(msg);

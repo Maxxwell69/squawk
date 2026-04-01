@@ -32,3 +32,10 @@ export function holdMsForState(state: ParrotState): number {
       return 2000;
   }
 }
+
+/** When no TTS audio: approximate time to read subtitle on screen */
+export function estimateHoldMsFromText(text: string): number {
+  const trimmed = text.trim();
+  if (!trimmed) return 2000;
+  return Math.min(12000, Math.max(2000, trimmed.length * 55));
+}

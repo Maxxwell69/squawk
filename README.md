@@ -7,7 +7,7 @@ Local-first MVP for **Pirate Maxx** TikTok livestreams: a pirate parrot browser 
 | Path | Role |
 |------|------|
 | `apps/overlay` | Next.js App Router — transparent OBS browser source |
-| `apps/local-bridge` | Fastify — webhooks, test endpoints, WebSocket broadcast, mock TTS queue |
+| `apps/local-bridge` | Fastify — webhooks, TTS → `/audio/*`, WebSocket `PARROT_SPEAK` |
 | `packages/shared` | Zod schemas, types, rule-based state mapping, **Captain Squawks** line pools |
 
 ## Prerequisites
@@ -73,11 +73,32 @@ This starts:
 
 | Page | URL |
 |------|-----|
-| **OBS browser source (transparent overlay)** | `http://localhost:3000/overlay/parrot` |
+| **OBS browser source (full widget)** | `http://localhost:3000/overlay/parrot` |
+| **OBS — parrot only (no box)** | `http://localhost:3000/overlay/parrot-only` |
 | **Dev test buttons** | `http://localhost:3000/dev/parrot-test` |
 | **Bridge health** | `http://127.0.0.1:8787/health` |
 
 Copy `apps/overlay/.env.example` to `apps/overlay/.env.local` if you need to change WebSocket URL (e.g. tunnel or remote bridge).
+
+Copy `apps/local-bridge/.env.example` to `apps/local-bridge/.env` for TTS and public audio URL settings.
+
+## Voice pipeline (TTS + browser playback)
+
+1. **Bridge** builds a line with the rule-based brain, runs the configured **voice provider** (default: mock WAV), writes a file under `apps/local-bridge/tmp/audio/`, and serves it at **`GET /audio/<file>`**.
+2. **WebSocket** sends **`PARROT_SPEAK`** with `text`, `state`, optional `audioUrl` (absolute URL), `durationMs`, `holdMs`, `eventType`.
+3. **Overlay** queues messages (FIFO, one line at a time), shows subtitles, drives parrot state, and plays `audioUrl` after you click **Enable audio** (browser autoplay policy).
+4. If TTS fails or `FEATURE_TTS=false`, the same message is sent **without** `audioUrl`; the UI uses `holdMs` / `durationMs` / estimated read time, then returns to idle.
+
+| Env (bridge) | Meaning |
+|--------------|---------|
+| `FEATURE_TTS` | `true` (default) — generate audio files |
+| `TTS_PROVIDER` | `mock` (default) or `openai` (stub — implement API) |
+| `AUDIO_PUBLIC_BASE_URL` | Origin for audio URLs, e.g. `http://127.0.0.1:8787` or your public bridge HTTPS URL |
+| `AUDIO_TEMP_DIR` | Optional override for generated files |
+
+**Swap to real TTS:** implement `apps/local-bridge/src/services/tts/openai-tts-provider.ts` (or add ElevenLabs), set `TTS_PROVIDER=openai`, and return `SpeakResult` with `audioBuffer` + extension.
+
+**Hosted bridge (Railway):** set `AUDIO_PUBLIC_BASE_URL` to your bridge’s public origin (no trailing slash) so `audioUrl` in WebSocket is reachable from the browser.
 
 ## Parrot media (WEBM + GIFs)
 
@@ -122,7 +143,8 @@ Invoke-RestMethod -Uri "http://127.0.0.1:8787/api/test/chaos" -Method POST -Cont
 | **Parrot lines & pools** | `packages/shared/src/personality/captain-squawks.ts` |
 | **State rules & timeouts** | `packages/shared/src/rules.ts` |
 | **Event → line logic (future LLM)** | `apps/local-bridge/src/brain/service.ts` |
-| **TTS implementation** | `apps/local-bridge/src/tts/` — swap `createMockTts()` for a real provider |
+| **Voice / TTS** | `apps/local-bridge/src/services/tts/` — providers + `openai-tts-provider.ts` stub |
+| **Audio files** | `apps/local-bridge/src/services/audio/audio-file-store.ts` |
 | **Overlay look (Tailwind)** | `apps/overlay/src/components/ParrotOverlay.tsx`, `tailwind.config.ts` |
 | **WEBM path** | `apps/overlay/src/lib/parrot-media.ts` |
 
@@ -156,9 +178,17 @@ A root `Dockerfile` builds the **Next.js standalone** overlay. Deploy the repo; 
 | Method | Path |
 |--------|------|
 | GET | `/health` |
-| GET | `/ws` (WebSocket) |
+| GET | `/ws` (WebSocket — messages include `PARROT_SPEAK`) |
+| GET | `/audio/<filename>` (generated TTS files) |
 | POST | `/api/test/follow`, `/api/test/gift`, `/api/test/like-milestone`, `/api/test/share`, `/api/test/comment`, `/api/test/chaos` |
 | POST | `/api/webhooks/tikfinity` — JSON body; normalized heuristically |
+
+### Test voice end-to-end
+
+1. `pnpm dev`
+2. Open **`/overlay/parrot`** (or **`/overlay/parrot-only`**) and click **Enable audio** once.
+3. Open **`/dev/parrot-test`** and trigger an event (e.g. Follow). You should hear a short mock WAV and see the subtitle; state returns to idle after playback.
+4. Set **`FEATURE_TTS=false`** on the bridge (env) and restart to verify **subtitle-only** fallback (no `audioUrl` in the JSON response).
 
 ## License
 

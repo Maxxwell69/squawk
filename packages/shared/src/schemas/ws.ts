@@ -1,5 +1,6 @@
 import { z } from "zod";
 import { PARROT_STATES } from "../parrot-state";
+import { parrotSpeakMessageSchema } from "./parrot-speak";
 
 const parrotStateSchema = z.enum(PARROT_STATES);
 
@@ -16,6 +17,7 @@ export const parrotOverlayPayloadSchema = z.object({
 export type ParrotOverlayPayload = z.infer<typeof parrotOverlayPayloadSchema>;
 
 export const bridgeWsMessageSchema = z.discriminatedUnion("type", [
+  parrotSpeakMessageSchema,
   z.object({
     type: z.literal("parrot_update"),
     payload: parrotOverlayPayloadSchema,
