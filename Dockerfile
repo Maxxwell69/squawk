@@ -21,8 +21,7 @@ ARG NEXT_PUBLIC_WS_URL=
 ARG NEXT_PUBLIC_BRIDGE_HTTP=
 ENV NEXT_PUBLIC_WS_URL=$NEXT_PUBLIC_WS_URL
 ENV NEXT_PUBLIC_BRIDGE_HTTP=$NEXT_PUBLIC_BRIDGE_HTTP
-# Shared package exports ./dist — must exist before Next can resolve @captain-squawks/shared
-RUN pnpm --filter @captain-squawks/shared run build
+# Overlay resolves @captain-squawks/shared via next.config webpack alias → packages/shared/src (pnpm Docker-safe)
 RUN pnpm --filter @captain-squawks/overlay build
 
 FROM node:22-alpine AS runner
