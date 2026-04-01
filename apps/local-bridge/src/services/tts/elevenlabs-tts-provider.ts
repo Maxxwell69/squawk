@@ -2,12 +2,14 @@ import type { SpeakResult, SpeakOptions, VoiceProvider } from "./voice-provider.
 
 const DEFAULT_MODEL = "eleven_multilingual_v2";
 const DEFAULT_OUTPUT_FORMAT = "mp3_44100_128";
+const DEFAULT_BASE_URL = "https://api.elevenlabs.io";
 
 export type ElevenLabsTtsConfig = {
   apiKey: string;
   voiceId: string;
   modelId: string;
   outputFormat: string;
+  baseUrl: string;
 };
 
 export function loadElevenLabsConfigFromEnv(): ElevenLabsTtsConfig {
@@ -17,7 +19,9 @@ export function loadElevenLabsConfigFromEnv(): ElevenLabsTtsConfig {
     process.env.ELEVENLABS_MODEL_ID?.trim() || DEFAULT_MODEL;
   const outputFormat =
     process.env.ELEVENLABS_OUTPUT_FORMAT?.trim() || DEFAULT_OUTPUT_FORMAT;
-  return { apiKey, voiceId, modelId, outputFormat };
+  const baseUrlRaw = process.env.ELEVENLABS_BASE_URL?.trim() || DEFAULT_BASE_URL;
+  const baseUrl = baseUrlRaw.replace(/\/$/, "");
+  return { apiKey, voiceId, modelId, outputFormat, baseUrl };
 }
 
 /**
@@ -42,7 +46,7 @@ export function createElevenLabsVoiceProvider(
       }
 
       const url = new URL(
-        `https://api.elevenlabs.io/v1/text-to-speech/${encodeURIComponent(voiceId)}`
+        `${cfg.baseUrl}/v1/text-to-speech/${encodeURIComponent(voiceId)}`
       );
       url.searchParams.set("output_format", cfg.outputFormat);
 
@@ -69,6 +73,7 @@ export function createElevenLabsVoiceProvider(
         method: "POST",
         headers: {
           "xi-api-key": cfg.apiKey,
+          Authorization: `Bearer ${cfg.apiKey}`,
           "Content-Type": "application/json",
           Accept: "audio/mpeg",
         },

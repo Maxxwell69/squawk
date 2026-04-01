@@ -107,6 +107,7 @@ On the **bridge** only, set:
 | `ELEVENLABS_VOICE_ID` | yes | **Voice ID** string from ElevenLabs (not the display name). In the app: **Voices** → select your voice → **Voice ID** / “Copy ID”. Wrong or missing ID → bridge omits `audioUrl` and the overlay falls back to **browser** speech (robotic), not your ElevenLabs voice. |
 | `ELEVENLABS_MODEL_ID` | no | Default `eleven_multilingual_v2` |
 | `ELEVENLABS_OUTPUT_FORMAT` | no | Default `mp3_44100_128` ([formats](https://elevenlabs.io/docs/api-reference/text-to-speech/convert)) |
+| `ELEVENLABS_BASE_URL` | no | Default `https://api.elevenlabs.io`. For residency/org-hosted keys, set matching host (e.g. `https://api.us.elevenlabs.io` or `https://api.eu.residency.elevenlabs.io`). |
 | `ELEVENLABS_VOICE_SETTINGS` | no | JSON object, e.g. `{"stability":0.5,"similarity_boost":0.75}` |
 
 Audio is returned as **MP3** and served under `/audio/*.mp3` like the mock WAV path.
