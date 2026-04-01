@@ -22,6 +22,14 @@ export class BrainService {
           "Yer generosity keeps the cannons roaring!",
           "May yer sails stay full and yer aim true!",
           "The whole crew salutes ye, ye glorious scallywag!",
+          "Ye just filled the treasure hold, matey!",
+          "That bounty could buy a fleet of parrots!",
+          "By the black flag, that gift be legendary!",
+          "The Captain tips his tricorne to ye!",
+          "Deckhands cheer yer name across the sea!",
+          "That tribute hits harder than a broadside!",
+          "Ye keep this ship sailing through any storm!",
+          "We mark yer name in gold on the captain's log!",
         ] as const;
         return `${user} just gifted a ${gift}! ${pickRandomLine(thanks)}`;
       }
