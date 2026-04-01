@@ -92,11 +92,26 @@ Copy `apps/local-bridge/.env.example` to `apps/local-bridge/.env` for TTS and pu
 | Env (bridge) | Meaning |
 |--------------|---------|
 | `FEATURE_TTS` | `true` (default) — generate audio files |
-| `TTS_PROVIDER` | `mock` (default) or `openai` (stub — implement API) |
+| `TTS_PROVIDER` | `mock` (default), `elevenlabs` ([env below](#elevenlabs-tts)), or `openai` (stub) |
 | `AUDIO_PUBLIC_BASE_URL` | Origin for audio URLs, e.g. `http://127.0.0.1:8787` or your public bridge HTTPS URL |
 | `AUDIO_TEMP_DIR` | Optional override for generated files |
 
-**Swap to real TTS:** implement `apps/local-bridge/src/services/tts/openai-tts-provider.ts` (or add ElevenLabs), set `TTS_PROVIDER=openai`, and return `SpeakResult` with `audioBuffer` + extension.
+### ElevenLabs TTS
+
+On the **bridge** only, set:
+
+| Variable | Required | Notes |
+|----------|----------|--------|
+| `TTS_PROVIDER` | yes | `elevenlabs` |
+| `ELEVENLABS_API_KEY` | yes | [API keys](https://elevenlabs.io/app/settings/api-keys) |
+| `ELEVENLABS_VOICE_ID` | yes | Voice ID from [Voices](https://elevenlabs.io/app/voice-library) or your cloned voice |
+| `ELEVENLABS_MODEL_ID` | no | Default `eleven_multilingual_v2` |
+| `ELEVENLABS_OUTPUT_FORMAT` | no | Default `mp3_44100_128` ([formats](https://elevenlabs.io/docs/api-reference/text-to-speech/convert)) |
+| `ELEVENLABS_VOICE_SETTINGS` | no | JSON object, e.g. `{"stability":0.5,"similarity_boost":0.75}` |
+
+Audio is returned as **MP3** and served under `/audio/*.mp3` like the mock WAV path.
+
+**OpenAI TTS:** implement `apps/local-bridge/src/services/tts/openai-tts-provider.ts`, set `TTS_PROVIDER=openai`, and return `SpeakResult` with `audioBuffer` + extension.
 
 **Hosted bridge (Railway):** set `AUDIO_PUBLIC_BASE_URL` to your bridge’s public origin (no trailing slash) so `audioUrl` in WebSocket is reachable from the browser.
 

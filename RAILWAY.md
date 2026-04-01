@@ -36,10 +36,17 @@ If Git was accidentally using your **user home** as the repo root, run `git init
 
 ## 2. Railway — deploy the **bridge** first (recommended)
 
+The repo root [`railway.toml`](./railway.toml) builds the **Next.js overlay** (`Dockerfile`). If your bridge service uses that file unchanged, you get the **wrong image** and routes like `/api/test/follow` return **404**.
+
+**Pick one approach for the bridge service:**
+
+**A (recommended):** **Settings** → **Config-as-code** (or **Build** → config file / “Railway config”) → set the config file to **`railway.bridge.toml`** in the repo. That file points the build at [`apps/local-bridge/Dockerfile`](./apps/local-bridge/Dockerfile).
+
+**B:** **Settings** → **Build** → override **Dockerfile path** to **`apps/local-bridge/Dockerfile`** (and do **not** rely on the overlay-only `railway.toml` for this service), if your UI offers an override next to “set in railway.toml”.
+
 1. [Railway](https://railway.app) → **New Project** → **Deploy from GitHub** → select the repo.
-2. **Add service** → **Empty service** or duplicate from repo, then:
-   - **Settings** → **Build** → **Dockerfile path**: `apps/local-bridge/Dockerfile`
-   - **Root directory**: leave empty or set to repository root (the folder that contains `pnpm-workspace.yaml`).
+2. **Add service** → **Empty service** or duplicate from repo, then apply **A** or **B** above.
+   - **Root directory**: leave empty — repository root (folder that contains `pnpm-workspace.yaml`).
 3. **Settings** → **Networking** → **Generate domain** (public HTTPS URL).
 4. Railway injects **`PORT`**. The bridge already reads `process.env.PORT` — no extra env var for port.
 5. **Variables** (bridge service) — set after you have a public domain:
@@ -49,6 +56,8 @@ If Git was accidentally using your **user home** as the repo root, run `git init
 | `AUDIO_PUBLIC_BASE_URL` | `https://YOUR-BRIDGE-SERVICE.up.railway.app` (no trailing slash) |
 
 Without this, WebSocket `audioUrl` may still point at `http://127.0.0.1:8787` and **audio will not play** from the hosted overlay.
+
+**ElevenLabs (optional):** on the same bridge service add `TTS_PROVIDER=elevenlabs`, `ELEVENLABS_API_KEY`, and `ELEVENLABS_VOICE_ID` (see repo `README.md` → ElevenLabs TTS). Mark the API key as a **secret** in Railway.
 
 6. Deploy and note the public URL, e.g. `https://captain-squawks-bridge-production.up.railway.app`.
 
@@ -91,6 +100,7 @@ Use that in **OBS** and anywhere you need a **public** link (not TikTok’s loca
 | Issue | What to check |
 |-------|----------------|
 | Overlay shows OFFLINE | `NEXT_PUBLIC_WS_URL` must match the bridge’s **public** `wss://…/ws` URL; redeploy overlay after changing it. |
+| **404** on `/api/test/follow` | The hostname in `NEXT_PUBLIC_BRIDGE_HTTP` is **not** running the bridge. Root `railway.toml` builds the **Next.js overlay** only. The **bridge** service must use Dockerfile path **`apps/local-bridge/Dockerfile`**. Open `https://YOUR-BRIDGE/health` — expect JSON with `"service":"captain-squawks-bridge"`. |
 | Bridge 502 | Check Railway logs; ensure `PORT` is used (already wired). |
 | CORS | Bridge allows `origin: true` for MVP. |
 

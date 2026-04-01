@@ -1,0 +1,12 @@
+# Use this file for the **bridge** Railway service only (Fastify + WebSocket + /api/test/*).
+# In Railway: Settings → Config-as-code → set config path to `railway.bridge.toml`
+# (wording may be "Railway config file" / "Config file path" depending on UI).
+# If you cannot set a per-service config file, set Dockerfile path in Build to:
+#   apps/local-bridge/Dockerfile
+
+[build]
+builder = "dockerfile"
+dockerfilePath = "apps/local-bridge/Dockerfile"
+
+[deploy]
+restartPolicyType = "on_failure"

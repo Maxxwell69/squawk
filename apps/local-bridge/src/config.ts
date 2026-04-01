@@ -18,6 +18,7 @@ export type BridgeConfig = {
 
 function parseTtsProvider(v: string | undefined): TtsProviderName {
   if (v === "openai") return "openai";
+  if (v === "elevenlabs") return "elevenlabs";
   return "mock";
 }
 

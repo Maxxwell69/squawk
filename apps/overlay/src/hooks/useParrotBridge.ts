@@ -8,23 +8,9 @@ import {
   type ParrotState,
 } from "@captain-squawks/shared";
 import { playUrlOnce } from "@/lib/audio-player";
+import { getClientWsUrl } from "@/lib/bridge-urls";
+import { getSilentWavDataUri } from "@/lib/silent-wav-data-uri";
 import { useAudioUnlock } from "./useAudioUnlock";
-
-/**
- * Local dev: ws://127.0.0.1:8787/ws
- * Hosted: set NEXT_PUBLIC_WS_URL at build time (wss://…)
- */
-function getWsUrl(): string {
-  const fromEnv = process.env.NEXT_PUBLIC_WS_URL;
-  if (fromEnv) return fromEnv;
-  if (typeof window !== "undefined") {
-    const h = window.location.hostname;
-    if (h === "localhost" || h === "127.0.0.1") {
-      return "ws://127.0.0.1:8787/ws";
-    }
-  }
-  return "ws://127.0.0.1:8787/ws";
-}
 
 /**
  * FIFO queue: one PARROT_SPEAK at a time; new lines wait until the current line
@@ -36,7 +22,7 @@ export function useParrotBridge() {
   const [subtitle, setSubtitle] = useState("");
   const [lastSpeak, setLastSpeak] = useState<ParrotSpeakMessage | null>(null);
 
-  const { audioUnlocked, requestAudioUnlock } = useAudioUnlock();
+  const { audioUnlocked, requestAudioUnlock: unlockBase } = useAudioUnlock();
   const queueRef = useRef<ParrotSpeakMessage[]>([]);
   const drainingRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -50,6 +36,24 @@ export function useParrotBridge() {
       audioRef.current = null;
     };
   }, []);
+
+  const requestAudioUnlock = useCallback(async () => {
+    const audio = audioRef.current;
+    if (audio) {
+      try {
+        audio.volume = 0.001;
+        audio.src = getSilentWavDataUri();
+        await audio.play();
+        audio.pause();
+        audio.removeAttribute("src");
+        audio.load();
+        audio.volume = 1;
+      } catch {
+        /* still try remote TTS after context unlock */
+      }
+    }
+    await unlockBase();
+  }, [unlockBase]);
 
   const finishLine = useCallback(() => {
     setState("idle");
@@ -104,7 +108,7 @@ export function useParrotBridge() {
   );
 
   useEffect(() => {
-    const url = getWsUrl();
+    const url = getClientWsUrl();
     let ws: WebSocket;
     try {
       ws = new WebSocket(url);

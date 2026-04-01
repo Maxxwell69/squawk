@@ -1,3 +1,7 @@
+# Next.js **overlay** service only. The **bridge** must not use this file — use
+# `railway.bridge.toml` (per-service config path in Railway) or Dockerfile
+# `apps/local-bridge/Dockerfile`. See RAILWAY.md.
+
 [build]
 builder = "dockerfile"
 dockerfilePath = "Dockerfile"
