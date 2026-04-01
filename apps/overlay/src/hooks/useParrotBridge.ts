@@ -7,7 +7,11 @@ import {
   type ParrotSpeakMessage,
   type ParrotState,
 } from "@captain-squawks/shared";
-import { playUrlOnce } from "@/lib/audio-player";
+import {
+  playUrlOnce,
+  playUrlViaWebAudio,
+  speakWithBrowserTts,
+} from "@/lib/audio-player";
 import { getClientWsUrl } from "@/lib/bridge-urls";
 import { getSilentWavDataUri } from "@/lib/silent-wav-data-uri";
 import { useAudioUnlock } from "./useAudioUnlock";
@@ -80,22 +84,45 @@ export function useParrotBridge() {
       next.durationMs ??
       estimateHoldMsFromText(next.text);
 
+    const sleep = (ms: number) =>
+      new Promise<void>((r) => setTimeout(r, ms));
+
     try {
-      if (next.audioUrl && audioUnlockedRef.current) {
+      if (!audioUnlockedRef.current) {
+        await sleep(fallbackMs);
+      } else if (next.audioUrl) {
         const audio = audioRef.current;
         if (audio) {
-          await playUrlOnce(audio, next.audioUrl);
+          try {
+            await playUrlOnce(audio, next.audioUrl);
+          } catch (e1) {
+            if (process.env.NODE_ENV === "development") {
+              console.warn("[parrot] HTMLAudio failed, trying Web Audio", e1);
+            }
+            try {
+              await playUrlViaWebAudio(next.audioUrl);
+            } catch (e2) {
+              if (process.env.NODE_ENV === "development") {
+                console.warn(
+                  "[parrot] Web Audio failed, trying browser speech",
+                  e2
+                );
+              }
+              await speakWithBrowserTts(next.text);
+            }
+          }
         } else {
-          await new Promise((r) => setTimeout(r, fallbackMs));
+          await speakWithBrowserTts(next.text);
         }
       } else {
-        await new Promise((r) => setTimeout(r, fallbackMs));
+        // No TTS file from bridge — still speak aloud via browser (user hears voice)
+        await speakWithBrowserTts(next.text);
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
-        console.warn("[parrot] audio playback failed, using timer fallback", err);
+        console.warn("[parrot] playback fallback to timer", err);
       }
-      await new Promise((r) => setTimeout(r, fallbackMs));
+      await sleep(fallbackMs);
     }
 
     finishLine();

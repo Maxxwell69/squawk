@@ -42,3 +42,47 @@ export function playUrlOnce(
     });
   });
 }
+
+/**
+ * Decode and play remote audio via Web Audio API (fallback when HTMLAudio fails).
+ * Requires prior user gesture (Enable audio) for AudioContext.resume().
+ */
+export async function playUrlViaWebAudio(url: string): Promise<void> {
+  const res = await fetch(url, { mode: "cors" });
+  if (!res.ok) throw new Error(`audio fetch ${res.status}`);
+  const buf = await res.arrayBuffer();
+  const ctx = new AudioContext();
+  await ctx.resume();
+  try {
+    const decoded = await ctx.decodeAudioData(buf.slice(0));
+    await new Promise<void>((resolve, reject) => {
+      const src = ctx.createBufferSource();
+      src.buffer = decoded;
+      src.connect(ctx.destination);
+      src.onended = () => resolve();
+      src.start();
+    });
+  } finally {
+    await ctx.close();
+  }
+}
+
+/** Browser speech synthesis — works when bridge sends no audioUrl or file play fails. */
+export function speakWithBrowserTts(text: string): Promise<void> {
+  return new Promise((resolve) => {
+    if (typeof window === "undefined") {
+      resolve();
+      return;
+    }
+    const s = window.speechSynthesis;
+    if (!s) {
+      resolve();
+      return;
+    }
+    s.cancel();
+    const u = new SpeechSynthesisUtterance(text);
+    u.onend = () => resolve();
+    u.onerror = () => resolve();
+    s.speak(u);
+  });
+}
