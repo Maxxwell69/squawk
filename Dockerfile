@@ -29,6 +29,8 @@ WORKDIR /app
 ENV NODE_ENV=production
 ENV PORT=3000
 ENV HOSTNAME=0.0.0.0
+# Railway sometimes invokes pnpm from packageManager; corepack provides the shim in the slim image
+RUN corepack enable pnpm
 
 # Next standalone + outputFileTracingRoot: server lives under apps/overlay/server.js
 COPY --from=build /repo/apps/overlay/.next/standalone ./

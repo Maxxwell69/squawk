@@ -3,4 +3,6 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
+# Standalone Next image has no pnpm — run Node directly (do not use "pnpm start" in Railway UI)
+startCommand = "node apps/overlay/server.js"
 restartPolicyType = "on_failure"
