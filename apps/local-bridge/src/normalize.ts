@@ -19,6 +19,18 @@ function guessKindFromStrings(
   return null;
 }
 
+function pickString(
+  obj: Record<string, unknown>,
+  keys: readonly string[]
+): string | undefined {
+  for (const k of keys) {
+    const v = obj[k];
+    if (typeof v === "string" && v.trim()) return v.trim();
+    if (typeof v === "number") return String(v);
+  }
+  return undefined;
+}
+
 /** Map arbitrary TikFinity-style payload to a normalized event (best-effort). */
 export function normalizeTikfinityPayload(
   raw: unknown
@@ -26,14 +38,47 @@ export function normalizeTikfinityPayload(
   const parsed = tikfinityWebhookSchema.safeParse(raw);
   if (!parsed.success) return null;
   const p: TikFinityWebhookPayload = parsed.data;
-  const kind =
-    guessKindFromStrings(p.event, p.type) ?? ("comment" as StreamEventKind);
-  const actorLabel = p.username ?? p.user;
+  const rawObj = p as unknown as Record<string, unknown>;
+  const nestedData =
+    rawObj.data && typeof rawObj.data === "object"
+      ? (rawObj.data as Record<string, unknown>)
+      : {};
+
+  const actorLabel =
+    pickString(rawObj, ["username", "user", "nickname", "uniqueId"]) ??
+    pickString(nestedData, ["username", "user", "nickname", "uniqueId"]);
+  const gift =
+    pickString(rawObj, ["giftName", "giftname", "gift", "gift_name"]) ??
+    pickString(nestedData, ["giftName", "giftname", "gift", "gift_name"]);
+  const commentText =
+    pickString(rawObj, ["comment", "text", "message", "chat"]) ??
+    pickString(nestedData, ["comment", "text", "message", "chat"]);
+  const milestoneRaw =
+    rawObj.milestone ??
+    rawObj.likes ??
+    nestedData.milestone ??
+    nestedData.likes;
+  const milestone =
+    typeof milestoneRaw === "number"
+      ? milestoneRaw
+      : typeof milestoneRaw === "string" && milestoneRaw.trim()
+        ? Number(milestoneRaw)
+        : undefined;
+
+  let kind = guessKindFromStrings(p.event, p.type);
+  if (!kind) {
+    if (gift) kind = "gift";
+    else if (Number.isFinite(milestone)) kind = "like_milestone";
+    else if (commentText) kind = "comment";
+    else kind = "custom";
+  }
+
   const detail =
-    p.comment ??
-    p.text ??
-    (p.giftName ? String(p.giftName) : undefined) ??
-    (p.milestone !== undefined ? `milestone:${p.milestone}` : undefined);
+    (kind === "gift" ? gift : undefined) ??
+    (kind === "comment" ? commentText : undefined) ??
+    (kind === "like_milestone" && Number.isFinite(milestone)
+      ? `milestone:${milestone}`
+      : undefined);
   return {
     id: newEventId(),
     kind,
