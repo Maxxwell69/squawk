@@ -36,6 +36,17 @@ const app = Fastify({
 });
 
 await app.register(cors, { origin: true });
+// TikFinity actions can post webhook data as text/plain or urlencoded.
+app.addContentTypeParser(
+  /^text\/plain(?:;.*)?$/i,
+  { parseAs: "string" },
+  (_req, body, done) => done(null, body)
+);
+app.addContentTypeParser(
+  /^application\/x-www-form-urlencoded(?:;.*)?$/i,
+  { parseAs: "string" },
+  (_req, body, done) => done(null, body)
+);
 
 await audioStore.ensureDir();
 await app.register(fastifyStatic, {
@@ -60,6 +71,20 @@ async function handleNormalizedEvent(event: NormalizedStreamEvent) {
     config,
     log: app.log,
   });
+}
+
+function coerceWebhookBody(raw: unknown): unknown {
+  if (typeof raw !== "string") return raw;
+  const s = raw.trim();
+  if (!s) return {};
+  try {
+    return JSON.parse(s);
+  } catch {
+    const params = new URLSearchParams(s);
+    const out: Record<string, string> = {};
+    for (const [k, v] of params.entries()) out[k] = v;
+    return out;
+  }
 }
 
 app.get("/health", async () => ({
@@ -140,7 +165,7 @@ app.post("/api/test/chaos", async (req) => {
 });
 
 app.post("/api/webhooks/tikfinity", async (req, reply) => {
-  const normalized = normalizeTikfinityPayload(req.body);
+  const normalized = normalizeTikfinityPayload(coerceWebhookBody(req.body));
   if (!normalized) {
     return reply.code(400).send({ ok: false, error: "invalid_payload" });
   }
