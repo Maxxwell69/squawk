@@ -2,6 +2,18 @@
 
 TikTok and other tools need a **public HTTPS URL** for the overlay — `localhost` will not work. Use Railway (or similar) to host the Next.js overlay, and optionally the bridge.
 
+## 0. Quick checklist (code already on GitHub)
+
+Your repo **Maxxwell69/squawk** is the source of truth. To **deploy on Railway**:
+
+1. Log in at [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo** → authorize and select **`squawk`**.
+2. Add **two services** from the same repo (see §2 bridge, §3 overlay), or start with one.
+3. Set **environment variables** as below; **redeploy** the overlay after the bridge has a public URL (so `NEXT_PUBLIC_WS_URL` and `AUDIO_PUBLIC_BASE_URL` are correct).
+
+Railway redeploys on every **push to `main`** once the project is linked.
+
+---
+
 ## 1. Push this repo to GitHub
 
 1. Create a **new empty repository** on GitHub (no README, no `.gitignore`), e.g. `captain-squawks` or `squawk`.
@@ -30,7 +42,15 @@ If Git was accidentally using your **user home** as the repo root, run `git init
    - **Root directory**: leave empty or set to repository root (the folder that contains `pnpm-workspace.yaml`).
 3. **Settings** → **Networking** → **Generate domain** (public HTTPS URL).
 4. Railway injects **`PORT`**. The bridge already reads `process.env.PORT` — no extra env var for port.
-5. Deploy and note the public URL, e.g. `https://captain-squawks-bridge-production.up.railway.app`.
+5. **Variables** (bridge service) — set after you have a public domain:
+
+| Variable | Value |
+|----------|--------|
+| `AUDIO_PUBLIC_BASE_URL` | `https://YOUR-BRIDGE-SERVICE.up.railway.app` (no trailing slash) |
+
+Without this, WebSocket `audioUrl` may still point at `http://127.0.0.1:8787` and **audio will not play** from the hosted overlay.
+
+6. Deploy and note the public URL, e.g. `https://captain-squawks-bridge-production.up.railway.app`.
 
 **WebSocket URL for the overlay** (use `wss://` in production):
 
