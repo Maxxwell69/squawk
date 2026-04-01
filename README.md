@@ -104,7 +104,7 @@ On the **bridge** only, set:
 |----------|----------|--------|
 | `TTS_PROVIDER` | yes | `elevenlabs` |
 | `ELEVENLABS_API_KEY` | yes | [API keys](https://elevenlabs.io/app/settings/api-keys) |
-| `ELEVENLABS_VOICE_ID` | yes | Voice ID from [Voices](https://elevenlabs.io/app/voice-library) or your cloned voice |
+| `ELEVENLABS_VOICE_ID` | yes | **Voice ID** string from ElevenLabs (not the display name). In the app: **Voices** → select your voice → **Voice ID** / “Copy ID”. Wrong or missing ID → bridge omits `audioUrl` and the overlay falls back to **browser** speech (robotic), not your ElevenLabs voice. |
 | `ELEVENLABS_MODEL_ID` | no | Default `eleven_multilingual_v2` |
 | `ELEVENLABS_OUTPUT_FORMAT` | no | Default `mp3_44100_128` ([formats](https://elevenlabs.io/docs/api-reference/text-to-speech/convert)) |
 | `ELEVENLABS_VOICE_SETTINGS` | no | JSON object, e.g. `{"stability":0.5,"similarity_boost":0.75}` |

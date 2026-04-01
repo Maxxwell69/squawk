@@ -92,30 +92,26 @@ export function useParrotBridge() {
         await sleep(fallbackMs);
       } else if (next.audioUrl) {
         const audio = audioRef.current;
-        if (audio) {
-          try {
-            await playUrlOnce(audio, next.audioUrl);
-          } catch (e1) {
-            if (process.env.NODE_ENV === "development") {
-              console.warn("[parrot] HTMLAudio failed, trying Web Audio", e1);
-            }
+        try {
+          if (audio) {
             try {
+              await playUrlOnce(audio, next.audioUrl);
+            } catch (e1) {
+              console.warn("[parrot] HTMLAudio failed, trying Web Audio", e1);
               await playUrlViaWebAudio(next.audioUrl);
-            } catch (e2) {
-              if (process.env.NODE_ENV === "development") {
-                console.warn(
-                  "[parrot] Web Audio failed, trying browser speech",
-                  e2
-                );
-              }
-              await speakWithBrowserTts(next.text);
             }
+          } else {
+            await playUrlViaWebAudio(next.audioUrl);
           }
-        } else {
-          await speakWithBrowserTts(next.text);
+        } catch (e2) {
+          console.warn(
+            "[parrot] TTS file playback failed (not using browser voice). Check message.audioUrl in /dev/parrot-test and bridge ElevenLabs env.",
+            e2
+          );
+          await sleep(fallbackMs);
         }
       } else {
-        // No TTS file from bridge — still speak aloud via browser (user hears voice)
+        // Bridge sent no audio file — browser speech so stream still has voice
         await speakWithBrowserTts(next.text);
       }
     } catch (err) {
