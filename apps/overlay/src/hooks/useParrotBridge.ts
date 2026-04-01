@@ -23,6 +23,10 @@ export function useParrotBridge() {
   const [lastSpeak, setLastSpeak] = useState<ParrotSpeakMessage | null>(null);
 
   const { audioUnlocked, requestAudioUnlock: unlockBase } = useAudioUnlock();
+  /** Ref avoids recreating drainQueue when unlock flips — stable WS + correct post-unlock playback */
+  const audioUnlockedRef = useRef(false);
+  audioUnlockedRef.current = audioUnlocked;
+
   const queueRef = useRef<ParrotSpeakMessage[]>([]);
   const drainingRef = useRef(false);
   const audioRef = useRef<HTMLAudioElement | null>(null);
@@ -77,7 +81,7 @@ export function useParrotBridge() {
       estimateHoldMsFromText(next.text);
 
     try {
-      if (next.audioUrl && audioUnlocked) {
+      if (next.audioUrl && audioUnlockedRef.current) {
         const audio = audioRef.current;
         if (audio) {
           await playUrlOnce(audio, next.audioUrl);
@@ -87,7 +91,10 @@ export function useParrotBridge() {
       } else {
         await new Promise((r) => setTimeout(r, fallbackMs));
       }
-    } catch {
+    } catch (err) {
+      if (process.env.NODE_ENV === "development") {
+        console.warn("[parrot] audio playback failed, using timer fallback", err);
+      }
       await new Promise((r) => setTimeout(r, fallbackMs));
     }
 
@@ -97,7 +104,7 @@ export function useParrotBridge() {
     if (queueRef.current.length > 0) {
       void drainQueue();
     }
-  }, [audioUnlocked, finishLine]);
+  }, [finishLine]);
 
   const enqueueSpeak = useCallback(
     (msg: ParrotSpeakMessage) => {

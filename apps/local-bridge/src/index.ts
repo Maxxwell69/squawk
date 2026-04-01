@@ -42,6 +42,10 @@ await app.register(fastifyStatic, {
   root: config.audioTempDir,
   prefix: "/audio/",
   decorateReply: false,
+  setHeaders: (res) => {
+    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Cross-Origin-Resource-Policy", "cross-origin");
+  },
 });
 
 await app.register(websocket);
