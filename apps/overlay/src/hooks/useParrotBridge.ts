@@ -76,7 +76,6 @@ export function useParrotBridge() {
     drainingRef.current = true;
 
     setSubtitle(next.text);
-    setState(next.state);
     setLastSpeak(next);
 
     const fallbackMs =
@@ -86,6 +85,7 @@ export function useParrotBridge() {
 
     const sleep = (ms: number) =>
       new Promise<void>((r) => setTimeout(r, ms));
+    let voiceStarted = false;
 
     try {
       if (!audioUnlockedRef.current) {
@@ -93,6 +93,8 @@ export function useParrotBridge() {
       } else if (next.audioUrl) {
         const audio = audioRef.current;
         try {
+          setState(next.state);
+          voiceStarted = true;
           if (audio) {
             try {
               await playUrlOnce(audio, next.audioUrl);
@@ -112,11 +114,16 @@ export function useParrotBridge() {
         }
       } else {
         // Bridge sent no audio file — browser speech so stream still has voice
+        setState(next.state);
+        voiceStarted = true;
         await speakWithBrowserTts(next.text);
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
         console.warn("[parrot] playback fallback to timer", err);
+      }
+      if (!voiceStarted) {
+        setState("idle");
       }
       await sleep(fallbackMs);
     }

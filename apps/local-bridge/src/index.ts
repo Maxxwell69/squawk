@@ -1,4 +1,4 @@
-import Fastify from "fastify";
+import Fastify, { type FastifyReply, type FastifyRequest } from "fastify";
 import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
@@ -160,6 +160,73 @@ app.post("/api/test/comment", async (req) => {
 app.post("/api/test/chaos", async (req) => {
   const body = testChaosBodySchema.parse(req.body ?? {});
   const ev = makeTestEvent("chaos", { detail: body.note });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+const streamDeckPreHandler = async (
+  req: FastifyRequest,
+  reply: FastifyReply
+) => {
+  const secret = config.streamDeckSecret;
+  if (!secret) return;
+  const headerKey = req.headers["x-stream-deck-key"];
+  const key =
+    typeof headerKey === "string" ? headerKey : Array.isArray(headerKey) ? headerKey[0] : undefined;
+  const auth = req.headers.authorization;
+  const bearer =
+    typeof auth === "string" && auth.startsWith("Bearer ")
+      ? auth.slice(7).trim()
+      : undefined;
+  const ok = key === secret || bearer === secret;
+  if (!ok) {
+    return reply.code(401).send({ ok: false, error: "unauthorized" });
+  }
+};
+
+const streamDeckOpts = { preHandler: streamDeckPreHandler };
+
+app.post("/api/streamdeck/hello", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_hello",
+    raw: { source: "stream_deck" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/streamdeck/please-share", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_please_share",
+    raw: { source: "stream_deck" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/streamdeck/thanks-likes", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_thanks_likes",
+    raw: { source: "stream_deck" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/streamdeck/thanks-share", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_thanks_share",
+    raw: { source: "stream_deck" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/streamdeck/pirate-maxx", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_pirate_maxx",
+    raw: { source: "stream_deck" },
+  });
   const message = await handleNormalizedEvent(ev);
   return { ok: true, message };
 });

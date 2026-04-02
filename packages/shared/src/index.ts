@@ -6,3 +6,4 @@ export * from "./schemas/parrot-speak";
 export * from "./personality/captain-squawks";
 export * from "./utils/id";
 export * from "./rules";
+export * from "./stream-deck";

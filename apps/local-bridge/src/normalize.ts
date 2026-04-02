@@ -91,7 +91,9 @@ export function normalizeTikfinityPayload(
 
 export function makeTestEvent(
   kind: StreamEventKind,
-  extra?: Partial<Pick<NormalizedStreamEvent, "actorLabel" | "detail">>
+  extra?: Partial<
+    Pick<NormalizedStreamEvent, "actorLabel" | "detail" | "raw">
+  >
 ): NormalizedStreamEvent {
   return {
     id: newEventId(),
@@ -99,5 +101,6 @@ export function makeTestEvent(
     receivedAt: Date.now(),
     actorLabel: extra?.actorLabel,
     detail: extra?.detail,
+    raw: extra?.raw,
   };
 }

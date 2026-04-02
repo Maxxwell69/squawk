@@ -14,6 +14,8 @@ export type BridgeConfig = {
   audioTempDir: string;
   /** Public origin for audio URLs (no trailing slash), e.g. http://127.0.0.1:8787 */
   publicBaseUrl: string;
+  /** When set, Stream Deck HTTP routes require this key (header or Bearer) */
+  streamDeckSecret?: string;
 };
 
 function parseTtsProvider(v: string | undefined): TtsProviderName {
@@ -38,6 +40,8 @@ export function loadConfig(): BridgeConfig {
     process.env.AUDIO_PUBLIC_BASE_URL?.replace(/\/$/, "") ??
     `http://127.0.0.1:${Number.isFinite(port) ? port : 8787}`;
 
+  const streamDeckSecret = process.env.STREAM_DECK_SECRET?.trim();
+
   return {
     host,
     port: Number.isFinite(port) ? port : 8787,
@@ -45,5 +49,6 @@ export function loadConfig(): BridgeConfig {
     ttsProvider: parseTtsProvider(process.env.TTS_PROVIDER),
     audioTempDir,
     publicBaseUrl,
+    streamDeckSecret: streamDeckSecret || undefined,
   };
 }

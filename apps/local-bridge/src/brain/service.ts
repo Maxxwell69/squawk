@@ -1,10 +1,16 @@
 import {
+  estimateHoldMsFromText,
   holdMsForState,
+  isParrotState,
+  isStreamDeckTriggerId,
+  lineForStreamDeckTrigger,
   parrotStateForEventKind,
   pickRandomLine,
   PARROT_LINES,
+  STREAM_DECK_PARROT_STATE,
   type NormalizedStreamEvent,
   type ParrotOverlayPayload,
+  type ParrotState,
 } from "@captain-squawks/shared";
 
 /**
@@ -54,15 +60,41 @@ export class BrainService {
       case "chaos":
         return `${pickRandomLine(PARROT_LINES.chaos)} ${user} kicked up a storm!`;
       case "custom":
-      default:
+      default: {
+        if (event.detail && isStreamDeckTriggerId(event.detail)) {
+          return (
+            lineForStreamDeckTrigger(event.detail) ??
+            pickRandomLine(PARROT_LINES.idle)
+          );
+        }
+        if (detail) return detail;
         return pickRandomLine(PARROT_LINES.idle);
+      }
     }
   }
 
+  private parrotStateFor(event: NormalizedStreamEvent): ParrotState {
+    const raw = event.raw;
+    if (
+      raw &&
+      typeof raw.parrotState === "string" &&
+      isParrotState(raw.parrotState)
+    ) {
+      return raw.parrotState;
+    }
+    if (event.kind === "custom" && event.detail && isStreamDeckTriggerId(event.detail)) {
+      return STREAM_DECK_PARROT_STATE[event.detail];
+    }
+    return parrotStateForEventKind(event.kind);
+  }
+
   buildOverlayPayload(event: NormalizedStreamEvent): ParrotOverlayPayload {
-    const state = parrotStateForEventKind(event.kind);
+    const state = this.parrotStateFor(event);
     const subtitle = this.buildSubtitle(event);
-    const holdMs = holdMsForState(state);
+    let holdMs = holdMsForState(state);
+    if (event.kind === "custom" && event.detail && isStreamDeckTriggerId(event.detail)) {
+      holdMs = estimateHoldMsFromText(subtitle);
+    }
     return {
       state,
       subtitle,
