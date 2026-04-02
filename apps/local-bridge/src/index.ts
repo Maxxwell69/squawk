@@ -25,6 +25,21 @@ const voice = createVoiceProvider(config.ttsProvider);
 const audioStore = new AudioFileStore(config.audioTempDir, config.publicBaseUrl);
 const hub = new WsHub();
 
+/** Ignore duplicate Stream Deck POSTs within this window (hardware often double-fires). */
+const STREAM_DECK_ANIM_DEDUP_MS = 3500;
+const lastStreamDeckAnimAt = { return: 0, exit: 0 };
+
+function shouldSkipDuplicateStreamDeckAnim(
+  kind: keyof typeof lastStreamDeckAnimAt
+): boolean {
+  const now = Date.now();
+  if (now - lastStreamDeckAnimAt[kind] < STREAM_DECK_ANIM_DEDUP_MS) {
+    return true;
+  }
+  lastStreamDeckAnimAt[kind] = now;
+  return false;
+}
+
 const app = Fastify({
   logger: {
     level: process.env.LOG_LEVEL ?? "info",
@@ -232,6 +247,9 @@ app.post("/api/streamdeck/pirate-maxx", streamDeckOpts, async () => {
 });
 
 app.post("/api/streamdeck/exit", streamDeckOpts, async () => {
+  if (shouldSkipDuplicateStreamDeckAnim("exit")) {
+    return { ok: true, deduped: true };
+  }
   const ev = makeTestEvent("custom", {
     detail: "streamdeck_exit",
     raw: { source: "stream_deck", parrotState: "exit" },
@@ -241,6 +259,9 @@ app.post("/api/streamdeck/exit", streamDeckOpts, async () => {
 });
 
 app.post("/api/streamdeck/return", streamDeckOpts, async () => {
+  if (shouldSkipDuplicateStreamDeckAnim("return")) {
+    return { ok: true, deduped: true };
+  }
   const ev = makeTestEvent("custom", {
     detail: "streamdeck_return",
     raw: { source: "stream_deck", parrotState: "return" },

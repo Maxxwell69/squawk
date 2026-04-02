@@ -36,8 +36,8 @@ export function holdMsForState(state: ParrotState): number {
     case "away":
       return 2000;
     case "peck":
-      // Approx; adjust after you test the actual squawkhoppeck.webm length.
-      return 2200;
+      // squawkhoppeck.webm is ~10s; buffer so one-shot video is not cut to idle early.
+      return 11_200;
     case "hello_wave":
       return 4200;
     case "idle":

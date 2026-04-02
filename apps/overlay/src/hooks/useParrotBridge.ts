@@ -35,6 +35,10 @@ export function useParrotBridge() {
   const drainingRef = useRef(false);
   /** While exit/return webm is playing — blocks duplicate Stream Deck double-fires */
   const activeExitAnimationRef = useRef<ParrotState | null>(null);
+  /** Last accepted enqueue time for burst double-fires (Stream Deck / double WS) */
+  const lastExitBurstRef = useRef<{ state: ParrotState; at: number } | null>(
+    null
+  );
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
   function isExitAnimationDupState(s: ParrotState): boolean {
@@ -169,6 +173,12 @@ export function useParrotBridge() {
     (msg: ParrotSpeakMessage) => {
       const emptyText = msg.text.trim().length === 0;
       if (emptyText && isExitAnimationDupState(msg.state)) {
+        const now = Date.now();
+        const burstMs = msg.state === "return" ? 3500 : 1500;
+        const prev = lastExitBurstRef.current;
+        if (prev?.state === msg.state && now - prev.at < burstMs) {
+          return;
+        }
         if (activeExitAnimationRef.current === msg.state) {
           return;
         }
@@ -181,6 +191,7 @@ export function useParrotBridge() {
         if (dupQueued) {
           return;
         }
+        lastExitBurstRef.current = { state: msg.state, at: now };
       }
       queueRef.current.push(msg);
       void drainQueue();
