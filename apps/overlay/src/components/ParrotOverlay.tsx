@@ -5,6 +5,10 @@ import type { ParrotState } from "@captain-squawks/shared";
 import { useParrotBridge } from "@/hooks/useParrotBridge";
 import { AudioUnlockButton } from "@/components/AudioUnlockButton";
 import { ParrotMedia } from "@/components/ParrotMedia";
+import { ParrotSpeechBubble } from "@/components/ParrotSpeechBubble";
+
+const PARROT_SCENE_CLASS =
+  "h-auto max-h-[min(85vh,520px)] w-[min(90vw,280px)] max-w-full object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.35)]";
 
 const BADGE: Record<ParrotState, string> = {
   idle: "IDLE",
@@ -42,10 +46,14 @@ function parrotOnlyStateClasses(state: ParrotState): string {
   }
 }
 
-export type ParrotOverlayVariant = "widget" | "parrot-only";
+export type ParrotOverlayVariant =
+  | "widget"
+  /** Parrot + comic bubble to the right of the head (transparent canvas). */
+  | "parrot-with-bubble"
+  /** Parrot only; subtitle as plain text under the bird (no bubble). */
+  | "parrot-only";
 
 type Props = {
-  /** `parrot-only`: transparent canvas with just the looping WEBM (no box, badges, or subtitles). */
   variant?: ParrotOverlayVariant;
 };
 
@@ -58,6 +66,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
     showAudioUnlockButton,
   } = useParrotBridge();
   const parrotOnly = variant === "parrot-only";
+  const parrotWithBubble = variant === "parrot-with-bubble";
 
   useEffect(() => {
     const root = document.documentElement;
@@ -68,6 +77,34 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
       document.body.classList.remove("overlay-transparent");
     };
   }, []);
+
+  if (parrotWithBubble) {
+    return (
+      <div
+        className="relative flex min-h-0 w-full flex-col items-center justify-center bg-transparent p-2"
+        data-state={state}
+        data-variant="parrot-with-bubble"
+        data-connected={connected ? "1" : "0"}
+      >
+        <AudioUnlockButton
+          visible={showAudioUnlockButton}
+          onUnlock={requestAudioUnlock}
+        />
+        <div className="flex max-w-[min(96vw,560px)] flex-row flex-nowrap items-center justify-center gap-0 pl-1">
+          <div
+            className={`relative shrink-0 transition-all duration-300 ${parrotOnlyStateClasses(state)}`}
+          >
+            <ParrotMedia state={state} className={PARROT_SCENE_CLASS} />
+          </div>
+          <div className="min-w-0 flex-1 pl-1">
+            <ParrotSpeechBubble>
+              {subtitle || "…"}
+            </ParrotSpeechBubble>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   if (parrotOnly) {
     return (
@@ -84,10 +121,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
         <div
           className={`relative inline-block transition-all duration-300 ${parrotOnlyStateClasses(state)}`}
         >
-          <ParrotMedia
-            state={state}
-            className="h-auto max-h-[min(85vh,520px)] w-[min(90vw,280px)] max-w-full object-contain drop-shadow-[0_8px_24px_rgba(0,0,0,0.35)]"
-          />
+          <ParrotMedia state={state} className={PARROT_SCENE_CLASS} />
         </div>
         {subtitle ? (
           <p className="mt-2 max-w-[min(90vw,320px)] text-center font-body text-xs leading-snug text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">

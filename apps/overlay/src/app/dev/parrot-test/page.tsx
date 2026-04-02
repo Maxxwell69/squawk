@@ -131,12 +131,19 @@ export default function ParrotTestPage() {
           <code className="text-parchment">message</code>, the bridge answering
           the request is an older build.
         </p>
-        <div className="flex flex-wrap gap-2 text-sm">
+        <div className="flex flex-wrap gap-x-2 gap-y-1 text-sm">
           <Link
             className="text-squawk-gold underline"
             href="/overlay/parrot"
           >
             Full widget
+          </Link>
+          <span className="text-parchment/50">|</span>
+          <Link
+            className="text-squawk-gold underline"
+            href="/overlay/parrot-with-bubble"
+          >
+            Parrot + bubble
           </Link>
           <span className="text-parchment/50">|</span>
           <Link
