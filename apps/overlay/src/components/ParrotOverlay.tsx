@@ -19,11 +19,13 @@ const BADGE: Record<ParrotState, string> = {
   away: "AWAY",
   return: "RETURN",
   peck: "PECK",
+  hello_wave: "HELLO",
 };
 
 function stateClasses(state: ParrotState): string {
   switch (state) {
     case "talking":
+    case "hello_wave":
       return "animate-squawk-bob ring-2 ring-squawk-gold/50";
     case "hype":
       return "animate-hype-pulse ring-2 ring-squawk-gold/70";
@@ -39,6 +41,7 @@ function stateClasses(state: ParrotState): string {
 function parrotOnlyStateClasses(state: ParrotState): string {
   switch (state) {
     case "talking":
+    case "hello_wave":
       return "animate-squawk-bob";
     case "hype":
       return "animate-hype-pulse";

@@ -13,7 +13,7 @@ export const PARROT_DEFAULT_PATH = "/parrot/pirate_parrot.webm";
 
 /** Per-state media URLs. Same default = one file until you replace each entry. */
 export const PARROT_ASSETS: Record<ParrotState, string> = {
-  idle: PARROT_DEFAULT_PATH,
+  idle: "/parrot/emotes/squawkidlereg.webm",
   talking: PARROT_DEFAULT_PATH,
   hype: PARROT_DEFAULT_PATH,
   chaos: PARROT_DEFAULT_PATH,
@@ -24,6 +24,7 @@ export const PARROT_ASSETS: Record<ParrotState, string> = {
   away: PARROT_DEFAULT_PATH,
   // One-shot animation driven by Stream Deck / voice command.
   peck: "/parrot/emotes/squawkhoppeck.webm",
+  hello_wave: "/parrot/emotes/squawkwavinghello.webm",
 };
 
 export function parrotMediaUrl(state: ParrotState): string {

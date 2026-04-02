@@ -83,7 +83,7 @@ export const STREAM_DECK_PARROT_STATE: Record<
   StreamDeckTriggerId,
   ParrotState
 > = {
-  streamdeck_hello: "talking",
+  streamdeck_hello: "hello_wave",
   streamdeck_please_share: "hype",
   streamdeck_thanks_likes: "hype",
   streamdeck_thanks_share: "hype",
