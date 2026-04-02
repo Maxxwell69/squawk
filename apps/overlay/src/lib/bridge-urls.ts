@@ -22,11 +22,24 @@ export function wsUrlFromHttpOrigin(httpOrigin: string): string {
   return `${scheme}//${u.host}/ws`;
 }
 
+/** Default local Fastify bridge (Stream Deck + test routes). */
+export const DEFAULT_LOCAL_BRIDGE_HTTP = "http://127.0.0.1:8787";
+
 /** Browser overlay: public bridge API origin (NEXT_PUBLIC_BRIDGE_HTTP). */
 export function getClientBridgeHttp(): string {
   const env = process.env.NEXT_PUBLIC_BRIDGE_HTTP?.trim();
   if (env) return normalizeHttpOrigin(env);
-  return "http://127.0.0.1:8787";
+  return DEFAULT_LOCAL_BRIDGE_HTTP;
+}
+
+/**
+ * Optional second bridge URL for /dev/parrot-test (Railway deploy).
+ * Empty if unset — the test page falls back to a manual input.
+ */
+export function getClientRailwayBridgeHttp(): string {
+  const env = process.env.NEXT_PUBLIC_RAILWAY_BRIDGE_HTTP?.trim();
+  if (!env) return "";
+  return normalizeHttpOrigin(env);
 }
 
 /**

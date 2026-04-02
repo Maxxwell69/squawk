@@ -33,7 +33,13 @@ export function useParrotBridge() {
 
   const queueRef = useRef<ParrotSpeakMessage[]>([]);
   const drainingRef = useRef(false);
+  /** While exit/return webm is playing — blocks duplicate Stream Deck double-fires */
+  const activeExitAnimationRef = useRef<ParrotState | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  function isExitAnimationDupState(s: ParrotState): boolean {
+    return s === "return" || s === "exit";
+  }
 
   useEffect(() => {
     const el = new Audio();
@@ -96,9 +102,14 @@ export function useParrotBridge() {
     try {
       if (animationOnly) {
         // Exit/return are visual-only (webm one-shots); don't attempt TTS/audio.
+        if (isExitAnimationDupState(next.state)) {
+          activeExitAnimationRef.current = next.state;
+        }
         setState(next.state);
         await sleep(fallbackMs);
       } else if (!audioUnlockedRef.current) {
+        // Still show the line's parrot clip (e.g. hello_wave) for the hold timer, then idle.
+        setState(next.state);
         await sleep(fallbackMs);
       } else if (next.audioUrl) {
         const audio = audioRef.current;
@@ -125,7 +136,12 @@ export function useParrotBridge() {
         // Bridge sent no audio file — browser speech so stream still has voice
         setState(next.state);
         if (shouldSpeak) {
-          await speakWithBrowserTts(next.text);
+          // Some environments never fire speech `onend` — cap wait so we still return to idle.
+          const ttsCapMs = Math.min(120_000, Math.max(fallbackMs + 1500, 8000));
+          await Promise.race([
+            speakWithBrowserTts(next.text),
+            sleep(ttsCapMs),
+          ]);
         } else {
           // Silent line (e.g. exit/away): just wait the visual timer.
           await sleep(fallbackMs);
@@ -139,6 +155,9 @@ export function useParrotBridge() {
     }
 
     finishLine(next.state);
+    if (animationOnly && isExitAnimationDupState(next.state)) {
+      activeExitAnimationRef.current = null;
+    }
     drainingRef.current = false;
 
     if (queueRef.current.length > 0) {
@@ -148,6 +167,21 @@ export function useParrotBridge() {
 
   const enqueueSpeak = useCallback(
     (msg: ParrotSpeakMessage) => {
+      const emptyText = msg.text.trim().length === 0;
+      if (emptyText && isExitAnimationDupState(msg.state)) {
+        if (activeExitAnimationRef.current === msg.state) {
+          return;
+        }
+        const dupQueued = queueRef.current.some(
+          (m) =>
+            m.text.trim() === "" &&
+            m.state === msg.state &&
+            isExitAnimationDupState(m.state)
+        );
+        if (dupQueued) {
+          return;
+        }
+      }
       queueRef.current.push(msg);
       void drainQueue();
     },

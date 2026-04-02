@@ -88,7 +88,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
   if (parrotWithBubble) {
     return (
       <div
-        className="relative flex min-h-0 w-full flex-col items-center justify-center bg-transparent p-2"
+        className="relative flex min-h-0 w-full flex-col items-stretch justify-center bg-transparent p-2"
         data-state={state}
         data-variant="parrot-with-bubble"
         data-connected={connected ? "1" : "0"}
@@ -97,14 +97,16 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
           visible={showAudioUnlockButton}
           onUnlock={requestAudioUnlock}
         />
-        <div className="flex max-w-[min(96vw,560px)] flex-row flex-nowrap items-center justify-center gap-0 pl-1">
+        <div className="flex w-full min-w-0 flex-row flex-nowrap items-center justify-start gap-2 pl-1 pr-2">
           <div
             className={`relative shrink-0 transition-all duration-300 ${parrotOnlyStateClasses(state)}`}
           >
             <ParrotMedia state={state} className={PARROT_SCENE_CLASS} />
           </div>
-          <div className="min-w-0 flex-1 pl-1">
-            {subtitle ? <ParrotSpeechBubble>{subtitle}</ParrotSpeechBubble> : null}
+          <div className="min-w-0 flex-1 self-center">
+            {subtitle ? (
+              <ParrotSpeechBubble>{subtitle}</ParrotSpeechBubble>
+            ) : null}
           </div>
         </div>
       </div>
