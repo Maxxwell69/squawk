@@ -23,7 +23,7 @@ export const PARROT_ASSETS: Record<ParrotState, string> = {
   // `away` is rendered as hidden in `ParrotMedia` (no video).
   away: PARROT_DEFAULT_PATH,
   // One-shot animation driven by Stream Deck / voice command.
-  peck: "/parrot/emotes/squawkhoppeck.webm",
+  peck: "/parrot/emotes/squawkhoppeck.gif",
 };
 
 export function parrotMediaUrl(state: ParrotState): string {
