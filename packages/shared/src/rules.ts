@@ -30,7 +30,9 @@ export function holdMsForState(state: ParrotState): number {
     case "exit":
       return 2600;
     case "return":
-      return 2600;
+      // Return clip is ~9s; add a small buffer so it can finish before we
+      // transition back to `idle` (which unmounts the one-shot video).
+      return 9800;
     case "away":
       return 2000;
     case "peck":
