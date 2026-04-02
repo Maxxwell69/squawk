@@ -231,6 +231,24 @@ app.post("/api/streamdeck/pirate-maxx", streamDeckOpts, async () => {
   return { ok: true, message };
 });
 
+app.post("/api/streamdeck/exit", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_exit",
+    raw: { source: "stream_deck", parrotState: "exit" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/streamdeck/return", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_return",
+    raw: { source: "stream_deck", parrotState: "return" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
 app.post("/api/webhooks/tikfinity", async (req, reply) => {
   const normalized = normalizeTikfinityPayload(coerceWebhookBody(req.body));
   if (!normalized) {

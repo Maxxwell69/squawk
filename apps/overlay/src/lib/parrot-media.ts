@@ -17,6 +17,11 @@ export const PARROT_ASSETS: Record<ParrotState, string> = {
   talking: PARROT_DEFAULT_PATH,
   hype: PARROT_DEFAULT_PATH,
   chaos: PARROT_DEFAULT_PATH,
+  exit: "/parrot/emotes/squawkgifstage%20left.webm",
+  // Same file, but we'll mirror it visually when in the `return` state.
+  return: "/parrot/emotes/squawkgifstage%20left.webm",
+  // `away` is rendered as hidden in `ParrotMedia` (no video).
+  away: PARROT_DEFAULT_PATH,
 };
 
 export function parrotMediaUrl(state: ParrotState): string {

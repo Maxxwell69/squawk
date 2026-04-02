@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import type { CSSProperties } from "react";
 import type { ParrotState } from "@captain-squawks/shared";
 import { isGifPath, parrotMediaUrl } from "@/lib/parrot-media";
 
@@ -16,6 +17,11 @@ type Props = {
 export function ParrotMedia({ state, className }: Props) {
   const src = parrotMediaUrl(state);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const shouldLoop = state === "idle" || state === "talking" || state === "hype" || state === "chaos";
+  const shouldMirror = state === "return";
+  const mirrorStyle: CSSProperties | undefined = shouldMirror
+    ? { transform: "scaleX(-1)" }
+    : undefined;
 
   useEffect(() => {
     const v = videoRef.current;
@@ -25,6 +31,8 @@ export function ParrotMedia({ state, className }: Props) {
     });
   }, [src]);
 
+  if (state === "away") return null;
+
   if (isGifPath(src)) {
     return (
       <img
@@ -32,6 +40,7 @@ export function ParrotMedia({ state, className }: Props) {
         src={src}
         alt=""
         className={className}
+        style={mirrorStyle}
         draggable={false}
       />
     );
@@ -44,7 +53,8 @@ export function ParrotMedia({ state, className }: Props) {
       className={className}
       src={src}
       autoPlay
-      loop
+      loop={shouldLoop}
+      style={mirrorStyle}
       muted
       playsInline
     />

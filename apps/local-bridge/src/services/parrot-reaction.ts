@@ -21,14 +21,15 @@ export async function processParrotReaction(params: {
 }): Promise<ParrotSpeakMessage> {
   const { event, brain, voice, audioStore, hub, config, log } = params;
   const base = brain.buildOverlayPayload(event);
+  const subtitleTrimmed = base.subtitle.trim();
 
   let audioUrl: string | undefined;
   let durationMs: number | undefined;
 
-  if (config.featureTts) {
+  if (config.featureTts && subtitleTrimmed) {
     try {
       const cacheKey = JSON.stringify({
-        text: base.subtitle,
+        text: subtitleTrimmed,
         provider: config.ttsProvider,
         elevenlabsVoiceId: process.env.ELEVENLABS_VOICE_ID ?? "",
         elevenlabsModelId: process.env.ELEVENLABS_MODEL_ID ?? "",
@@ -42,7 +43,7 @@ export async function processParrotReaction(params: {
         audioUrl = cached.saved.publicUrl;
         durationMs = cached.durationMs;
       } else {
-        const spoken = await voice.speak(base.subtitle);
+        const spoken = await voice.speak(subtitleTrimmed);
         const stored = await audioStore.saveAudioCached(
           cacheKey,
           spoken.audioBuffer,

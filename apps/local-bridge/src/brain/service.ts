@@ -93,7 +93,9 @@ export class BrainService {
     const subtitle = this.buildSubtitle(event);
     let holdMs = holdMsForState(state);
     if (event.kind === "custom" && event.detail && isStreamDeckTriggerId(event.detail)) {
-      holdMs = estimateHoldMsFromText(subtitle);
+      if (subtitle.trim()) {
+        holdMs = estimateHoldMsFromText(subtitle);
+      }
     }
     return {
       state,

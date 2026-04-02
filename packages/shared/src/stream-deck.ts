@@ -66,6 +66,9 @@ export const STREAM_DECK_POOLS = {
     "Someone had to say it: Pirate Maxx — worth yer time unless ye dislike fun.",
     "Blink twice if ye want a hint: Pirate Maxx. That's the hint.",
   ],
+  // Exit/return are animation-only. We keep the subtitle empty.
+  streamdeck_exit: [""],
+  streamdeck_return: [""],
 } as const;
 
 export type StreamDeckTriggerId = keyof typeof STREAM_DECK_POOLS;
@@ -84,6 +87,8 @@ export const STREAM_DECK_PARROT_STATE: Record<
   streamdeck_thanks_likes: "hype",
   streamdeck_thanks_share: "hype",
   streamdeck_pirate_maxx: "talking",
+  streamdeck_exit: "exit",
+  streamdeck_return: "return",
 };
 
 export function isStreamDeckTriggerId(v: string): v is StreamDeckTriggerId {

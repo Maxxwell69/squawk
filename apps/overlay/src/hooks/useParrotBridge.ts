@@ -63,8 +63,11 @@ export function useParrotBridge() {
     await unlockBase();
   }, [unlockBase]);
 
-  const finishLine = useCallback(() => {
-    setState("idle");
+  const finishLine = useCallback((endedState: ParrotState) => {
+    const nextState: ParrotState =
+      endedState === "exit" ? "away" : "idle";
+
+    setState(nextState);
     setSubtitle("");
     setLastSpeak(null);
   }, []);
@@ -78,6 +81,9 @@ export function useParrotBridge() {
     setSubtitle(next.text);
     setLastSpeak(next);
 
+    const animationOnly = next.state === "exit" || next.state === "return";
+    const shouldSpeak = next.text.trim().length > 0;
+
     const fallbackMs =
       next.holdMs ??
       next.durationMs ??
@@ -85,16 +91,18 @@ export function useParrotBridge() {
 
     const sleep = (ms: number) =>
       new Promise<void>((r) => setTimeout(r, ms));
-    let voiceStarted = false;
 
     try {
-      if (!audioUnlockedRef.current) {
+      if (animationOnly) {
+        // Exit/return are visual-only (webm one-shots); don't attempt TTS/audio.
+        setState(next.state);
+        await sleep(fallbackMs);
+      } else if (!audioUnlockedRef.current) {
         await sleep(fallbackMs);
       } else if (next.audioUrl) {
         const audio = audioRef.current;
         try {
           setState(next.state);
-          voiceStarted = true;
           if (audio) {
             try {
               await playUrlOnce(audio, next.audioUrl);
@@ -115,20 +123,21 @@ export function useParrotBridge() {
       } else {
         // Bridge sent no audio file — browser speech so stream still has voice
         setState(next.state);
-        voiceStarted = true;
-        await speakWithBrowserTts(next.text);
+        if (shouldSpeak) {
+          await speakWithBrowserTts(next.text);
+        } else {
+          // Silent line (e.g. exit/away): just wait the visual timer.
+          await sleep(fallbackMs);
+        }
       }
     } catch (err) {
       if (process.env.NODE_ENV === "development") {
         console.warn("[parrot] playback fallback to timer", err);
       }
-      if (!voiceStarted) {
-        setState("idle");
-      }
       await sleep(fallbackMs);
     }
 
-    finishLine();
+    finishLine(next.state);
     drainingRef.current = false;
 
     if (queueRef.current.length > 0) {

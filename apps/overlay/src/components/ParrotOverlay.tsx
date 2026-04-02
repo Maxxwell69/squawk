@@ -15,6 +15,9 @@ const BADGE: Record<ParrotState, string> = {
   talking: "TALKING",
   hype: "HYPE",
   chaos: "CHAOS",
+  exit: "EXIT",
+  away: "AWAY",
+  return: "RETURN",
 };
 
 function stateClasses(state: ParrotState): string {
@@ -97,9 +100,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
             <ParrotMedia state={state} className={PARROT_SCENE_CLASS} />
           </div>
           <div className="min-w-0 flex-1 pl-1">
-            <ParrotSpeechBubble>
-              {subtitle || "…"}
-            </ParrotSpeechBubble>
+            {subtitle ? <ParrotSpeechBubble>{subtitle}</ParrotSpeechBubble> : null}
           </div>
         </div>
       </div>
@@ -183,7 +184,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
               </span>
             </div>
             <p className="min-h-[3rem] rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-body text-sm leading-snug text-squawk-ink shadow-inner">
-              {subtitle || "…"}
+              {subtitle ? subtitle : state === "idle" ? "…" : ""}
             </p>
           </div>
         </div>

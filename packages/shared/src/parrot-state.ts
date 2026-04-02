@@ -1,4 +1,12 @@
-export const PARROT_STATES = ["idle", "talking", "hype", "chaos"] as const;
+export const PARROT_STATES = [
+  "idle",
+  "talking",
+  "hype",
+  "chaos",
+  "exit",
+  "away",
+  "return",
+] as const;
 export type ParrotState = (typeof PARROT_STATES)[number];
 
 export function isParrotState(v: string): v is ParrotState {

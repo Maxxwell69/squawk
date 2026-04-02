@@ -27,6 +27,12 @@ export function holdMsForState(state: ParrotState): number {
       return 4200;
     case "chaos":
       return 5200;
+    case "exit":
+      return 2600;
+    case "return":
+      return 2600;
+    case "away":
+      return 2000;
     case "idle":
     default:
       return 2000;
