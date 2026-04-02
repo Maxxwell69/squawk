@@ -69,6 +69,7 @@ export const STREAM_DECK_POOLS = {
   // Exit/return are animation-only. We keep the subtitle empty.
   streamdeck_exit: [""],
   streamdeck_return: [""],
+  streamdeck_peck: [""],
 } as const;
 
 export type StreamDeckTriggerId = keyof typeof STREAM_DECK_POOLS;
@@ -89,6 +90,7 @@ export const STREAM_DECK_PARROT_STATE: Record<
   streamdeck_pirate_maxx: "talking",
   streamdeck_exit: "exit",
   streamdeck_return: "return",
+  streamdeck_peck: "peck",
 };
 
 export function isStreamDeckTriggerId(v: string): v is StreamDeckTriggerId {

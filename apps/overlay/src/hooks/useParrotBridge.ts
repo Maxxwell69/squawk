@@ -81,7 +81,8 @@ export function useParrotBridge() {
     setSubtitle(next.text);
     setLastSpeak(next);
 
-    const animationOnly = next.state === "exit" || next.state === "return";
+    const animationOnly =
+      next.state === "exit" || next.state === "return" || next.state === "peck";
     const shouldSpeak = next.text.trim().length > 0;
 
     const fallbackMs =

@@ -18,6 +18,7 @@ const BADGE: Record<ParrotState, string> = {
   exit: "EXIT",
   away: "AWAY",
   return: "RETURN",
+  peck: "PECK",
 };
 
 function stateClasses(state: ParrotState): string {

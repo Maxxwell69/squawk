@@ -6,6 +6,7 @@ export const PARROT_STATES = [
   "exit",
   "away",
   "return",
+  "peck",
 ] as const;
 export type ParrotState = (typeof PARROT_STATES)[number];
 

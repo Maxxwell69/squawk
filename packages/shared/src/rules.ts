@@ -33,6 +33,9 @@ export function holdMsForState(state: ParrotState): number {
       return 2600;
     case "away":
       return 2000;
+    case "peck":
+      // Approx; adjust after you test the actual squawkhoppeck.webm length.
+      return 2200;
     case "idle":
     default:
       return 2000;

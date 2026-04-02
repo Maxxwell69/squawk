@@ -18,7 +18,7 @@ export function ParrotMedia({ state, className }: Props) {
   const src = parrotMediaUrl(state);
   const videoRef = useRef<HTMLVideoElement>(null);
   const shouldLoop = state === "idle" || state === "talking" || state === "hype" || state === "chaos";
-  const shouldMirror = state === "return";
+  const shouldMirror = false;
   const mirrorStyle: CSSProperties | undefined = shouldMirror
     ? { transform: "scaleX(-1)" }
     : undefined;

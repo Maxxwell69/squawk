@@ -249,6 +249,15 @@ app.post("/api/streamdeck/return", streamDeckOpts, async () => {
   return { ok: true, message };
 });
 
+app.post("/api/streamdeck/peck", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_peck",
+    raw: { source: "stream_deck", parrotState: "peck" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
 app.post("/api/webhooks/tikfinity", async (req, reply) => {
   const normalized = normalizeTikfinityPayload(coerceWebhookBody(req.body));
   if (!normalized) {

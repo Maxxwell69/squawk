@@ -18,10 +18,12 @@ export const PARROT_ASSETS: Record<ParrotState, string> = {
   hype: PARROT_DEFAULT_PATH,
   chaos: PARROT_DEFAULT_PATH,
   exit: "/parrot/emotes/squawkgifstageleft.webm",
-  // Same file, but we'll mirror it visually when in the `return` state.
-  return: "/parrot/emotes/squawkgifstageleft.webm",
+  // Return is its own animation (left -> right), so we don't mirror it.
+  return: "/parrot/emotes/squawkstagereturn.webm",
   // `away` is rendered as hidden in `ParrotMedia` (no video).
   away: PARROT_DEFAULT_PATH,
+  // One-shot animation driven by Stream Deck / voice command.
+  peck: "/parrot/emotes/squawkhoppeck.webm",
 };
 
 export function parrotMediaUrl(state: ParrotState): string {
