@@ -17,9 +17,9 @@ export const PARROT_ASSETS: Record<ParrotState, string> = {
   talking: PARROT_DEFAULT_PATH,
   hype: PARROT_DEFAULT_PATH,
   chaos: PARROT_DEFAULT_PATH,
-  exit: "/parrot/emotes/squawkgifstage%20left.webm",
+  exit: "/parrot/emotes/squawkgifstageleft.webp",
   // Same file, but we'll mirror it visually when in the `return` state.
-  return: "/parrot/emotes/squawkgifstage%20left.webm",
+  return: "/parrot/emotes/squawkgifstageleft.webp",
   // `away` is rendered as hidden in `ParrotMedia` (no video).
   away: PARROT_DEFAULT_PATH,
 };
@@ -29,5 +29,7 @@ export function parrotMediaUrl(state: ParrotState): string {
 }
 
 export function isGifPath(url: string): boolean {
-  return /\.gif(\?|$)/i.test(url);
+  // We treat animated `.webp` the same way as gifs (render as an `<img>`).
+  // For anything else, we use `<video>`.
+  return /\.(gif|webp)(\?|$)/i.test(url);
 }
