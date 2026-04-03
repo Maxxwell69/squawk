@@ -40,6 +40,9 @@ export function holdMsForState(state: ParrotState): number {
       return 11_200;
     case "hello_wave":
       return 4200;
+    case "dancing_squawk":
+    case "feeding_time":
+      return 4200;
     case "idle":
     default:
       return 2000;

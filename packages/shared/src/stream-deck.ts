@@ -70,6 +70,30 @@ export const STREAM_DECK_POOLS = {
   streamdeck_exit: [""],
   streamdeck_return: [""],
   streamdeck_peck: [""],
+  streamdeck_dancing_squawk: [
+    "The deck be shakin' — this bird's got moves that'd shame a mermaid!",
+    "Feast yer eyes on the finest footwork on the seven seas!",
+    "That's not a dance — that's a declaration of fabulous chaos!",
+    "If rhythm were treasure, this parrot just looted the whole hold!",
+    "Someone call the bard — the Captain's bird stole the show again!",
+    "Shake a leg, ye lubbers — the parrot's leadin' this jig!",
+    "Gravity took the night off — look at those feathers fly!",
+    "That's the kind of swagger that starts tavern brawls… the fun kind!",
+    "The mast ain't the only thing swayin' tonight — behold the boogie!",
+    "Even the kraken paused to watch this nonsense. Respect.",
+  ],
+  streamdeck_feeding_time: [
+    "Chow time on deck — crumbs for crew, glory for the Captain!",
+    "Pass the biscuit barrel — this bird runs on sass and snacks!",
+    "Dinner bell rang — no scallywag leaves this table hungry!",
+    "Hot grub, cold grog, and one very smug parrot — feast up!",
+    "The galley's servin' comfort food and mild disrespect. Dig in!",
+    "If ye can chew it, ye can conquer it — plates forward, mates!",
+    "This meal's sponsored by hunger and poor life choices. Enjoy!",
+    "Seconds? Aye. Thirds? Also aye. We're pirates, not accountants.",
+    "Eat like nobody's chartin' yer waistline — we're at sea!",
+    "The cook swears it's edible. The parrot swears it's strategic. Eat!",
+  ],
 } as const;
 
 export type StreamDeckTriggerId = keyof typeof STREAM_DECK_POOLS;
@@ -91,6 +115,8 @@ export const STREAM_DECK_PARROT_STATE: Record<
   streamdeck_exit: "exit",
   streamdeck_return: "return",
   streamdeck_peck: "peck",
+  streamdeck_dancing_squawk: "dancing_squawk",
+  streamdeck_feeding_time: "feeding_time",
 };
 
 export function isStreamDeckTriggerId(v: string): v is StreamDeckTriggerId {

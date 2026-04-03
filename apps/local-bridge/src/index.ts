@@ -279,6 +279,24 @@ app.post("/api/streamdeck/peck", streamDeckOpts, async () => {
   return { ok: true, message };
 });
 
+app.post("/api/streamdeck/dancing-squawk", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_dancing_squawk",
+    raw: { source: "stream_deck" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/streamdeck/squawk-feeding-time", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_feeding_time",
+    raw: { source: "stream_deck" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
 app.post("/api/webhooks/tikfinity", async (req, reply) => {
   const normalized = normalizeTikfinityPayload(coerceWebhookBody(req.body));
   if (!normalized) {

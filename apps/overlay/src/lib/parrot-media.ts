@@ -25,6 +25,8 @@ export const PARROT_ASSETS: Record<ParrotState, string> = {
   // One-shot animation driven by Stream Deck / voice command.
   peck: "/parrot/emotes/squawkhoppeck.webm",
   hello_wave: "/parrot/emotes/squawkwavinghello.webm",
+  dancing_squawk: "/parrot/emotes/dancingsquawk.webm",
+  feeding_time: "/parrot/emotes/squawkfeedingtime.webm",
 };
 
 export function parrotMediaUrl(state: ParrotState): string {

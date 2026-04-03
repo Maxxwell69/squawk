@@ -23,6 +23,8 @@ const STREAM_DECK_ACTIONS: StreamDeckAction[] = [
   { label: "Exit (stage left)", path: "/api/streamdeck/exit" },
   { label: "Return", path: "/api/streamdeck/return" },
   { label: "Peck", path: "/api/streamdeck/peck" },
+  { label: "Dancing Squawk", path: "/api/streamdeck/dancing-squawk" },
+  { label: "Feeding time", path: "/api/streamdeck/squawk-feeding-time" },
 ];
 
 type SimAction = { label: string; path: string; body: object };

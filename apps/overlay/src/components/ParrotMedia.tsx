@@ -22,7 +22,9 @@ export function ParrotMedia({ state, className }: Props) {
     state === "talking" ||
     state === "hype" ||
     state === "chaos" ||
-    state === "hello_wave";
+    state === "hello_wave" ||
+    state === "dancing_squawk" ||
+    state === "feeding_time";
   const shouldMirror = false;
   const mirrorStyle: CSSProperties | undefined = shouldMirror
     ? { transform: "scaleX(-1)" }

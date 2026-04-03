@@ -9,6 +9,10 @@ export const PARROT_STATES = [
   "peck",
   /** Stream Deck hello — waving emote while line + TTS play */
   "hello_wave",
+  /** Stream Deck — dance emote + line */
+  "dancing_squawk",
+  /** Stream Deck — feeding animation + line */
+  "feeding_time",
 ] as const;
 export type ParrotState = (typeof PARROT_STATES)[number];
 
