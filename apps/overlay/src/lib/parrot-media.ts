@@ -8,6 +8,8 @@ import type { ParrotState } from "@captain-squawks/shared";
  * - `talking` — beak/movement while speaking
  * - `hype` — gift/likes energy
  * - `chaos` — raid/storm energy
+ * - `victory_dance` — victory celebration clip: `emotes/victorydance.webm`
+ * - `dancing_squawk` — general dance loop: `emotes/dancingsquawk.webm`
  */
 export const PARROT_DEFAULT_PATH = "/parrot/pirate_parrot.webm";
 
@@ -32,6 +34,7 @@ export const PARROT_ASSETS: Record<ParrotState, string> = {
   peck: "/parrot/emotes/squawkhoppeck.webm",
   hello_wave: "/parrot/emotes/squawkwavinghello.webm",
   dancing_squawk: "/parrot/emotes/dancingsquawk.webm",
+  /** Dedicated win celebration dance video (one-shot in UI). */
   victory_dance: "/parrot/emotes/victorydance.webm",
   feeding_time: "/parrot/emotes/squawkfeedingtime.webm",
 };

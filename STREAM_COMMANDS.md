@@ -11,6 +11,11 @@ Use your **local bridge** base URL everywhere below (example: `http://127.0.0.1:
 
 **Overlay:** Parrot listens on WebSocket `GET /ws` (e.g. `wss://your-bridge.example/ws`). Point the overlay at the bridge with `NEXT_PUBLIC_BRIDGE_HTTP`, `NEXT_PUBLIC_WS_URL`, or `?squawk_bridge=https://…` on the overlay URL.
 
+**Victory vs general dance (video files):**
+
+- **`victorydance.webm`** — the **victory dance** clip (`victory_dance` state: Stream Deck `victory-dance`, battle party lines A/B, `battle_victory_dance`).
+- **`dancingsquawk.webm`** — the **regular dance** loop (`dancing_squawk` state: `battle_cheer`, Stream Deck `dancing-squawk`).
+
 ---
 
 ## Stream Deck → `POST` (no JSON body)
