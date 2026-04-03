@@ -102,6 +102,78 @@ function coerceWebhookBody(raw: unknown): unknown {
   }
 }
 
+/** Public origin as seen by clients (Railway sets x-forwarded-*). */
+function bridgePublicOrigin(req: FastifyRequest): string {
+  const xfProto = req.headers["x-forwarded-proto"];
+  const protoRaw =
+    (typeof xfProto === "string" ? xfProto : "http").split(",")[0]?.trim() ||
+    "http";
+  const xfHost = req.headers["x-forwarded-host"];
+  const host =
+    (typeof xfHost === "string" ? xfHost : req.headers.host) || "localhost";
+  return `${protoRaw}://${host}`;
+}
+
+function escapeHtml(s: string): string {
+  return s
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+app.get("/", async (req, reply) => {
+  const origin = bridgePublicOrigin(req);
+  const wsBase = origin.startsWith("https")
+    ? "wss" + origin.slice("https".length)
+    : "ws" + origin.slice("http".length);
+  const wsUrl = `${wsBase}/ws`;
+  const overlayBase = process.env.OVERLAY_PUBLIC_URL?.trim().replace(/\/$/, "");
+  const accept = req.headers.accept ?? "";
+  const wantsJson =
+    accept.includes("application/json") && !accept.includes("text/html");
+
+  if (wantsJson) {
+    return {
+      ok: true,
+      service: "captain-squawks-bridge",
+      message:
+        "This host is the API bridge (Stream Deck, webhooks, WebSocket). The Next.js overlay is a separate deployment.",
+      health: `${origin}/health`,
+      websocket: wsUrl,
+      overlay: overlayBase ? `${overlayBase}/dev/parrot-test` : undefined,
+    };
+  }
+
+  reply.type("text/html; charset=utf-8");
+  const overlayBlock = overlayBase
+    ? `<p><strong>Overlay test panel:</strong> <a href="${escapeHtml(overlayBase)}/dev/parrot-test">/dev/parrot-test</a> on your overlay deployment.</p>`
+    : `<p>Optional: set Railway env <code>OVERLAY_PUBLIC_URL</code> to your <strong>Next.js overlay</strong> origin (e.g. <code>https://squawk-overlay.up.railway.app</code>) to show a link here.</p>`;
+
+  return `<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1"/>
+<title>Captain Squawks — Bridge</title>
+<style>
+body{font-family:system-ui,sans-serif;max-width:40rem;margin:2rem auto;padding:0 1rem;line-height:1.55;color:#111}
+code{background:#f4f4f5;padding:.12rem .35rem;border-radius:4px;font-size:88%}
+a{color:#0b6}
+h1{font-size:1.35rem;font-weight:600}
+</style>
+</head>
+<body>
+<h1>Captain Squawks bridge</h1>
+<p>This URL is the <strong>Fastify API</strong> (Stream Deck routes, TikFinity webhook, TTS audio, WebSocket). It is <strong>not</strong> the Next.js overlay — opening the root in a browser used to show 404 because there was no page here.</p>
+<p><strong>Health:</strong> <a href="/health"><code>/health</code></a></p>
+<p><strong>WebSocket for overlays:</strong> <code>${escapeHtml(wsUrl)}</code></p>
+${overlayBlock}
+<p><strong>Stream Deck:</strong> <code>POST</code> to <code>${escapeHtml(origin)}/api/streamdeck/hello</code> (and other routes — see repo).</p>
+</body>
+</html>`;
+});
+
 app.get("/health", async () => ({
   ok: true,
   service: "captain-squawks-bridge",
