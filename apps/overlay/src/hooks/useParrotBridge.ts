@@ -17,6 +17,20 @@ import { getClientWsUrl } from "@/lib/bridge-urls";
 import { getSilentWavDataUri } from "@/lib/silent-wav-data-uri";
 import { useAudioUnlock } from "./useAudioUnlock";
 
+const LS_SQUAWK_VOL = "squawk-overlay-tts-vol";
+
+function readSquawkVolume01(): number {
+  if (typeof window === "undefined") return 0.9;
+  try {
+    const raw = window.localStorage.getItem(LS_SQUAWK_VOL);
+    if (raw == null) return 0.9;
+    const n = Number.parseFloat(raw);
+    return Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0.9;
+  } catch {
+    return 0.9;
+  }
+}
+
 /**
  * FIFO queue: one PARROT_SPEAK at a time; new lines wait until the current line
  * finishes (audio end or fallback timer). Documented MVP — swap for interrupt later.
@@ -26,6 +40,7 @@ export function useParrotBridge() {
   const [state, setState] = useState<ParrotState>("idle");
   const [subtitle, setSubtitle] = useState("");
   const [lastSpeak, setLastSpeak] = useState<ParrotSpeakMessage | null>(null);
+  const [squawkVolume01, setSquawkVolume01State] = useState(0.9);
 
   const { audioUnlocked, requestAudioUnlock: unlockBase } = useAudioUnlock();
   /** Ref avoids recreating drainQueue when unlock flips — stable WS + correct post-unlock playback */
@@ -41,6 +56,24 @@ export function useParrotBridge() {
     null
   );
   const audioRef = useRef<HTMLAudioElement | null>(null);
+  const squawkVolume01Ref = useRef(squawkVolume01);
+  squawkVolume01Ref.current = squawkVolume01;
+
+  useEffect(() => {
+    setSquawkVolume01State(readSquawkVolume01());
+  }, []);
+
+  useEffect(() => {
+    try {
+      window.localStorage.setItem(LS_SQUAWK_VOL, String(squawkVolume01));
+    } catch {
+      /* ignore */
+    }
+  }, [squawkVolume01]);
+
+  const setSquawkVolume01 = useCallback((v: number) => {
+    setSquawkVolume01State(Math.min(1, Math.max(0, v)));
+  }, []);
 
   function isExitAnimationDupState(s: ParrotState): boolean {
     return s === "return" || s === "exit";
@@ -66,7 +99,7 @@ export function useParrotBridge() {
         audio.pause();
         audio.removeAttribute("src");
         audio.load();
-        audio.volume = 1;
+        audio.volume = squawkVolume01Ref.current;
       } catch {
         /* still try remote TTS after context unlock */
       }
@@ -119,18 +152,19 @@ export function useParrotBridge() {
       } else if (next.audioUrl) {
         // TTS often ends before holdMs (e.g. 5s audio vs 10s feeding clip) — wait both.
         setState(next.state);
+        const vol = squawkVolume01Ref.current;
         const playRemoteTts = async () => {
           const audio = audioRef.current;
           try {
             if (audio) {
               try {
-                await playUrlOnce(audio, next.audioUrl!);
+                await playUrlOnce(audio, next.audioUrl!, vol);
               } catch (e1) {
                 console.warn("[parrot] HTMLAudio failed, trying Web Audio", e1);
-                await playUrlViaWebAudio(next.audioUrl!);
+                await playUrlViaWebAudio(next.audioUrl!, vol);
               }
             } else {
-              await playUrlViaWebAudio(next.audioUrl!);
+              await playUrlViaWebAudio(next.audioUrl!, vol);
             }
           } catch (e2) {
             console.warn(
@@ -150,7 +184,7 @@ export function useParrotBridge() {
           const ttsCapMs = Math.min(120_000, Math.max(fallbackMs + 1500, 8000));
           await Promise.all([
             Promise.race([
-              speakWithBrowserTts(next.text),
+              speakWithBrowserTts(next.text, squawkVolume01Ref.current),
               sleep(ttsCapMs),
             ]),
             sleep(fallbackMs),
@@ -331,5 +365,7 @@ export function useParrotBridge() {
     audioUnlocked,
     requestAudioUnlock,
     showAudioUnlockButton: !audioUnlocked,
+    squawkVolume01,
+    setSquawkVolume01,
   };
 }

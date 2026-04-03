@@ -1,10 +1,15 @@
+function clamp01(n: number): number {
+  return Math.min(1, Math.max(0, n));
+}
+
 /**
  * Play a remote URL on a shared HTMLAudioElement; resolves on `ended` or rejects on error.
  * Queue strategy: one element per overlay instance (see useParrotBridge).
  */
 export function playUrlOnce(
   audio: HTMLAudioElement,
-  url: string
+  url: string,
+  volume01 = 1
 ): Promise<void> {
   return new Promise((resolve, reject) => {
     const onEnded = () => {
@@ -33,7 +38,7 @@ export function playUrlOnce(
 
     audio.addEventListener("ended", onEnded);
     audio.addEventListener("error", onErr);
-    audio.volume = 1;
+    audio.volume = clamp01(volume01);
     audio.src = url;
     audio.load();
     void audio.play().catch((e) => {
@@ -47,7 +52,10 @@ export function playUrlOnce(
  * Decode and play remote audio via Web Audio API (fallback when HTMLAudio fails).
  * Requires prior user gesture (Enable audio) for AudioContext.resume().
  */
-export async function playUrlViaWebAudio(url: string): Promise<void> {
+export async function playUrlViaWebAudio(
+  url: string,
+  volume01 = 1
+): Promise<void> {
   const res = await fetch(url, { mode: "cors" });
   if (!res.ok) throw new Error(`audio fetch ${res.status}`);
   const buf = await res.arrayBuffer();
@@ -58,7 +66,10 @@ export async function playUrlViaWebAudio(url: string): Promise<void> {
     await new Promise<void>((resolve, reject) => {
       const src = ctx.createBufferSource();
       src.buffer = decoded;
-      src.connect(ctx.destination);
+      const gain = ctx.createGain();
+      gain.gain.value = clamp01(volume01);
+      src.connect(gain);
+      gain.connect(ctx.destination);
       src.onended = () => resolve();
       src.start();
     });
@@ -68,7 +79,10 @@ export async function playUrlViaWebAudio(url: string): Promise<void> {
 }
 
 /** Browser speech synthesis — works when bridge sends no audioUrl or file play fails. */
-export function speakWithBrowserTts(text: string): Promise<void> {
+export function speakWithBrowserTts(
+  text: string,
+  volume01 = 1
+): Promise<void> {
   return new Promise((resolve) => {
     if (typeof window === "undefined") {
       resolve();
@@ -81,6 +95,7 @@ export function speakWithBrowserTts(text: string): Promise<void> {
     }
     s.cancel();
     const u = new SpeechSynthesisUtterance(text);
+    u.volume = clamp01(volume01);
     u.onend = () => resolve();
     u.onerror = () => resolve();
     s.speak(u);
