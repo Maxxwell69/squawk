@@ -373,9 +373,13 @@ app.post("/api/streamdeck/squawk-feeding-time", streamDeckOpts, async () => {
 
 app.post("/api/battle/trigger", streamDeckOpts, async (req) => {
   const body = battleTriggerBodySchema.parse(req.body ?? {});
+  const name = body.opponentName?.trim();
   const ev = makeTestEvent("custom", {
     detail: body.triggerId,
-    raw: { source: "battle_ui" },
+    raw: {
+      source: "battle_ui",
+      ...(name ? { opponentName: name } : {}),
+    },
   });
   const message = await handleNormalizedEvent(ev);
   return { ok: true, message };

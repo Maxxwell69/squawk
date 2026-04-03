@@ -7,11 +7,21 @@ import {
   DEFAULT_LOCAL_BRIDGE_HTTP,
   getClientBridgeHttp,
 } from "@/lib/bridge-urls";
+import { BATTLE_AUTO_MILESTONES } from "@/lib/battle-auto-milestones";
+import {
+  useBattleMusic,
+  type BattleMatchStatus,
+} from "@/hooks/useBattleMusic";
 
 const LS_BRIDGE = "squawk-battle-bridge";
 const LS_DECK_KEY = "squawk-parrot-test-stream-deck-key";
+const LS_OPPONENT = "squawk-battle-opponent";
+const LS_MUSIC_VOL = "squawk-battle-music-vol";
+const LS_MUSIC_MUTE = "squawk-battle-music-muted";
 
 const BATTLE_PATH = "/api/battle/trigger";
+const TOTAL_SEC = 5 * 60;
+const VICTORY_PARTY_SEC = 120;
 
 type BattleSection = {
   title: string;
@@ -37,18 +47,23 @@ const BATTLE_SECTIONS: BattleSection[] = [
   {
     title: "Battle — minute one",
     hint: "Nice and easy, fun first — watch for extra on first gift.",
-    buttons: [
-      { label: "Line 1", triggerId: "battle_phase1_1" },
-      { label: "Line 2", triggerId: "battle_phase1_2" },
-      { label: "Line 3", triggerId: "battle_phase1_3" },
-      { label: "Line 4", triggerId: "battle_phase1_4" },
-      { label: "Line 5", triggerId: "battle_phase1_5" },
-      { label: "Line 6", triggerId: "battle_phase1_6" },
-      { label: "Line 7", triggerId: "battle_phase1_7" },
-      { label: "Line 8", triggerId: "battle_phase1_8" },
-      { label: "Line 9", triggerId: "battle_phase1_9" },
-      { label: "Line 10", triggerId: "battle_phase1_10" },
-    ],
+    buttons: (
+      [
+        "battle_phase1_1",
+        "battle_phase1_2",
+        "battle_phase1_3",
+        "battle_phase1_4",
+        "battle_phase1_5",
+        "battle_phase1_6",
+        "battle_phase1_7",
+        "battle_phase1_8",
+        "battle_phase1_9",
+        "battle_phase1_10",
+      ] as const
+    ).map((id, i) => ({
+      label: `Line ${i + 1}`,
+      triggerId: id,
+    })),
   },
   {
     title: "Battle — phase two",
@@ -81,14 +96,34 @@ const BATTLE_SECTIONS: BattleSection[] = [
   },
   {
     title: "Repair & party",
-    hint: "Congrats, MVPs — Squawk will ask chat for names.",
+    hint: "After the clock — use Win / Lose above first. MVPs below.",
     buttons: [
       { label: "Repair & party", triggerId: "battle_phase5_repair_party" },
-      { label: "We won", triggerId: "battle_phase5_we_won" },
-      { label: "We lost", triggerId: "battle_phase5_we_lost" },
       { label: "Who were the MVPs?", triggerId: "battle_phase5_mvps_prompt" },
     ],
   },
+];
+
+const HAIL_NICE: { label: string; triggerId: BattleTriggerId }[] = [
+  { label: "Respect 1", triggerId: "battle_hail_nice_1" },
+  { label: "Respect 2", triggerId: "battle_hail_nice_2" },
+  { label: "Respect 3", triggerId: "battle_hail_nice_3" },
+];
+
+const HAIL_ROAST: { label: string; triggerId: BattleTriggerId }[] = [
+  { label: "Fun jab 1", triggerId: "battle_hail_roast_1" },
+  { label: "Fun jab 2", triggerId: "battle_hail_roast_2" },
+  { label: "Fun jab 3", triggerId: "battle_hail_roast_3" },
+];
+
+const PARTY_VICTORY: { label: string; triggerId: BattleTriggerId }[] = [
+  { label: "Party line A", triggerId: "battle_party_victory_1" },
+  { label: "Party line B", triggerId: "battle_party_victory_2" },
+];
+
+const PARTY_LOSS: { label: string; triggerId: BattleTriggerId }[] = [
+  { label: "Salute A", triggerId: "battle_party_loss_1" },
+  { label: "Salute B", triggerId: "battle_party_loss_2" },
 ];
 
 function normalizeBase(raw: string): string {
@@ -100,16 +135,14 @@ function normalizeBase(raw: string): string {
 }
 
 function bridgeUsesSecret(path: string): boolean {
-  return (
-    path.includes("/api/streamdeck/") ||
-    path.includes("/api/battle/")
-  );
+  return path.includes("/api/streamdeck/") || path.includes("/api/battle/");
 }
 
 async function postBattleTrigger(
   base: string,
   triggerId: BattleTriggerId,
-  streamDeckKey: string
+  streamDeckKey: string,
+  opponentName?: string
 ): Promise<unknown> {
   const origin = normalizeBase(base);
   const url = new URL(BATTLE_PATH, `${origin}/`);
@@ -120,10 +153,15 @@ async function postBattleTrigger(
   if (key && bridgeUsesSecret(BATTLE_PATH)) {
     headers["x-stream-deck-key"] = key;
   }
+  const body: { triggerId: BattleTriggerId; opponentName?: string } = {
+    triggerId,
+  };
+  const n = opponentName?.trim();
+  if (n) body.opponentName = n;
   const res = await fetch(url.toString(), {
     method: "POST",
     headers,
-    body: JSON.stringify({ triggerId }),
+    body: JSON.stringify(body),
   });
   const text = await res.text();
   if (!res.ok) throw new Error(text || `${res.status}`);
@@ -133,8 +171,6 @@ async function postBattleTrigger(
     return text;
   }
 }
-
-const TOTAL_SEC = 5 * 60;
 
 function formatClock(sec: number): string {
   const s = Math.max(0, sec);
@@ -146,11 +182,25 @@ function formatClock(sec: number): string {
 export default function BattleBoardPage() {
   const [bridgeUrl, setBridgeUrl] = useState(DEFAULT_LOCAL_BRIDGE_HTTP);
   const [streamDeckKey, setStreamDeckKey] = useState("");
+  const [opponentName, setOpponentName] = useState("");
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState("");
   const [remainingSec, setRemainingSec] = useState(TOTAL_SEC);
   const [running, setRunning] = useState(false);
+  const [matchStatus, setMatchStatus] = useState<BattleMatchStatus>("idle");
+  const [partyRemainingSec, setPartyRemainingSec] = useState(0);
+  const [musicVolume01, setMusicVolume01] = useState(0.75);
+  const [musicMuted, setMusicMuted] = useState(false);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
+  const autoFiredRef = useRef<Set<number>>(new Set());
+
+  const elapsedSec =
+    matchStatus === "running" ? TOTAL_SEC - remainingSec : 0;
+
+  useBattleMusic(matchStatus, elapsedSec, {
+    volume01: musicVolume01,
+    muted: musicMuted,
+  });
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -161,6 +211,13 @@ export default function BattleBoardPage() {
       process.env.NEXT_PUBLIC_STREAM_DECK_TEST_KEY?.trim() ??
       "";
     setStreamDeckKey(keyFromLs);
+    setOpponentName(window.localStorage.getItem(LS_OPPONENT)?.trim() ?? "");
+    const volRaw = window.localStorage.getItem(LS_MUSIC_VOL);
+    const v = volRaw != null ? Number.parseFloat(volRaw) : NaN;
+    if (Number.isFinite(v) && v >= 0 && v <= 1) {
+      setMusicVolume01(v);
+    }
+    setMusicMuted(window.localStorage.getItem(LS_MUSIC_MUTE) === "1");
   }, []);
 
   useEffect(() => {
@@ -172,6 +229,21 @@ export default function BattleBoardPage() {
     if (typeof window === "undefined") return;
     window.localStorage.setItem(LS_DECK_KEY, streamDeckKey);
   }, [streamDeckKey]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(LS_OPPONENT, opponentName);
+  }, [opponentName]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(LS_MUSIC_VOL, String(musicVolume01));
+  }, [musicVolume01]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(LS_MUSIC_MUTE, musicMuted ? "1" : "0");
+  }, [musicMuted]);
 
   useEffect(() => {
     if (!running) {
@@ -195,11 +267,52 @@ export default function BattleBoardPage() {
     };
   }, [running]);
 
+  useEffect(() => {
+    if (matchStatus !== "running") return;
+    if (remainingSec !== 0) return;
+    setMatchStatus("awaiting_result");
+  }, [matchStatus, remainingSec]);
+
+  useEffect(() => {
+    if (matchStatus !== "victory_party") return;
+    const t = setInterval(() => {
+      setPartyRemainingSec((s) => {
+        if (s <= 1) {
+          setMatchStatus("idle");
+          setRemainingSec(TOTAL_SEC);
+          return 0;
+        }
+        return s - 1;
+      });
+    }, 1000);
+    return () => clearInterval(t);
+  }, [matchStatus]);
+
+  useEffect(() => {
+    if (matchStatus !== "running") return;
+    const elapsed = TOTAL_SEC - remainingSec;
+    for (const m of BATTLE_AUTO_MILESTONES) {
+      if (elapsed !== m.elapsed) continue;
+      if (autoFiredRef.current.has(m.elapsed)) continue;
+      autoFiredRef.current.add(m.elapsed);
+      void postBattleTrigger(bridgeUrl, m.trigger, streamDeckKey, opponentName).catch(
+        () => {
+          /* ignore auto fail */
+        }
+      );
+    }
+  }, [matchStatus, remainingSec, bridgeUrl, streamDeckKey, opponentName]);
+
   const fire = useCallback(
     async (triggerId: BattleTriggerId, label: string) => {
       setBusy(true);
       try {
-        const data = await postBattleTrigger(bridgeUrl, triggerId, streamDeckKey);
+        const data = await postBattleTrigger(
+          bridgeUrl,
+          triggerId,
+          streamDeckKey,
+          opponentName
+        );
         setLog(`[${label}]\n${JSON.stringify(data, null, 2)}`);
       } catch (e) {
         setLog(`[${label}]\n${String(e)}`);
@@ -207,22 +320,46 @@ export default function BattleBoardPage() {
         setBusy(false);
       }
     },
-    [bridgeUrl, streamDeckKey]
+    [bridgeUrl, streamDeckKey, opponentName]
   );
 
   const phaseHint = useMemo(() => {
-    const t = TOTAL_SEC - remainingSec;
-    if (t < 60) return "Phase: Prepare / minute one";
-    if (t < 120) return "Phase: ~Minute two";
-    if (t < 180) return "Phase: ~Minute three";
-    if (t < 240) return "Phase: ~Last minute soon";
-    return "Phase: ~Final stretch / party";
-  }, [remainingSec]);
+    if (matchStatus !== "running") return "—";
+    const t = elapsedSec;
+    if (t < 60) return "Phase 1 — minute one";
+    if (t < 120) return "Phase 2 — minute two";
+    if (t < 180) return "Phase 3 — minute three";
+    if (t < 240) return "Phase 4 — minute four";
+    return "Phase 5 — final minute";
+  }, [matchStatus, elapsedSec]);
+
+  const startMatch = () => {
+    autoFiredRef.current = new Set();
+    setRemainingSec(TOTAL_SEC);
+    setRunning(true);
+    setMatchStatus("running");
+  };
+
+  const resetAll = () => {
+    setRunning(false);
+    setRemainingSec(TOTAL_SEC);
+    setMatchStatus("idle");
+    setPartyRemainingSec(0);
+    autoFiredRef.current = new Set();
+  };
 
   const btn =
     "rounded-lg border border-white/15 bg-black/35 px-2.5 py-2 font-body text-xs font-semibold text-parchment hover:bg-white/10 disabled:opacity-50 sm:text-sm";
   const btnCheer =
     "rounded-lg bg-squawk-gold/90 px-3 py-2 font-body text-sm font-bold text-squawk-ink hover:bg-squawk-gold disabled:opacity-50";
+  const btnWin =
+    "rounded-lg border border-emerald-500/60 bg-emerald-900/40 px-4 py-3 font-display text-sm font-bold text-emerald-100 hover:bg-emerald-800/50 disabled:opacity-50";
+  const btnLose =
+    "rounded-lg border border-amber-500/40 bg-amber-950/35 px-4 py-3 font-display text-sm font-bold text-amber-100 hover:bg-amber-900/40 disabled:opacity-50";
+
+  const awaiting = matchStatus === "awaiting_result";
+  const inVictoryParty = matchStatus === "victory_party";
+  const inDefeat = matchStatus === "defeat";
 
   return (
     <main className="min-h-screen bg-squawk-ink p-4 pb-28 text-parchment sm:p-6">
@@ -233,17 +370,18 @@ export default function BattleBoardPage() {
               Battle board
             </h1>
             <p className="mt-1 max-w-xl font-body text-sm text-parchment/75">
-              Five-minute match timer (reference only). Buttons send lines through
-              the bridge — same secret as Stream Deck when{" "}
-              <code className="text-parchment/90">STREAM_DECK_SECRET</code> is set.
+              Start the match for music + timed Squawk callouts (from minute two).
+              Drop tracks in{" "}
+              <code className="text-parchment/90">public/battle/music/</code>{" "}
+              — see README there. Bridge secret optional.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/overlay/parrot"
+              href="/overlay/parrot-with-bubble"
               className="rounded-lg border border-parchment/40 px-3 py-1.5 text-sm text-squawk-gold hover:bg-white/5"
             >
-              Overlay
+              Parrot + bubble
             </Link>
             <Link
               href="/dev/parrot-test"
@@ -255,41 +393,259 @@ export default function BattleBoardPage() {
         </div>
 
         <section className="rounded-xl border border-squawk-gold/35 bg-black/30 p-4">
+          <label className="block font-body text-xs font-medium text-parchment/80">
+            Opponent / rival crew name (used in hail lines — optional)
+            <input
+              type="text"
+              value={opponentName}
+              onChange={(e) => setOpponentName(e.target.value)}
+              placeholder="e.g. Captain Rex"
+              className="mt-1 w-full max-w-md rounded-lg border border-white/20 bg-black/40 px-3 py-2 font-body text-sm text-parchment outline-none focus:border-squawk-gold/60"
+            />
+          </label>
+        </section>
+
+        <section className="rounded-xl border border-white/10 bg-black/25 p-4">
+          <h2 className="font-display text-sm font-bold text-squawk-gold">
+            Battle music
+          </h2>
+          <p className="mt-1 font-body text-xs text-parchment/65">
+            Master level for phase / victory / defeat tracks. Mute keeps your slider
+            value for when you unmute.
+          </p>
+          <div className="mt-3 flex flex-wrap items-center gap-4">
+            <label className="flex min-w-[min(100%,280px)] flex-1 flex-col gap-1 sm:flex-row sm:items-center">
+              <span className="shrink-0 font-body text-xs text-parchment/80">
+                Volume
+              </span>
+              <input
+                type="range"
+                min={0}
+                max={100}
+                value={Math.round(musicVolume01 * 100)}
+                onChange={(e) =>
+                  setMusicVolume01(
+                    Math.min(1, Math.max(0, Number(e.target.value) / 100))
+                  )
+                }
+                className="h-2 min-w-0 flex-1 cursor-pointer accent-squawk-gold"
+                aria-label="Battle music volume"
+              />
+              <span className="w-10 shrink-0 font-mono text-xs tabular-nums text-parchment/75">
+                {Math.round(musicVolume01 * 100)}%
+              </span>
+            </label>
+            <button
+              type="button"
+              className={
+                musicMuted
+                  ? "rounded-lg border border-squawk-gold/50 bg-squawk-gold/20 px-3 py-1.5 font-body text-xs font-semibold text-squawk-gold hover:bg-squawk-gold/30"
+                  : "rounded-lg border border-white/20 bg-black/40 px-3 py-1.5 font-body text-xs font-semibold text-parchment hover:bg-white/10"
+              }
+              onClick={() => setMusicMuted((m) => !m)}
+            >
+              {musicMuted ? "Unmute music" : "Mute music"}
+            </button>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-squawk-gold/35 bg-black/30 p-4">
           <div className="flex flex-wrap items-center gap-4">
             <div className="font-mono text-4xl font-bold tabular-nums text-squawk-gold">
-              {formatClock(remainingSec)}
+              {inVictoryParty
+                ? formatClock(partyRemainingSec)
+                : formatClock(remainingSec)}
             </div>
-            <div className="font-body text-sm text-parchment/70">{phaseHint}</div>
+            <div className="font-body text-sm text-parchment/70">
+              {inVictoryParty
+                ? "Victory party"
+                : inDefeat
+                  ? "Post-match — lighter track"
+                  : awaiting
+                    ? "Match over — pick result"
+                    : phaseHint}
+            </div>
           </div>
           <div className="mt-3 flex flex-wrap gap-2">
             <button
               type="button"
               className={btn}
-              disabled={running && remainingSec === 0}
-              onClick={() => {
-                setRemainingSec(TOTAL_SEC);
-                setRunning(true);
-              }}
+              disabled={matchStatus !== "idle"}
+              onClick={startMatch}
             >
-              Start / restart 5:00
+              Start match (5:00)
             </button>
             <button
               type="button"
               className={btn}
+              disabled={matchStatus !== "running"}
               onClick={() => setRunning((r) => !r)}
             >
               {running ? "Pause" : "Resume"}
             </button>
-            <button
-              type="button"
-              className={btn}
-              onClick={() => {
-                setRunning(false);
-                setRemainingSec(TOTAL_SEC);
-              }}
-            >
-              Reset clock
+            <button type="button" className={btn} onClick={resetAll}>
+              Reset all
             </button>
+          </div>
+
+          {awaiting ? (
+            <div className="mt-6 rounded-xl border border-emerald-500/30 bg-black/40 p-4">
+              <p className="font-display text-base font-bold text-squawk-gold">
+                Clock&apos;s at zero — who took the round?
+              </p>
+              <p className="mt-1 font-body text-xs text-parchment/70">
+                Squawk waits for you. Win starts ~2 minutes of victory music + party
+                timer; loss plays a softer track until you continue.
+              </p>
+              <div className="mt-4 flex flex-wrap gap-3">
+                <button
+                  type="button"
+                  className={btnWin}
+                  disabled={busy}
+                  onClick={() => {
+                    void (async () => {
+                      setBusy(true);
+                      try {
+                        await postBattleTrigger(
+                          bridgeUrl,
+                          "battle_phase5_we_won",
+                          streamDeckKey,
+                          opponentName
+                        );
+                        setPartyRemainingSec(VICTORY_PARTY_SEC);
+                        setMatchStatus("victory_party");
+                        setLog((prev) => `${prev}\n[We won → party started]`);
+                      } catch (e) {
+                        setLog(String(e));
+                      } finally {
+                        setBusy(false);
+                      }
+                    })();
+                  }}
+                >
+                  We won
+                </button>
+                <button
+                  type="button"
+                  className={btnLose}
+                  disabled={busy}
+                  onClick={() => {
+                    void (async () => {
+                      setBusy(true);
+                      try {
+                        await postBattleTrigger(
+                          bridgeUrl,
+                          "battle_phase5_we_lost",
+                          streamDeckKey,
+                          opponentName
+                        );
+                        setMatchStatus("defeat");
+                        setLog((prev) => `${prev}\n[We lost → softer track]`);
+                      } catch (e) {
+                        setLog(String(e));
+                      } finally {
+                        setBusy(false);
+                      }
+                    })();
+                  }}
+                >
+                  We lost
+                </button>
+              </div>
+            </div>
+          ) : null}
+
+          {inVictoryParty ? (
+            <div className="mt-4 rounded-xl border border-emerald-600/40 bg-emerald-950/20 p-4">
+              <p className="font-body text-sm text-parchment">
+                Victory party — spam the party lines or cheer. Music loops until the
+                timer ends.
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:max-w-md">
+                {PARTY_VICTORY.map((b) => (
+                  <button
+                    key={b.triggerId}
+                    type="button"
+                    disabled={busy}
+                    className={btn}
+                    onClick={() => void fire(b.triggerId, b.label)}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
+          {inDefeat ? (
+            <div className="mt-4 rounded-xl border border-amber-600/30 bg-amber-950/15 p-4">
+              <p className="font-body text-sm text-parchment/90">
+                Take a breath — hail the other crew in chat. Tap below when
+                you&apos;re ready to reset the board.
+              </p>
+              <div className="mt-3 grid grid-cols-2 gap-2 sm:max-w-md">
+                {PARTY_LOSS.map((b) => (
+                  <button
+                    key={b.triggerId}
+                    type="button"
+                    disabled={busy}
+                    className={btn}
+                    onClick={() => void fire(b.triggerId, b.label)}
+                  >
+                    {b.label}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="button"
+                className={`${btn} mt-3`}
+                onClick={resetAll}
+              >
+                Continue — back to setup
+              </button>
+            </div>
+          ) : null}
+        </section>
+
+        <section className="rounded-xl border border-white/10 bg-black/25 p-4">
+          <h2 className="font-display text-lg font-bold text-squawk-gold">
+            Hail the other crew
+          </h2>
+          <p className="mt-1 font-body text-xs text-parchment/65">
+            Uses opponent name above in the lines. Works anytime — best during the
+            fight.
+          </p>
+          <p className="mt-2 font-body text-[11px] font-semibold text-parchment/80">
+            Respect & sportsmanship
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {HAIL_NICE.map((b) => (
+              <button
+                key={b.triggerId}
+                type="button"
+                disabled={busy}
+                className={btn}
+                onClick={() => void fire(b.triggerId, b.label)}
+              >
+                {b.label}
+              </button>
+            ))}
+          </div>
+          <p className="mt-4 font-body text-[11px] font-semibold text-parchment/80">
+            Fun insults (keep it playful)
+          </p>
+          <div className="mt-2 grid grid-cols-2 gap-2 sm:grid-cols-3">
+            {HAIL_ROAST.map((b) => (
+              <button
+                key={b.triggerId}
+                type="button"
+                disabled={busy}
+                className={btn}
+                onClick={() => void fire(b.triggerId, b.label)}
+              >
+                {b.label}
+              </button>
+            ))}
           </div>
         </section>
 
@@ -338,7 +694,9 @@ export default function BattleBoardPage() {
                 <button
                   key={b.triggerId}
                   type="button"
-                  disabled={busy}
+                  disabled={
+                    busy || awaiting || inVictoryParty || inDefeat
+                  }
                   className={btn}
                   onClick={() => void fire(b.triggerId, b.label)}
                 >
@@ -359,7 +717,7 @@ export default function BattleBoardPage() {
       <div className="fixed bottom-0 left-0 right-0 border-t border-squawk-gold/30 bg-squawk-ink/95 p-3 backdrop-blur sm:p-4">
         <div className="mx-auto flex max-w-5xl flex-wrap items-center justify-between gap-3">
           <p className="font-body text-xs text-parchment/70">
-            Squawk cheer — hype the troops (random line each tap)
+            Squawk cheer — hype the troops
           </p>
           <button
             type="button"

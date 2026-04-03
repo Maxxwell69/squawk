@@ -65,7 +65,12 @@ export class BrainService {
       case "custom":
       default: {
         if (event.detail && isBattleTriggerId(event.detail)) {
-          return lineForBattleTrigger(event.detail);
+          const raw = event.raw;
+          const opponentName =
+            raw && typeof raw.opponentName === "string"
+              ? raw.opponentName
+              : undefined;
+          return lineForBattleTrigger(event.detail, { opponentName });
         }
         if (event.detail && isStreamDeckTriggerId(event.detail)) {
           return (
@@ -87,6 +92,9 @@ export class BrainService {
       isParrotState(raw.parrotState)
     ) {
       return raw.parrotState;
+    }
+    if (event.kind === "custom" && event.detail && isBattleTriggerId(event.detail)) {
+      return BATTLE_PARROT_STATE[event.detail];
     }
     if (event.kind === "custom" && event.detail && isStreamDeckTriggerId(event.detail)) {
       return STREAM_DECK_PARROT_STATE[event.detail];

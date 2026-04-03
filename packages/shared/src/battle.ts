@@ -4,7 +4,7 @@ import { pickRandomLine } from "./personality/captain-squawks";
 
 /**
  * Battle mode — each trigger maps to a small pool; UI picks one line at random per button press.
- * Detail string on custom events: `battle_*` (see BATTLE_TRIGGER_IDS).
+ * Use {{OPPONENT}} in strings for opponent name substitution (see lineForBattleTrigger).
  */
 
 export const BATTLE_TRIGGERS = {
@@ -119,6 +119,111 @@ export const BATTLE_TRIGGERS = {
     "Captain Squawks wants to know — who were our MVPs tonight? Shout their names in chat!",
   ],
 
+  // —— Timer auto callouts (Squawk names the mode; random line per fire) ——
+  battle_auto_phase2: [
+    "We just passed our second minute — keep it up! Watch for 3× gifting and keep those cannons warm!",
+    "Minute two on the clock! Steady stacks, call the shots — don't dump everything at once!",
+    "Second minute — this is where the fun really starts! Hype the room and read the board!",
+    "We're in battle mode two now — eyes on 3×, voices up, make 'em feel the pressure!",
+    "Two minutes down — pace yourselves, save a punch for the wire, and cheer like pirates!",
+  ],
+  battle_auto_phase3: [
+    "Third minute — we're past halfway! Chain-shot their rhythm and steal the pace!",
+    "Halfway home, crew! Positive stacks only — we're still in this fight!",
+    "Battle mode three — push with purpose! Every gift from here is gold!",
+    "Third minute energy — more than halfway! Stay loud, stay smart, stay together!",
+    "We're sailing the middle stretch — stack clean, call targets, no panic gifts!",
+  ],
+  battle_auto_phase4: [
+    "Fourth minute — watch for snipers and last-second steals! Eyes open at the wire!",
+    "Battle mode four — prepare to board! Final push, all hands, no sleep till the horn!",
+    "Last leg before the bell — hold the line if we're ahead, coordinated rush if we're chasing!",
+    "Fourth minute — snipers love the chaos! Call your shots and protect the stack!",
+    "We're in the deep water now — board 'em with hype, finish with heart!",
+  ],
+  battle_auto_phase5: [
+    "Final minute — this is it! Everything on the deck, nothing held back!",
+    "Last sixty — snipers, boarders, big gifts — the whole ocean's watching!",
+    "Fifth minute — empty the powder if you must, but finish as a crew!",
+    "Clock's almost dry — cheer like the parrot army, one last coordinated swing!",
+    "Endgame — breathe, then blast! Make this minute count!",
+  ],
+
+  // —— Hail opponent (use {{OPPONENT}}) ——
+  battle_hail_nice_1: [
+    "Big respect to {{OPPONENT}} and their crew — bringin' the fight tonight!",
+    "Hail {{OPPONENT}} — yer chat's loud and yer house is strong. Good seas to ye!",
+    "Shout to {{OPPONENT}} — thanks for a wild match, mates!",
+    "Fair winds to {{OPPONENT}}'s crew — we love a worthy rival!",
+    "{{OPPONENT}} — ye sailed clean. Salute from Captain Squawks!",
+  ],
+  battle_hail_nice_2: [
+    "Tip the hat to {{OPPONENT}} — that room's electric!",
+    "Love the energy from {{OPPONENT}}'s side — give 'em a cheer, crew!",
+    "{{OPPONENT}}'s deckhands are legends tonight — show love in chat!",
+    "Nothing but respect for {{OPPONENT}} — what a battle!",
+    "Huzzah for {{OPPONENT}} — ye made us work for every inch!",
+  ],
+  battle_hail_nice_3: [
+    "Let's hear it for {{OPPONENT}} — class act, loud chat, big hearts!",
+    "{{OPPONENT}}, ye brought the storm — we're honored to share the water!",
+    "Good sport, {{OPPONENT}} — may yer next raid be twice as fierce!",
+    "Crowd love to {{OPPONENT}} and everyone sailing with 'em!",
+    "{{OPPONENT}} — thanks for the show — now let's finish strong!",
+  ],
+
+  battle_hail_roast_1: [
+    "{{OPPONENT}} — yer ship's so slow the barnacles filed a complaint!",
+    "We see {{OPPONENT}}'s stack wobblin' like a three-legged crab!",
+    "{{OPPONENT}}, did ye bring cannons or confetti? Either way we're still here!",
+    "Tell {{OPPONENT}} we're stealin' their wind — fair chase!",
+    "{{OPPONENT}}'s crew hits like wet paper — love ye anyway!",
+  ],
+  battle_hail_roast_2: [
+    "If {{OPPONENT}}'s gifts were any lighter they'd float away!",
+    "{{OPPONENT}} — nice try, cute try, we're still the louder birds!",
+    "We've seen scarier waves in a bathtub than {{OPPONENT}}'s last push!",
+    "{{OPPONENT}}, save some energy for the sail home — ye'll need it!",
+    "Captain Squawks says {{OPPONENT}}'s chat types faster than they gift — all love!",
+  ],
+  battle_hail_roast_3: [
+    "{{OPPONENT}} — we're not sayin' yer predictable, but the parrot called that play!",
+    "Someone tell {{OPPONENT}} the 3× window isn't a suggestion — it's a warning!",
+    "{{OPPONENT}}'s ship leaks hype — we're bailin' with victory buckets!",
+    "We still love {{OPPONENT}} — even when they're feedin' us easy reads!",
+    "{{OPPONENT}}, ye fight like a legend… from the kiddie pool!",
+  ],
+
+  // —— Victory party (optional taps during 2 min celebration) ——
+  battle_party_victory_1: [
+    "Victory lap! This crew doesn't miss — keep the party loud!",
+    "We won — spin the wheel, pop the pretend powder, hail the MVPs!",
+    "That's how you raid! Celebrate like parrots who own the tide!",
+    "Winners' deck — stomp, cheer, and soak it in!",
+    "Champions tonight — let the chat hear ye!",
+  ],
+  battle_party_victory_2: [
+    "Party mode — two minutes of pure pirate pride!",
+    "Victory tastes like salt and gold — keep cheerin'!",
+    "We painted the scoreboard — now paint the chat!",
+    "Winning never gets old — neither does this crew!",
+    "Captain Squawks is dancin' — join the flock!",
+  ],
+
+  // —— Loss — lighter tone ——
+  battle_party_loss_1: [
+    "Tough one — but we sailed honest. Salute the other crew!",
+    "We didn't get the dub — still proud of every gift and every voice!",
+    "Loss stings, but the crew's heart didn't — we'll be back!",
+    "Shake it off — good fight, good chat, we'll run it back!",
+  ],
+  battle_party_loss_2: [
+    "Lighter seas tonight — still love our MVPs who showed up!",
+    "No shame in a hard loss — we showed up loud!",
+    "Rest the cannons, hug the chat — we go again next time!",
+    "They got the round — they don't get our spirit!",
+  ],
+
   // —— Squawk cheer (any phase) ——
   battle_cheer: [
     "That's the spirit — cheer on the crew! Louder, mates, they can hear us!",
@@ -141,12 +246,19 @@ export const battleTriggerBodySchema = z.object({
     .refine((v): v is BattleTriggerId => isBattleTriggerId(v), {
       message: "invalid battle triggerId",
     }),
+  opponentName: z.string().max(100).optional(),
 });
 
 export type BattleTriggerBody = z.infer<typeof battleTriggerBodySchema>;
 
-export function lineForBattleTrigger(id: BattleTriggerId): string {
-  return pickRandomLine(BATTLE_TRIGGERS[id]);
+export function lineForBattleTrigger(
+  id: BattleTriggerId,
+  opts?: { opponentName?: string }
+): string {
+  let line = pickRandomLine(BATTLE_TRIGGERS[id]);
+  const name = opts?.opponentName?.trim() || "the other crew";
+  line = line.replace(/\{\{OPPONENT\}\}/g, name);
+  return line;
 }
 
 /** Visual state per battle line — cheer uses dance emote. */
@@ -184,5 +296,19 @@ export const BATTLE_PARROT_STATE: Record<BattleTriggerId, ParrotState> = {
   battle_phase5_we_won: "talking",
   battle_phase5_we_lost: "talking",
   battle_phase5_mvps_prompt: "talking",
+  battle_auto_phase2: "talking",
+  battle_auto_phase3: "talking",
+  battle_auto_phase4: "talking",
+  battle_auto_phase5: "talking",
+  battle_hail_nice_1: "talking",
+  battle_hail_nice_2: "talking",
+  battle_hail_nice_3: "talking",
+  battle_hail_roast_1: "talking",
+  battle_hail_roast_2: "talking",
+  battle_hail_roast_3: "talking",
+  battle_party_victory_1: "dancing_squawk",
+  battle_party_victory_2: "dancing_squawk",
+  battle_party_loss_1: "talking",
+  battle_party_loss_2: "talking",
   battle_cheer: "dancing_squawk",
 };

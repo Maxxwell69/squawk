@@ -203,38 +203,80 @@ export function useParrotBridge() {
     [drainQueue]
   );
 
+  const enqueueSpeakRef = useRef(enqueueSpeak);
+  enqueueSpeakRef.current = enqueueSpeak;
+
   useEffect(() => {
-    const url = getClientWsUrl();
-    let ws: WebSocket;
-    try {
-      ws = new WebSocket(url);
-    } catch {
-      setConnected(false);
-      return;
-    }
+    let cancelled = false;
+    let ws: WebSocket | null = null;
+    let retryTimer: ReturnType<typeof setTimeout> | null = null;
+    let attempt = 0;
 
-    ws.onopen = () => setConnected(true);
-    ws.onclose = () => setConnected(false);
-    ws.onerror = () => setConnected(false);
-
-    ws.onmessage = (ev) => {
-      try {
-        const raw = JSON.parse(String(ev.data));
-        const parsed = bridgeWsMessageSchema.safeParse(raw);
-        if (!parsed.success) return;
-
-        if (parsed.data.type === "PARROT_SPEAK") {
-          enqueueSpeak(parsed.data);
-        }
-      } catch {
-        /* ignore */
+    const clearRetry = () => {
+      if (retryTimer) {
+        clearTimeout(retryTimer);
+        retryTimer = null;
       }
     };
 
-    return () => {
-      ws.close();
+    const scheduleRetry = () => {
+      if (cancelled) return;
+      const delay = Math.min(30_000, 1000 * Math.pow(2, Math.min(attempt, 5)));
+      attempt += 1;
+      clearRetry();
+      retryTimer = setTimeout(connect, delay);
     };
-  }, [enqueueSpeak]);
+
+    function connect() {
+      if (cancelled) return;
+      clearRetry();
+      const url = getClientWsUrl();
+      try {
+        ws = new WebSocket(url);
+      } catch {
+        setConnected(false);
+        scheduleRetry();
+        return;
+      }
+
+      ws.onopen = () => {
+        attempt = 0;
+        setConnected(true);
+      };
+      ws.onclose = () => {
+        setConnected(false);
+        ws = null;
+        if (!cancelled) scheduleRetry();
+      };
+      ws.onerror = () => {
+        setConnected(false);
+      };
+      ws.onmessage = (ev) => {
+        try {
+          const raw = JSON.parse(String(ev.data));
+          const parsed = bridgeWsMessageSchema.safeParse(raw);
+          if (!parsed.success) return;
+
+          if (parsed.data.type === "PARROT_SPEAK") {
+            enqueueSpeakRef.current(parsed.data);
+          }
+        } catch {
+          /* ignore */
+        }
+      };
+    }
+
+    connect();
+
+    return () => {
+      cancelled = true;
+      clearRetry();
+      if (ws) {
+        ws.onclose = null;
+        ws.close();
+      }
+    };
+  }, []);
 
   return {
     connected,

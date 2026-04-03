@@ -1,7 +1,8 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import type { ParrotState } from "@captain-squawks/shared";
+import { getClientWsUrl } from "@/lib/bridge-urls";
 import { useParrotBridge } from "@/hooks/useParrotBridge";
 import { AudioUnlockButton } from "@/components/AudioUnlockButton";
 import { ParrotMedia } from "@/components/ParrotMedia";
@@ -81,6 +82,11 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
   const parrotOnly = variant === "parrot-only";
   const parrotWithBubble = variant === "parrot-with-bubble";
 
+  const [wsUrlHint, setWsUrlHint] = useState("");
+  useEffect(() => {
+    setWsUrlHint(getClientWsUrl());
+  }, []);
+
   useEffect(() => {
     const root = document.documentElement;
     root.classList.add("overlay-transparent");
@@ -99,6 +105,20 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
         data-variant="parrot-with-bubble"
         data-connected={connected ? "1" : "0"}
       >
+        <div
+          className="pointer-events-none absolute right-3 top-1 z-20"
+          title={wsUrlHint || "WebSocket URL (bridge)"}
+        >
+          <span
+            className={`rounded-full px-2 py-0.5 font-display text-[10px] font-bold tracking-widest ${
+              connected
+                ? "bg-emerald-700/90 text-emerald-100"
+                : "bg-red-900/80 text-red-100"
+            }`}
+          >
+            {connected ? "LIVE" : "OFFLINE"}
+          </span>
+        </div>
         <AudioUnlockButton
           visible={showAudioUnlockButton}
           onUnlock={requestAudioUnlock}
@@ -127,6 +147,20 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
         data-variant="parrot-only"
         data-connected={connected ? "1" : "0"}
       >
+        <div
+          className="pointer-events-none absolute right-3 top-1 z-20"
+          title={wsUrlHint || "WebSocket URL (bridge)"}
+        >
+          <span
+            className={`rounded-full px-2 py-0.5 font-display text-[10px] font-bold tracking-widest ${
+              connected
+                ? "bg-emerald-700/90 text-emerald-100"
+                : "bg-red-900/80 text-red-100"
+            }`}
+          >
+            {connected ? "LIVE" : "OFFLINE"}
+          </span>
+        </div>
         <AudioUnlockButton
           visible={showAudioUnlockButton}
           onUnlock={requestAudioUnlock}
