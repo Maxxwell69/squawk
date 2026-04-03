@@ -29,9 +29,9 @@ function stateClasses(state: ParrotState): string {
     case "talking":
     case "hello_wave":
     case "feeding_time":
+    case "dancing_squawk":
       return "animate-squawk-bob";
     case "hype":
-    case "dancing_squawk":
       return "animate-hype-pulse";
     case "chaos":
       return "animate-chaos-shake";
@@ -47,9 +47,9 @@ function parrotOnlyStateClasses(state: ParrotState): string {
     case "talking":
     case "hello_wave":
     case "feeding_time":
+    case "dancing_squawk":
       return "animate-squawk-bob";
     case "hype":
-    case "dancing_squawk":
       return "animate-hype-pulse";
     case "chaos":
       return "animate-chaos-shake";
