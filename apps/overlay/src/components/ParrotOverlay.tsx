@@ -22,6 +22,7 @@ const BADGE: Record<ParrotState, string> = {
   peck: "PECK",
   hello_wave: "HELLO",
   dancing_squawk: "DANCE",
+  victory_dance: "V-WIN",
   feeding_time: "FEED",
 };
 
@@ -31,6 +32,7 @@ function stateClasses(state: ParrotState): string {
     case "hello_wave":
     case "feeding_time":
     case "dancing_squawk":
+    case "victory_dance":
       return "animate-squawk-bob";
     case "hype":
       return "animate-hype-pulse";
@@ -49,6 +51,7 @@ function parrotOnlyStateClasses(state: ParrotState): string {
     case "hello_wave":
     case "feeding_time":
     case "dancing_squawk":
+    case "victory_dance":
       return "animate-squawk-bob";
     case "hype":
       return "animate-hype-pulse";
@@ -202,7 +205,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
 
           <div className="relative flex justify-center bg-gradient-to-b from-squawk-sea/25 to-transparent px-3 pt-4">
             <div className="speech-bubble relative inline-block rounded-2xl border border-black/10 bg-white/30 px-3 py-1 text-center font-display text-[11px] font-semibold uppercase tracking-wide text-squawk-ink/80">
-              Captain Squawks
+              First Mate Squawks
             </div>
           </div>
 

@@ -24,6 +24,7 @@ export function ParrotMedia({ state, className }: Props) {
     state === "chaos" ||
     state === "hello_wave" ||
     state === "dancing_squawk" ||
+    state === "victory_dance" ||
     state === "feeding_time";
   const shouldMirror = false;
   const mirrorStyle: CSSProperties | undefined = shouldMirror

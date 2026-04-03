@@ -11,6 +11,8 @@ export const PARROT_STATES = [
   "hello_wave",
   /** Stream Deck — dance emote + line */
   "dancing_squawk",
+  /** Victory celebration clip (battle party / Stream Deck) */
+  "victory_dance",
   /** Stream Deck — feeding animation + line */
   "feeding_time",
 ] as const;

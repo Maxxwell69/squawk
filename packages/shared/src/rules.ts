@@ -41,6 +41,9 @@ export function holdMsForState(state: ParrotState): number {
       return 4200;
     case "dancing_squawk":
       return 4200;
+    case "victory_dance":
+      // victorydance.webm — hold through a full celebratory play; clip loops in UI if shorter.
+      return 12_000;
     case "feeding_time":
       // squawkfeedingtime.webm ~10s — keep state until clip can finish.
       return 10_000;

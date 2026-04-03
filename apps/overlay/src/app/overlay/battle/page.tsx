@@ -121,6 +121,7 @@ const HAIL_ROAST: { label: string; triggerId: BattleTriggerId }[] = [
 ];
 
 const PARTY_VICTORY: { label: string; triggerId: BattleTriggerId }[] = [
+  { label: "Victory dance", triggerId: "battle_victory_dance" },
   { label: "Party line A", triggerId: "battle_party_victory_1" },
   { label: "Party line B", triggerId: "battle_party_victory_2" },
 ];

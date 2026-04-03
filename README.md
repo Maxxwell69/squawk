@@ -1,6 +1,6 @@
-# Captain Squawks
+# Squawk — Pirate Maxx & First Mate Squawks
 
-Local-first MVP for **Pirate Maxx** TikTok livestreams: a pirate parrot browser overlay that reacts to events from a small Fastify **local bridge** (TikFinity-style webhooks + WebSocket to the overlay).
+Local-first MVP for **Pirate Maxx** TikTok livestreams: **First Mate Squawks** (the parrot) in a browser overlay, reacting to events from a small Fastify **local bridge** (TikFinity-style webhooks + WebSocket to the overlay).
 
 ## Monorepo layout
 
@@ -8,7 +8,7 @@ Local-first MVP for **Pirate Maxx** TikTok livestreams: a pirate parrot browser 
 |------|------|
 | `apps/overlay` | Next.js App Router — transparent OBS browser source |
 | `apps/local-bridge` | Fastify — webhooks, TTS → `/audio/*`, WebSocket `PARROT_SPEAK` |
-| `packages/shared` | Zod schemas, types, rule-based state mapping, **Captain Squawks** line pools |
+| `packages/shared` | Zod schemas, types, rule-based state mapping, **First Mate Squawks** line pools |
 
 ## Prerequisites
 
@@ -208,4 +208,4 @@ A root `Dockerfile` builds the **Next.js standalone** overlay. Deploy the repo; 
 
 ## License
 
-Private project for Pirate Maxx / Captain Squawks.
+Private project for Pirate Maxx (captain) and First Mate Squawks (parrot).

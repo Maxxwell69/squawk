@@ -1,4 +1,4 @@
-# Captain Squawks — browser overlay only (Next.js standalone).
+# Squawk overlay — Pirate Maxx / First Mate Squawks (Next.js standalone).
 # The local-bridge should stay on your stream PC; deploy this image if you want
 # a hosted overlay URL for OBS (WebSocket must reach your bridge — use tunneling or local WS).
 

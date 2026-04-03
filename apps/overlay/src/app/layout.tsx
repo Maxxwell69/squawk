@@ -15,7 +15,7 @@ const body = DM_Sans({
 });
 
 export const metadata: Metadata = {
-  title: "Captain Squawks — Overlay",
+  title: "Pirate Maxx — First Mate Squawks",
   description: "Pirate Maxx stream companion overlay",
 };
 

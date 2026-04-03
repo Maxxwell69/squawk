@@ -25,7 +25,7 @@ export const BATTLE_TRIGGERS = {
     "This is a marathon, not a sprint — taps first, then we call the targets together!",
   ],
   battle_prepare_6: [
-    "Eyes up! Small gifts build pressure — hold the big guns until Captain says load!",
+    "Eyes up! Small gifts build pressure — hold the big guns until Cap'n Maxx says load!",
   ],
   battle_prepare_7: [
     "Crew, breathe — warm up with likes and taps. We'll name prize targets when the water's hot!",
@@ -116,7 +116,7 @@ export const BATTLE_TRIGGERS = {
     "Tough seas — we lost this one, but we sailed hard! Salute the opponents and our MVPs who carried us!",
   ],
   battle_phase5_mvps_prompt: [
-    "Captain Squawks wants to know — who were our MVPs tonight? Shout their names in chat!",
+    "First Mate Squawks wants to know — who were our MVPs tonight? Shout their names in chat!",
   ],
 
   // —— Timer auto callouts (Squawk names the mode; random line per fire) ——
@@ -155,7 +155,7 @@ export const BATTLE_TRIGGERS = {
     "Hail {{OPPONENT}} — yer chat's loud and yer house is strong. Good seas to ye!",
     "Shout to {{OPPONENT}} — thanks for a wild match, mates!",
     "Fair winds to {{OPPONENT}}'s crew — we love a worthy rival!",
-    "{{OPPONENT}} — ye sailed clean. Salute from Captain Squawks!",
+    "{{OPPONENT}} — ye sailed clean. Salute from First Mate Squawks!",
   ],
   battle_hail_nice_2: [
     "Tip the hat to {{OPPONENT}} — that room's electric!",
@@ -184,7 +184,7 @@ export const BATTLE_TRIGGERS = {
     "{{OPPONENT}} — nice try, cute try, we're still the louder birds!",
     "We've seen scarier waves in a bathtub than {{OPPONENT}}'s last push!",
     "{{OPPONENT}}, save some energy for the sail home — ye'll need it!",
-    "Captain Squawks says {{OPPONENT}}'s chat types faster than they gift — all love!",
+    "First Mate Squawks says {{OPPONENT}}'s chat types faster than they gift — all love!",
   ],
   battle_hail_roast_3: [
     "{{OPPONENT}} — we're not sayin' yer predictable, but the parrot called that play!",
@@ -192,6 +192,14 @@ export const BATTLE_TRIGGERS = {
     "{{OPPONENT}}'s ship leaks hype — we're bailin' with victory buckets!",
     "We still love {{OPPONENT}} — even when they're feedin' us easy reads!",
     "{{OPPONENT}}, ye fight like a legend… from the kiddie pool!",
+  ],
+
+  // —— Victory dance (emote-forward; same clip as Stream Deck victory-dance) ——
+  battle_victory_dance: [
+    "Victory dance on deck — First Mate Squawks is feelin' it!",
+    "We won the moment — stomp with the parrot!",
+    "That's the victory shuffle — crew, make noise!",
+    "Spin the compass — we dance like champions!",
   ],
 
   // —— Victory party (optional taps during 2 min celebration) ——
@@ -207,7 +215,7 @@ export const BATTLE_TRIGGERS = {
     "Victory tastes like salt and gold — keep cheerin'!",
     "We painted the scoreboard — now paint the chat!",
     "Winning never gets old — neither does this crew!",
-    "Captain Squawks is dancin' — join the flock!",
+    "First Mate Squawks is dancin' — join the flock!",
   ],
 
   // —— Loss — lighter tone ——
@@ -230,7 +238,7 @@ export const BATTLE_TRIGGERS = {
     "Huzzah! Push the hype — every voice on deck counts!",
     "Squawk squawk! Let 'em feel the parrot energy — we don't quit!",
     "Cannons up, voices up — cheer like we own the tide!",
-    "Yer Captain's proud — keep stomping, keep gifting, keep believing!",
+    "Cap'n Maxx is proud — keep stomping, keep gifting, keep believing!",
   ],
 } as const satisfies Record<string, readonly string[]>;
 
@@ -306,8 +314,9 @@ export const BATTLE_PARROT_STATE: Record<BattleTriggerId, ParrotState> = {
   battle_hail_roast_1: "talking",
   battle_hail_roast_2: "talking",
   battle_hail_roast_3: "talking",
-  battle_party_victory_1: "dancing_squawk",
-  battle_party_victory_2: "dancing_squawk",
+  battle_victory_dance: "victory_dance",
+  battle_party_victory_1: "victory_dance",
+  battle_party_victory_2: "victory_dance",
   battle_party_loss_1: "talking",
   battle_party_loss_2: "talking",
   battle_cheer: "dancing_squawk",

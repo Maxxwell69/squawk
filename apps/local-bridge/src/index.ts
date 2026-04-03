@@ -156,7 +156,7 @@ app.get("/", async (req, reply) => {
 <head>
 <meta charset="utf-8"/>
 <meta name="viewport" content="width=device-width, initial-scale=1"/>
-<title>Captain Squawks — Bridge</title>
+<title>Pirate Maxx — Squawk bridge</title>
 <style>
 body{font-family:system-ui,sans-serif;max-width:40rem;margin:2rem auto;padding:0 1rem;line-height:1.55;color:#111}
 code{background:#f4f4f5;padding:.12rem .35rem;border-radius:4px;font-size:88%}
@@ -165,7 +165,7 @@ h1{font-size:1.35rem;font-weight:600}
 </style>
 </head>
 <body>
-<h1>Captain Squawks bridge</h1>
+<h1>Pirate Maxx — Squawk bridge</h1>
 <p>This URL is the <strong>Fastify API</strong> (Stream Deck routes, TikFinity webhook, TTS audio, WebSocket). It is <strong>not</strong> the Next.js overlay — opening the root in a browser used to show 404 because there was no page here.</p>
 <p><strong>Health:</strong> <a href="/health"><code>/health</code></a></p>
 <p><strong>WebSocket for overlays:</strong> <code>${escapeHtml(wsUrl)}</code></p>
@@ -353,6 +353,15 @@ app.post("/api/streamdeck/peck", streamDeckOpts, async () => {
   return { ok: true, message };
 });
 
+app.post("/api/streamdeck/victory-dance", streamDeckOpts, async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "streamdeck_victory_dance",
+    raw: { source: "stream_deck" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
 app.post("/api/streamdeck/dancing-squawk", streamDeckOpts, async () => {
   const ev = makeTestEvent("custom", {
     detail: "streamdeck_dancing_squawk",
@@ -397,7 +406,7 @@ app.post("/api/webhooks/tikfinity", async (req, reply) => {
 try {
   await app.listen({ host: config.host, port: config.port });
   app.log.info(
-    `Captain Squawks bridge listening on http://${config.host}:${config.port} (audio: ${config.publicBaseUrl}/audio/)`
+    `Squawk bridge listening on http://${config.host}:${config.port} (audio: ${config.publicBaseUrl}/audio/)`
   );
 } catch (err) {
   app.log.error(err);

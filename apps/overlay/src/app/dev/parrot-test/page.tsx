@@ -23,6 +23,7 @@ const STREAM_DECK_ACTIONS: StreamDeckAction[] = [
   { label: "Exit (stage left)", path: "/api/streamdeck/exit" },
   { label: "Return", path: "/api/streamdeck/return" },
   { label: "Peck", path: "/api/streamdeck/peck" },
+  { label: "Victory dance", path: "/api/streamdeck/victory-dance" },
   { label: "Dancing Squawk", path: "/api/streamdeck/dancing-squawk" },
   { label: "Feeding time", path: "/api/streamdeck/squawk-feeding-time" },
 ];

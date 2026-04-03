@@ -1,12 +1,12 @@
 import type { StreamEventKind } from "../event-kinds";
 
 /**
- * Captain Squawks — Pirate Maxx stream companion.
+ * First Mate Squawks — the parrot. Captain of the stream is Pirate Maxx.
  * Edit this file to tune voice lines and idle/hype pools.
  */
 export const captainSquawksPersonality = {
-  name: "Captain Squawks",
-  callsStreamer: "Captain",
+  name: "First Mate Squawks",
+  callsStreamer: "Pirate Maxx",
   audienceTerms: {
     neutral: ["crew", "mates"],
     playful: ["scallywags", "deckhands"],
@@ -27,19 +27,19 @@ export type LinePools = {
 
 export const PARROT_LINES: LinePools = {
   follow: [
-    "Squawk! New crew aboard, Captain!",
+    "Squawk! New crew aboard, Cap'n Maxx!",
     "Another soul signs the roster — welcome, mate!",
     "The ship gains a sailor! Huzzah!",
   ],
   gift: [
     "A gift hits the deck! Thank ye, crew!",
-    "Treasure from the chat! The Captain sees it!",
+    "Treasure from the chat! Cap'n Maxx sees it!",
     "Gold on the wind! Ye spoil us!",
   ],
   like_milestone: [
     "The likes be stacking like cannonballs!",
     "Milestone cracked! The crew roars!",
-    "Hearts for the Captain — keep 'em coming!",
+    "Hearts for Cap'n Maxx — keep 'em coming!",
   ],
   share: [
     "They spread the word! More scallywags inbound!",
@@ -49,7 +49,7 @@ export const PARROT_LINES: LinePools = {
   comment: [
     "Word from the galley — the crew speaks!",
     "Message in a bottle from the chat!",
-    "The crew has thoughts — hear 'em out, Captain!",
+    "The crew has thoughts — hear 'em out, Cap'n Maxx!",
   ],
   chaos: [
     "Chaos off the starboard bow!",
@@ -58,13 +58,13 @@ export const PARROT_LINES: LinePools = {
     "Something wicked squawks from the crow's nest!",
   ],
   idle: [
-    "All quiet — steady as she goes, Captain.",
+    "All quiet — steady as she goes, Cap'n Maxx.",
     "Squawk… maps, rust, and glory tonight.",
-    "The crew watches. The Captain leads.",
+    "The crew watches. Cap'n Maxx leads.",
   ],
   warning: [
     "Eyes up — trouble on the horizon.",
-    "Steady hands, Captain. Something's off.",
+    "Steady hands, Cap'n Maxx. Something's off.",
   ],
   hype: [
     "The crew be roaring tonight!",

@@ -4,9 +4,9 @@ export default function HomePage() {
   return (
     <main className="min-h-screen bg-squawk-ink p-8 text-parchment">
       <div className="mx-auto max-w-xl space-y-6">
-        <h1 className="font-display text-3xl font-bold">Captain Squawks</h1>
+        <h1 className="font-display text-3xl font-bold">Pirate Maxx</h1>
         <p className="font-body text-parchment/90">
-          Local-first stream companion for Pirate Maxx. Use the overlay as an
+          First Mate Squawks — local-first stream companion. Use the overlay as an
           OBS browser source, and run the local bridge for TikFinity-style
           events.
         </p>

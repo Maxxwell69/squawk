@@ -32,6 +32,7 @@ export const PARROT_ASSETS: Record<ParrotState, string> = {
   peck: "/parrot/emotes/squawkhoppeck.webm",
   hello_wave: "/parrot/emotes/squawkwavinghello.webm",
   dancing_squawk: "/parrot/emotes/dancingsquawk.webm",
+  victory_dance: "/parrot/emotes/victorydance.webm",
   feeding_time: "/parrot/emotes/squawkfeedingtime.webm",
 };
 

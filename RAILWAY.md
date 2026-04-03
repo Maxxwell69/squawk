@@ -1,4 +1,4 @@
-# Captain Squawks on Railway + GitHub
+# Squawk (Pirate Maxx / First Mate Squawks) on Railway + GitHub
 
 TikTok and other tools need a **public HTTPS URL** for the overlay — `localhost` will not work. Use Railway (or similar) to host the Next.js overlay, and optionally the bridge.
 
@@ -25,7 +25,7 @@ cd C:\Users\maxxf\OneDrive\Desktop\squawk
 git init
 git branch -M main
 git add .
-git commit -m "Add Captain Squawks monorepo (overlay, bridge, shared)"
+git commit -m "Add Squawk monorepo (overlay, bridge, shared)"
 git remote add origin https://github.com/YOUR_USERNAME/YOUR_REPO.git
 git push -u origin main
 ```
