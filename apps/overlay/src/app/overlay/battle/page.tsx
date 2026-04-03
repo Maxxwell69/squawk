@@ -7,7 +7,11 @@ import {
   DEFAULT_LOCAL_BRIDGE_HTTP,
   getClientBridgeHttp,
 } from "@/lib/bridge-urls";
-import { BATTLE_AUTO_MILESTONES } from "@/lib/battle-auto-milestones";
+import {
+  BATTLE_AUTO_MILESTONES,
+  BATTLE_MINUTE_MARK_SECONDS,
+} from "@/lib/battle-auto-milestones";
+import { pickRandomSprinkleTrigger } from "@/lib/battle-sprinkle-pools";
 import {
   useBattleMusic,
   type BattleMatchStatus,
@@ -179,6 +183,10 @@ function formatClock(sec: number): string {
   return `${m}:${r.toString().padStart(2, "0")}`;
 }
 
+function randomInt(min: number, max: number): number {
+  return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
 export default function BattleBoardPage() {
   const [bridgeUrl, setBridgeUrl] = useState(DEFAULT_LOCAL_BRIDGE_HTTP);
   const [streamDeckKey, setStreamDeckKey] = useState("");
@@ -193,11 +201,13 @@ export default function BattleBoardPage() {
   const [musicMuted, setMusicMuted] = useState(false);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoFiredRef = useRef<Set<number>>(new Set());
+  /** Seconds until next random sprinkle (board-style line); not used on minute marks. */
+  const sprinkleSecsUntilRef = useRef<number | null>(null);
 
   const elapsedSec =
     matchStatus === "running" ? TOTAL_SEC - remainingSec : 0;
 
-  useBattleMusic(matchStatus, elapsedSec, {
+  const { primePlayback } = useBattleMusic(matchStatus, elapsedSec, {
     volume01: musicVolume01,
     muted: musicMuted,
   });
@@ -291,6 +301,8 @@ export default function BattleBoardPage() {
   useEffect(() => {
     if (matchStatus !== "running") return;
     const elapsed = TOTAL_SEC - remainingSec;
+
+    let firedMinuteCall = false;
     for (const m of BATTLE_AUTO_MILESTONES) {
       if (elapsed !== m.elapsed) continue;
       if (autoFiredRef.current.has(m.elapsed)) continue;
@@ -300,6 +312,29 @@ export default function BattleBoardPage() {
           /* ignore auto fail */
         }
       );
+      sprinkleSecsUntilRef.current = randomInt(20, 42);
+      firedMinuteCall = true;
+      break;
+    }
+    if (firedMinuteCall) return;
+
+    if (BATTLE_MINUTE_MARK_SECONDS.has(elapsed)) {
+      sprinkleSecsUntilRef.current = randomInt(18, 42);
+      return;
+    }
+
+    if (sprinkleSecsUntilRef.current === null) {
+      sprinkleSecsUntilRef.current = randomInt(22, 38);
+    }
+    sprinkleSecsUntilRef.current -= 1;
+    if (sprinkleSecsUntilRef.current <= 0) {
+      const id = pickRandomSprinkleTrigger(elapsed);
+      void postBattleTrigger(bridgeUrl, id, streamDeckKey, opponentName).catch(
+        () => {
+          /* ignore */
+        }
+      );
+      sprinkleSecsUntilRef.current = randomInt(28, 50);
     }
   }, [matchStatus, remainingSec, bridgeUrl, streamDeckKey, opponentName]);
 
@@ -335,9 +370,11 @@ export default function BattleBoardPage() {
 
   const startMatch = () => {
     autoFiredRef.current = new Set();
+    sprinkleSecsUntilRef.current = randomInt(22, 38);
     setRemainingSec(TOTAL_SEC);
     setRunning(true);
     setMatchStatus("running");
+    primePlayback();
   };
 
   const resetAll = () => {
@@ -346,6 +383,7 @@ export default function BattleBoardPage() {
     setMatchStatus("idle");
     setPartyRemainingSec(0);
     autoFiredRef.current = new Set();
+    sprinkleSecsUntilRef.current = null;
   };
 
   const btn =
@@ -370,8 +408,8 @@ export default function BattleBoardPage() {
               Battle board
             </h1>
             <p className="mt-1 max-w-xl font-body text-sm text-parchment/75">
-              Start the match for music + timed Squawk callouts (from minute two).
-              Drop tracks in{" "}
+              Timed mode callouts at 1–4 minutes; between those, random lines from the
+              board (easy first minute + respect for the other crew). Drop tracks in{" "}
               <code className="text-parchment/90">public/battle/music/</code>{" "}
               — see README there. Bridge secret optional.
             </p>
