@@ -24,6 +24,7 @@ const LS_MUSIC_VOL = "squawk-battle-music-vol";
 const LS_MUSIC_MUTE = "squawk-battle-music-muted";
 
 const BATTLE_PATH = "/api/battle/trigger";
+const STREAM_DECK_VICTORY_DANCE = "/api/streamdeck/victory-dance";
 const TOTAL_SEC = 5 * 60;
 const VICTORY_PARTY_SEC = 120;
 
@@ -168,6 +169,28 @@ async function postBattleTrigger(
     headers,
     body: JSON.stringify(body),
   });
+  const text = await res.text();
+  if (!res.ok) throw new Error(text || `${res.status}`);
+  try {
+    return JSON.parse(text) as unknown;
+  } catch {
+    return text;
+  }
+}
+
+async function postStreamDeckAction(
+  base: string,
+  path: string,
+  streamDeckKey: string
+): Promise<unknown> {
+  const origin = normalizeBase(base);
+  const url = new URL(path.replace(/^\//, ""), `${origin}/`);
+  const headers: Record<string, string> = {};
+  const key = streamDeckKey.trim();
+  if (key && bridgeUsesSecret(path)) {
+    headers["x-stream-deck-key"] = key;
+  }
+  const res = await fetch(url.toString(), { method: "POST", headers });
   const text = await res.text();
   if (!res.ok) throw new Error(text || `${res.status}`);
   try {
@@ -409,8 +432,10 @@ export default function BattleBoardPage() {
               Battle board
             </h1>
             <p className="mt-1 max-w-xl font-body text-sm text-parchment/75">
-              Timed mode callouts at 1–4 minutes; between those, random lines from the
-              board (easy first minute + respect for the other crew). Drop tracks in{" "}
+              Timed mode callouts at 1–4 minutes; between those, random sprinkles.
+              The last-minute &quot;we&apos;re ahead&quot; / &quot;we&apos;re
+              behind&quot; lines are never auto-fired — use those buttons only.
+              Drop tracks in{" "}
               <code className="text-parchment/90">public/battle/music/</code>{" "}
               — see README there. Bridge secret optional.
             </p>
@@ -430,6 +455,44 @@ export default function BattleBoardPage() {
             </Link>
           </div>
         </div>
+
+        <section className="rounded-xl border border-emerald-600/35 bg-black/30 p-4">
+          <h2 className="font-display text-sm font-bold text-emerald-200">
+            First Mate Squawks — victory dance (anytime)
+          </h2>
+          <p className="mt-1 font-body text-xs text-parchment/70">
+            Same as Stream Deck{" "}
+            <code className="text-parchment/85">POST …/victory-dance</code> — fires
+            the victory dance emote + line on the parrot overlay whenever you need
+            it (match or not).
+          </p>
+          <button
+            type="button"
+            disabled={busy}
+            className={`${btnCheer} mt-3`}
+            onClick={() => {
+              void (async () => {
+                setBusy(true);
+                try {
+                  const data = await postStreamDeckAction(
+                    bridgeUrl,
+                    STREAM_DECK_VICTORY_DANCE,
+                    streamDeckKey
+                  );
+                  setLog(
+                    `[Victory dance (Stream Deck)]\n${JSON.stringify(data, null, 2)}`
+                  );
+                } catch (e) {
+                  setLog(`[Victory dance (Stream Deck)]\n${String(e)}`);
+                } finally {
+                  setBusy(false);
+                }
+              })();
+            }}
+          >
+            Victory dance (overlay)
+          </button>
+        </section>
 
         <section className="rounded-xl border border-squawk-gold/35 bg-black/30 p-4">
           <label className="block font-body text-xs font-medium text-parchment/80">

@@ -56,8 +56,6 @@ const SPRINKLE_MINUTE_3: BattleTriggerId[] = [
 const SPRINKLE_MINUTE_4: BattleTriggerId[] = [
   "battle_phase4_snipers",
   "battle_phase4_board",
-  "battle_phase4_ahead",
-  "battle_phase4_behind",
   "battle_phase3_push",
   "battle_cheer",
   "battle_hail_nice_1",
@@ -68,8 +66,6 @@ const SPRINKLE_MINUTE_4: BattleTriggerId[] = [
 const SPRINKLE_MINUTE_5: BattleTriggerId[] = [
   "battle_phase4_snipers",
   "battle_phase4_board",
-  "battle_phase4_ahead",
-  "battle_phase4_behind",
   "battle_phase5_repair_party",
   "battle_cheer",
   "battle_hail_nice_1",

@@ -24,7 +24,6 @@ export function ParrotMedia({ state, className }: Props) {
     state === "chaos" ||
     state === "hello_wave" ||
     state === "dancing_squawk" ||
-    state === "victory_dance" ||
     state === "feeding_time";
   const shouldMirror = false;
   const mirrorStyle: CSSProperties | undefined = shouldMirror
@@ -34,9 +33,22 @@ export function ParrotMedia({ state, className }: Props) {
   useEffect(() => {
     const v = videoRef.current;
     if (!v || isGifPath(src)) return;
-    void v.play().catch(() => {
-      /* autoplay policies */
-    });
+    v.muted = true;
+    const tryPlay = () => {
+      void v.play().catch(() => {
+        /* autoplay policies */
+      });
+    };
+    tryPlay();
+    const raf = requestAnimationFrame(() => tryPlay());
+    const onReady = () => tryPlay();
+    v.addEventListener("loadeddata", onReady);
+    v.addEventListener("canplay", onReady);
+    return () => {
+      cancelAnimationFrame(raf);
+      v.removeEventListener("loadeddata", onReady);
+      v.removeEventListener("canplay", onReady);
+    };
   }, [src]);
 
   if (state === "away") return null;

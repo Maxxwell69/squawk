@@ -12,7 +12,7 @@ export const parrotSpeakMessageSchema = z.object({
   state: parrotStateSchema,
   /** Absolute URL to audio (e.g. http://127.0.0.1:8787/audio/xxx.wav) */
   audioUrl: z.string().optional(),
-  durationMs: z.number().positive().optional(),
+  durationMs: z.number().finite().nonnegative().optional(),
   eventType: z.string().optional(),
   /** Fallback display duration when audio is missing or fails */
   holdMs: z.number().int().positive().optional(),

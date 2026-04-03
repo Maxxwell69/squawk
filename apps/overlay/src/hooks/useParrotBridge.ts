@@ -4,6 +4,7 @@ import { useCallback, useEffect, useRef, useState } from "react";
 import {
   bridgeWsMessageSchema,
   estimateHoldMsFromText,
+  isParrotState,
   type ParrotSpeakMessage,
   type ParrotState,
 } from "@captain-squawks/shared";
@@ -253,12 +254,53 @@ export function useParrotBridge() {
       };
       ws.onmessage = (ev) => {
         try {
-          const raw = JSON.parse(String(ev.data));
+          const raw: unknown = JSON.parse(String(ev.data));
           const parsed = bridgeWsMessageSchema.safeParse(raw);
-          if (!parsed.success) return;
+          if (parsed.success) {
+            if (parsed.data.type === "PARROT_SPEAK") {
+              enqueueSpeakRef.current(parsed.data);
+            }
+            return;
+          }
 
-          if (parsed.data.type === "PARROT_SPEAK") {
-            enqueueSpeakRef.current(parsed.data);
+          if (
+            raw &&
+            typeof raw === "object" &&
+            (raw as { type?: string }).type === "PARROT_SPEAK" &&
+            typeof (raw as { text?: string }).text === "string" &&
+            typeof (raw as { state?: string }).state === "string" &&
+            isParrotState((raw as { state: string }).state)
+          ) {
+            const o = raw as Record<string, unknown>;
+            const msg: ParrotSpeakMessage = {
+              type: "PARROT_SPEAK",
+              text: String(o.text),
+              state: o.state as ParrotState,
+              ts: typeof o.ts === "number" ? o.ts : Date.now(),
+              audioUrl:
+                typeof o.audioUrl === "string" ? o.audioUrl : undefined,
+              durationMs:
+                typeof o.durationMs === "number" &&
+                Number.isFinite(o.durationMs) &&
+                o.durationMs >= 0
+                  ? o.durationMs
+                  : undefined,
+              eventType:
+                typeof o.eventType === "string" ? o.eventType : undefined,
+              holdMs:
+                typeof o.holdMs === "number" &&
+                Number.isFinite(o.holdMs) &&
+                o.holdMs > 0
+                  ? o.holdMs
+                  : undefined,
+              lineId: typeof o.lineId === "string" ? o.lineId : undefined,
+            };
+            enqueueSpeakRef.current(msg);
+            return;
+          }
+
+          if (process.env.NODE_ENV === "development") {
+            console.warn("[parrot] WS PARROT_SPEAK parse failed", parsed.error);
           }
         } catch {
           /* ignore */
