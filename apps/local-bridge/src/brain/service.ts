@@ -1,8 +1,11 @@
 import {
+  BATTLE_PARROT_STATE,
   estimateHoldMsFromText,
   holdMsForState,
+  isBattleTriggerId,
   isParrotState,
   isStreamDeckTriggerId,
+  lineForBattleTrigger,
   lineForStreamDeckTrigger,
   parrotStateForEventKind,
   pickRandomLine,
@@ -61,6 +64,9 @@ export class BrainService {
         return `${pickRandomLine(PARROT_LINES.chaos)} ${user} kicked up a storm!`;
       case "custom":
       default: {
+        if (event.detail && isBattleTriggerId(event.detail)) {
+          return lineForBattleTrigger(event.detail);
+        }
         if (event.detail && isStreamDeckTriggerId(event.detail)) {
           return (
             lineForStreamDeckTrigger(event.detail) ??
@@ -93,8 +99,10 @@ export class BrainService {
     const subtitle = this.buildSubtitle(event);
     const baseHoldMs = holdMsForState(state);
     let holdMs = baseHoldMs;
-    if (event.kind === "custom" && event.detail && isStreamDeckTriggerId(event.detail)) {
-      if (subtitle.trim()) {
+    if (event.kind === "custom" && event.detail) {
+      const battleOrDeck =
+        isBattleTriggerId(event.detail) || isStreamDeckTriggerId(event.detail);
+      if (battleOrDeck && subtitle.trim()) {
         // Don't let subtitle-based estimates undercut clip/TTS floors from holdMsForState.
         holdMs = Math.max(baseHoldMs, estimateHoldMsFromText(subtitle));
       }

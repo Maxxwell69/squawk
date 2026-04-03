@@ -3,6 +3,7 @@ import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
 import {
+  battleTriggerBodySchema,
   type NormalizedStreamEvent,
   testChaosBodySchema,
   testCommentBodySchema,
@@ -170,6 +171,7 @@ h1{font-size:1.35rem;font-weight:600}
 <p><strong>WebSocket for overlays:</strong> <code>${escapeHtml(wsUrl)}</code></p>
 ${overlayBlock}
 <p><strong>Stream Deck:</strong> <code>POST</code> to <code>${escapeHtml(origin)}/api/streamdeck/hello</code> (and other routes — see repo).</p>
+<p><strong>Battle UI:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "battle_prepare_1" }))}</code> (same auth header as Stream Deck when a secret is set).</p>
 </body>
 </html>`;
 });
@@ -364,6 +366,16 @@ app.post("/api/streamdeck/squawk-feeding-time", streamDeckOpts, async () => {
   const ev = makeTestEvent("custom", {
     detail: "streamdeck_feeding_time",
     raw: { source: "stream_deck" },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/battle/trigger", streamDeckOpts, async (req) => {
+  const body = battleTriggerBodySchema.parse(req.body ?? {});
+  const ev = makeTestEvent("custom", {
+    detail: body.triggerId,
+    raw: { source: "battle_ui" },
   });
   const message = await handleNormalizedEvent(ev);
   return { ok: true, message };

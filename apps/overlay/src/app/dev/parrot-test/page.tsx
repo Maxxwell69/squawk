@@ -58,8 +58,11 @@ function normalizeBase(raw: string): string {
   return t;
 }
 
-function isStreamDeckPath(path: string): boolean {
-  return path.includes("/api/streamdeck/");
+/** Routes that require the same secret as Stream Deck when STREAM_DECK_SECRET is set. */
+function bridgeSecretPath(path: string): boolean {
+  return (
+    path.includes("/api/streamdeck/") || path.includes("/api/battle/")
+  );
 }
 
 async function postBridge(
@@ -74,7 +77,7 @@ async function postBridge(
     "Content-Type": "application/json",
   };
   const key = streamDeckKey.trim();
-  if (key && isStreamDeckPath(path)) {
+  if (key && bridgeSecretPath(path)) {
     headers["x-stream-deck-key"] = key;
   }
   const res = await fetch(url.toString(), {
@@ -101,7 +104,7 @@ function curlSnippet(
   const url = new URL(path, `${origin}/`).toString();
   const key = streamDeckKey.trim();
   const deckHeader =
-    key && isStreamDeckPath(path)
+    key && bridgeSecretPath(path)
       ? ` \\\n  -H "x-stream-deck-key: ${key.replace(/"/g, '\\"')}"`
       : "";
   const bodyJson = JSON.stringify(body).replace(/'/g, "'\\''");
@@ -326,12 +329,20 @@ export default function ParrotTestPage() {
       <div className="mx-auto max-w-5xl space-y-6">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <h1 className="font-display text-2xl font-bold">Parrot test panel</h1>
-          <Link
-            href="/overlay/parrot"
-            className="rounded-lg border border-parchment/40 px-3 py-1 text-sm text-squawk-gold hover:bg-white/5"
-          >
-            Open overlay
-          </Link>
+          <div className="flex flex-wrap gap-2">
+            <Link
+              href="/overlay/parrot"
+              className="rounded-lg border border-parchment/40 px-3 py-1 text-sm text-squawk-gold hover:bg-white/5"
+            >
+              Open overlay
+            </Link>
+            <Link
+              href="/overlay/battle"
+              className="rounded-lg border border-parchment/40 px-3 py-1 text-sm text-squawk-gold hover:bg-white/5"
+            >
+              Battle board
+            </Link>
+          </div>
         </div>
 
         {hostedButLocalBridge ? (
