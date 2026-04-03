@@ -142,17 +142,20 @@ export function useParrotBridge() {
         };
         await Promise.all([playRemoteTts(), sleep(fallbackMs)]);
       } else {
-        // Bridge sent no audio file — browser speech so stream still has voice
+        // Bridge sent no audio file — browser speech + emote must stay up long enough.
+        // OBS / CEF often has no speechSynthesis or it ends instantly; Promise.race(speech, cap)
+        // alone would resolve in ~0ms and snap back to idle before victory dance / long webms play.
         setState(next.state);
         if (shouldSpeak) {
-          // Some environments never fire speech `onend` — cap wait so we still return to idle.
           const ttsCapMs = Math.min(120_000, Math.max(fallbackMs + 1500, 8000));
-          await Promise.race([
-            speakWithBrowserTts(next.text),
-            sleep(ttsCapMs),
+          await Promise.all([
+            Promise.race([
+              speakWithBrowserTts(next.text),
+              sleep(ttsCapMs),
+            ]),
+            sleep(fallbackMs),
           ]);
         } else {
-          // Silent line (e.g. exit/away): just wait the visual timer.
           await sleep(fallbackMs);
         }
       }

@@ -35,11 +35,6 @@ export function ParrotMedia({ state, className }: Props) {
     if (!v || isGifPath(src)) return;
     v.muted = true;
     v.defaultMuted = true;
-    try {
-      v.load();
-    } catch {
-      /* ignore */
-    }
     const tryPlay = () => {
       void v.play().catch(() => {
         /* autoplay policies */
