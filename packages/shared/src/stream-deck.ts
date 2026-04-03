@@ -108,7 +108,7 @@ export const STREAM_DECK_PARROT_STATE: Record<
   ParrotState
 > = {
   streamdeck_hello: "hello_wave",
-  // Use idle clip (squawkidle) — not the legacy default loop on hype/talking.
+  // Idle clip is squawkidlereg (overlay); talking/battle use squawkidle.
   streamdeck_please_share: "idle",
   streamdeck_thanks_likes: "idle",
   streamdeck_thanks_share: "idle",

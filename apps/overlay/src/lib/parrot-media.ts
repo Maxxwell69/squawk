@@ -11,15 +11,18 @@ import type { ParrotState } from "@captain-squawks/shared";
  */
 export const PARROT_DEFAULT_PATH = "/parrot/pirate_parrot.webm";
 
-/** Looping idle-style clip — use for idle + speech states (bridge `talking`, battle lines, etc.). */
-const PARROT_IDLE_LOOP = "/parrot/emotes/squawkidle.webm";
+/** Main idle / ambient loop (squawkidlereg). */
+const PARROT_IDLE_MAIN = "/parrot/emotes/squawkidlereg.webm";
+
+/** Talking / speech loop while lines + TTS play (squawkidle). */
+const PARROT_TALKING_LOOP = "/parrot/emotes/squawkidle.webm";
 
 /** Per-state media URLs. Same default = one file until you replace each entry. */
 export const PARROT_ASSETS: Record<ParrotState, string> = {
-  idle: PARROT_IDLE_LOOP,
-  talking: PARROT_IDLE_LOOP,
-  hype: PARROT_IDLE_LOOP,
-  chaos: PARROT_IDLE_LOOP,
+  idle: PARROT_IDLE_MAIN,
+  talking: PARROT_TALKING_LOOP,
+  hype: PARROT_IDLE_MAIN,
+  chaos: PARROT_IDLE_MAIN,
   exit: "/parrot/emotes/squawkgifstageleft.webm",
   // Return is its own animation (left -> right), so we don't mirror it.
   return: "/parrot/emotes/squawkstagereturn.webm",
