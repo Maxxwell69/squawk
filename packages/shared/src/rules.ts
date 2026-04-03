@@ -40,8 +40,10 @@ export function holdMsForState(state: ParrotState): number {
     case "hello_wave":
       return 4200;
     case "dancing_squawk":
-    case "feeding_time":
       return 4200;
+    case "feeding_time":
+      // squawkfeedingtime.webm ~10s — keep state until clip can finish.
+      return 10_000;
     case "idle":
     default:
       return 2000;

@@ -91,10 +91,12 @@ export class BrainService {
   buildOverlayPayload(event: NormalizedStreamEvent): ParrotOverlayPayload {
     const state = this.parrotStateFor(event);
     const subtitle = this.buildSubtitle(event);
-    let holdMs = holdMsForState(state);
+    const baseHoldMs = holdMsForState(state);
+    let holdMs = baseHoldMs;
     if (event.kind === "custom" && event.detail && isStreamDeckTriggerId(event.detail)) {
       if (subtitle.trim()) {
-        holdMs = estimateHoldMsFromText(subtitle);
+        // Don't let subtitle-based estimates undercut clip/TTS floors from holdMsForState.
+        holdMs = Math.max(baseHoldMs, estimateHoldMsFromText(subtitle));
       }
     }
     return {
