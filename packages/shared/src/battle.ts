@@ -251,6 +251,7 @@ export function isBattleTriggerId(v: string): v is BattleTriggerId {
 export const battleTriggerBodySchema = z.object({
   triggerId: z
     .string()
+    .trim()
     .refine((v): v is BattleTriggerId => isBattleTriggerId(v), {
       message: "invalid battle triggerId",
     }),

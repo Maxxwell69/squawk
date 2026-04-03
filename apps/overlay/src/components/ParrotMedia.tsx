@@ -34,6 +34,12 @@ export function ParrotMedia({ state, className }: Props) {
     const v = videoRef.current;
     if (!v || isGifPath(src)) return;
     v.muted = true;
+    v.defaultMuted = true;
+    try {
+      v.load();
+    } catch {
+      /* ignore */
+    }
     const tryPlay = () => {
       void v.play().catch(() => {
         /* autoplay policies */
@@ -49,7 +55,7 @@ export function ParrotMedia({ state, className }: Props) {
       v.removeEventListener("loadeddata", onReady);
       v.removeEventListener("canplay", onReady);
     };
-  }, [src]);
+  }, [src, state]);
 
   if (state === "away") return null;
 
@@ -68,7 +74,7 @@ export function ParrotMedia({ state, className }: Props) {
 
   return (
     <video
-      key={src}
+      key={`${state}:${src}`}
       ref={videoRef}
       className={className}
       src={src}
@@ -77,6 +83,7 @@ export function ParrotMedia({ state, className }: Props) {
       style={mirrorStyle}
       muted
       playsInline
+      preload="auto"
     />
   );
 }

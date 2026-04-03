@@ -1,8 +1,5 @@
 import { z } from "zod";
-import { PARROT_STATES } from "../parrot-state";
-import { parrotSpeakMessageSchema } from "./parrot-speak";
-
-const parrotStateSchema = z.enum(PARROT_STATES);
+import { parrotSpeakMessageSchema, parrotStateSchema } from "./parrot-speak";
 
 export const parrotOverlayPayloadSchema = z.object({
   state: parrotStateSchema,

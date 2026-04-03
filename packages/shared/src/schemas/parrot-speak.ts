@@ -1,7 +1,15 @@
 import { z } from "zod";
-import { PARROT_STATES } from "../parrot-state";
+import { isParrotState, type ParrotState } from "../parrot-state";
 
-const parrotStateSchema = z.enum(PARROT_STATES);
+/**
+ * Keeps validation in sync with PARROT_STATES without relying on z.enum + `as const`
+ * tuple quirks across Zod versions.
+ */
+export const parrotStateSchema: z.ZodType<ParrotState> = z.custom<ParrotState>(
+  (val): val is ParrotState =>
+    typeof val === "string" && isParrotState(val),
+  { message: "invalid parrot state" }
+);
 
 /**
  * WebSocket message: parrot line + optional TTS audio URL for the overlay.

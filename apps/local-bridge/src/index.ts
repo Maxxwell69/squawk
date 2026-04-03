@@ -3,7 +3,9 @@ import cors from "@fastify/cors";
 import websocket from "@fastify/websocket";
 import fastifyStatic from "@fastify/static";
 import {
+  BATTLE_PARROT_STATE,
   battleTriggerBodySchema,
+  type BattleTriggerId,
   type NormalizedStreamEvent,
   testChaosBodySchema,
   testCommentBodySchema,
@@ -356,7 +358,7 @@ app.post("/api/streamdeck/peck", streamDeckOpts, async () => {
 app.post("/api/streamdeck/victory-dance", streamDeckOpts, async () => {
   const ev = makeTestEvent("custom", {
     detail: "streamdeck_victory_dance",
-    raw: { source: "stream_deck" },
+    raw: { source: "stream_deck", parrotState: "victory_dance" },
   });
   const message = await handleNormalizedEvent(ev);
   return { ok: true, message };
@@ -383,10 +385,13 @@ app.post("/api/streamdeck/squawk-feeding-time", streamDeckOpts, async () => {
 app.post("/api/battle/trigger", streamDeckOpts, async (req) => {
   const body = battleTriggerBodySchema.parse(req.body ?? {});
   const name = body.opponentName?.trim();
+  const triggerId = body.triggerId as BattleTriggerId;
+  const parrotState = BATTLE_PARROT_STATE[triggerId];
   const ev = makeTestEvent("custom", {
     detail: body.triggerId,
     raw: {
       source: "battle_ui",
+      parrotState,
       ...(name ? { opponentName: name } : {}),
     },
   });

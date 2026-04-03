@@ -1,4 +1,5 @@
 import {
+  isParrotState,
   parrotSpeakMessageSchema,
   type NormalizedStreamEvent,
   type ParrotSpeakMessage,
@@ -64,7 +65,7 @@ export async function processParrotReaction(params: {
     }
   }
 
-  const msg = parrotSpeakMessageSchema.parse({
+  const payload = {
     type: "PARROT_SPEAK" as const,
     text: base.subtitle,
     state: base.state,
@@ -74,7 +75,28 @@ export async function processParrotReaction(params: {
     holdMs: base.holdMs,
     lineId: base.lineId,
     ts: Date.now(),
-  });
+  };
+
+  let msg: ParrotSpeakMessage;
+  try {
+    msg = parrotSpeakMessageSchema.parse(payload);
+  } catch (err) {
+    log.error(
+      { err, state: base.state, lineId: base.lineId },
+      "PARROT_SPEAK schema parse failed; broadcasting minimal message"
+    );
+    msg = {
+      type: "PARROT_SPEAK",
+      text: base.subtitle,
+      state: isParrotState(base.state) ? base.state : "talking",
+      audioUrl,
+      durationMs,
+      eventType: event.kind,
+      holdMs: base.holdMs,
+      lineId: base.lineId,
+      ts: Date.now(),
+    };
+  }
 
   hub.broadcastParrotSpeak(msg);
   return msg;
