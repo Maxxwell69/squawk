@@ -116,26 +116,30 @@ export function useParrotBridge() {
         setState(next.state);
         await sleep(fallbackMs);
       } else if (next.audioUrl) {
-        const audio = audioRef.current;
-        try {
-          setState(next.state);
-          if (audio) {
-            try {
-              await playUrlOnce(audio, next.audioUrl);
-            } catch (e1) {
-              console.warn("[parrot] HTMLAudio failed, trying Web Audio", e1);
-              await playUrlViaWebAudio(next.audioUrl);
+        // TTS often ends before holdMs (e.g. 5s audio vs 10s feeding clip) — wait both.
+        setState(next.state);
+        const playRemoteTts = async () => {
+          const audio = audioRef.current;
+          try {
+            if (audio) {
+              try {
+                await playUrlOnce(audio, next.audioUrl!);
+              } catch (e1) {
+                console.warn("[parrot] HTMLAudio failed, trying Web Audio", e1);
+                await playUrlViaWebAudio(next.audioUrl!);
+              }
+            } else {
+              await playUrlViaWebAudio(next.audioUrl!);
             }
-          } else {
-            await playUrlViaWebAudio(next.audioUrl);
+          } catch (e2) {
+            console.warn(
+              "[parrot] TTS file playback failed (not using browser voice). Check message.audioUrl in /dev/parrot-test and bridge ElevenLabs env.",
+              e2
+            );
+            await sleep(fallbackMs);
           }
-        } catch (e2) {
-          console.warn(
-            "[parrot] TTS file playback failed (not using browser voice). Check message.audioUrl in /dev/parrot-test and bridge ElevenLabs env.",
-            e2
-          );
-          await sleep(fallbackMs);
-        }
+        };
+        await Promise.all([playRemoteTts(), sleep(fallbackMs)]);
       } else {
         // Bridge sent no audio file — browser speech so stream still has voice
         setState(next.state);
