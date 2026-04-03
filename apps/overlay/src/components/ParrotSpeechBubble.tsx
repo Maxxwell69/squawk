@@ -1,5 +1,8 @@
 import type { ReactNode } from "react";
 
+/** Matches `PARROT_SCENE_CLASS` max width so the bubble stays ~parrot-wide, not full row. */
+const BUBBLE_MAX = "max-w-[min(90vw,280px)]";
+
 type Props = {
   /** Line shown inside the bubble (subtitle from bridge) */
   children: ReactNode;
@@ -7,20 +10,19 @@ type Props = {
 };
 
 /**
- * Comic-style speech bubble to the right of the parrot, tail points left toward the bird.
+ * Speech bubble to the right of the parrot — white fill, black text, width ~bird size.
  */
 export function ParrotSpeechBubble({ children, className = "" }: Props) {
   return (
     <div
-      className={`relative flex min-h-[3.25rem] items-center ${className}`.trim()}
+      className={`relative flex w-fit ${BUBBLE_MAX} min-h-[3.25rem] items-center ${className}`.trim()}
     >
-      {/* Tail — diamond overlapping parrot side */}
       <div
-        className="absolute -left-1.5 top-[38%] z-0 h-3.5 w-3.5 -translate-y-1/2 rotate-45 rounded-[2px] border-b-2 border-l-2 border-parchment-dark/80 bg-gradient-to-br from-parchment to-parchment-dark/25 shadow-[-2px_2px_6px_rgba(0,0,0,0.12)]"
+        className="absolute -left-1.5 top-[38%] z-0 h-3.5 w-3.5 -translate-y-1/2 rotate-45 rounded-[2px] border-b border-l border-black/20 bg-white"
         aria-hidden
       />
-      <div className="relative z-10 w-full rounded-2xl border-2 border-parchment-dark/80 bg-gradient-to-br from-parchment/98 via-parchment/95 to-parchment-dark/20 px-3.5 py-2.5 shadow-[0_10px_32px_rgba(0,0,0,0.38),inset_0_1px_0_rgba(255,255,255,0.35)]">
-        <p className="font-body text-[13px] leading-snug text-squawk-ink [text-shadow:0_1px_0_rgba(255,255,255,0.4)]">
+      <div className="relative z-10 w-full min-w-0 rounded-2xl border border-black/15 bg-white px-3.5 py-2.5 shadow-sm">
+        <p className="break-words font-body text-[13px] leading-snug text-black">
           {children}
         </p>
       </div>

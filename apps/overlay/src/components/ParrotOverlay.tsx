@@ -109,7 +109,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
           >
             <ParrotMedia state={state} className={PARROT_SCENE_CLASS} />
           </div>
-          <div className="min-w-0 flex-1 self-center">
+          <div className="flex max-w-[min(90vw,280px)] shrink-0 flex-col items-stretch self-center">
             {subtitle ? (
               <ParrotSpeechBubble>{subtitle}</ParrotSpeechBubble>
             ) : null}
