@@ -29,12 +29,12 @@ function stateClasses(state: ParrotState): string {
     case "talking":
     case "hello_wave":
     case "feeding_time":
-      return "animate-squawk-bob ring-2 ring-squawk-gold/50";
+      return "animate-squawk-bob";
     case "hype":
     case "dancing_squawk":
-      return "animate-hype-pulse ring-2 ring-squawk-gold/70";
+      return "animate-hype-pulse";
     case "chaos":
-      return "animate-chaos-shake ring-2 ring-squawk-rust/80";
+      return "animate-chaos-shake";
     case "idle":
     default:
       return "";
@@ -136,11 +136,6 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
         >
           <ParrotMedia state={state} className={PARROT_SCENE_CLASS} />
         </div>
-        {subtitle ? (
-          <p className="mt-2 max-w-[min(90vw,320px)] text-center font-body text-xs leading-snug text-white drop-shadow-[0_1px_4px_rgba(0,0,0,0.9)]">
-            {subtitle}
-          </p>
-        ) : null}
       </div>
     );
   }
@@ -157,7 +152,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
       />
       <div className="mx-auto flex max-w-[320px] flex-col gap-3">
         <div
-          className={`relative overflow-hidden rounded-2xl border-2 border-parchment-dark/80 bg-gradient-to-b from-parchment/95 to-parchment/85 shadow-panel transition-all duration-500 ${stateClasses(state)}`}
+          className={`relative overflow-hidden rounded-2xl border border-parchment-dark/50 bg-gradient-to-b from-parchment/95 to-parchment/85 transition-all duration-500 ${stateClasses(state)}`}
         >
           <div className="absolute right-2 top-2 z-10">
             <span
@@ -172,7 +167,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
           </div>
 
           <div className="relative flex justify-center bg-gradient-to-b from-squawk-sea/25 to-transparent px-3 pt-4">
-            <div className="speech-bubble relative inline-block rounded-2xl border border-black/10 bg-white/30 px-3 py-1 text-center font-display text-[11px] font-semibold uppercase tracking-wide text-squawk-ink/80 shadow-inner">
+            <div className="speech-bubble relative inline-block rounded-2xl border border-black/10 bg-white/30 px-3 py-1 text-center font-display text-[11px] font-semibold uppercase tracking-wide text-squawk-ink/80">
               Captain Squawks
             </div>
           </div>
@@ -195,7 +190,7 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
                 {BADGE[state]}
               </span>
             </div>
-            <p className="min-h-[3rem] rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-body text-sm leading-snug text-squawk-ink shadow-inner">
+            <p className="min-h-[3rem] rounded-lg border border-black/10 bg-white/40 px-3 py-2 font-body text-sm leading-snug text-squawk-ink">
               {subtitle ? subtitle : state === "idle" ? "…" : ""}
             </p>
           </div>

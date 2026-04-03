@@ -108,10 +108,11 @@ export const STREAM_DECK_PARROT_STATE: Record<
   ParrotState
 > = {
   streamdeck_hello: "hello_wave",
-  streamdeck_please_share: "hype",
-  streamdeck_thanks_likes: "hype",
-  streamdeck_thanks_share: "hype",
-  streamdeck_pirate_maxx: "talking",
+  // Use idle clip (squawkidlereg) — not the legacy default loop on hype/talking.
+  streamdeck_please_share: "idle",
+  streamdeck_thanks_likes: "idle",
+  streamdeck_thanks_share: "idle",
+  streamdeck_pirate_maxx: "idle",
   streamdeck_exit: "exit",
   streamdeck_return: "return",
   streamdeck_peck: "peck",
