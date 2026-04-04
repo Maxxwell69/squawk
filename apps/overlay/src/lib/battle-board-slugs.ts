@@ -44,6 +44,11 @@ export const BATTLE_BOARD_DEFS: BattleBoardDef[] = [
     "More than halfway — positive push only.",
     "Stack with purpose; every gift counts.",
   ]),
+  LEVEL("minute-four", "Minute four", [
+    "Fourth quarter — steady pressure, no panic.",
+    "Read snipers early; protect your stacks.",
+    "One clean plan before the final push.",
+  ]),
   LEVEL("last-minute", "Last minute", [
     "Watch for snipers — big gifts at the wire.",
     "Prepare to board: final coordinated push.",

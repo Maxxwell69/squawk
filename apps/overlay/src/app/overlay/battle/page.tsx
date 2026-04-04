@@ -22,7 +22,11 @@ import {
   readSquawkVolume01,
   SQUAWK_VOL_EVENT,
 } from "@/lib/squawk-volume";
-import { BATTLE_BOARD_DEFS } from "@/lib/battle-board-slugs";
+import {
+  BATTLE_BOARD_DEFS,
+  type BattleBoardSlug,
+} from "@/lib/battle-board-slugs";
+import { battleBoardSlugForTimer } from "@/lib/battle-board-timer-slug";
 import { publishBattleBoardScene } from "@/lib/battle-board-sync";
 
 const LS_BRIDGE = "squawk-battle-bridge";
@@ -243,6 +247,7 @@ export default function BattleBoardPage() {
   const autoFiredRef = useRef<Set<number>>(new Set());
   /** Seconds until next random sprinkle (board-style line); not used on minute marks. */
   const sprinkleSecsUntilRef = useRef<number | null>(null);
+  const lastAutoBoardSlugRef = useRef<BattleBoardSlug | null>(null);
 
   const elapsedSec =
     matchStatus === "running" ? TOTAL_SEC - remainingSec : 0;
@@ -349,6 +354,18 @@ export default function BattleBoardPage() {
     }, 1000);
     return () => clearInterval(t);
   }, [matchStatus]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    const slug = battleBoardSlugForTimer(
+      matchStatus,
+      remainingSec,
+      TOTAL_SEC
+    );
+    if (lastAutoBoardSlugRef.current === slug) return;
+    lastAutoBoardSlugRef.current = slug;
+    publishBattleBoardScene(slug);
+  }, [matchStatus, remainingSec]);
 
   useEffect(() => {
     if (matchStatus !== "running") return;
@@ -529,8 +546,11 @@ export default function BattleBoardPage() {
             <strong className="text-parchment/85">same overlay host</strong>{" "}
             (e.g. your Railway URL — see repo{" "}
             <code className="text-parchment/85">RAILWAY.md</code>
-            ). Each tap POSTs to your bridge and broadcasts on{" "}
-            <code className="text-parchment/85">/ws</code> so OBS updates; local
+            ). While this tab is open, the match clock{" "}
+            <strong className="text-parchment/85">auto-switches</strong> banner
+            and tips by phase (and party / lose after the result). Manual scene
+            buttons below still POST immediately. Bridge{" "}
+            <code className="text-parchment/85">/ws</code> updates OBS;
             BroadcastChannel only helps extra tabs on the same machine.
           </p>
           <div className="mt-3">

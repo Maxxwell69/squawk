@@ -6,6 +6,7 @@ export const BATTLE_BOARD_SCENE_SLUGS = [
   "minute-one",
   "minute-two",
   "minute-three",
+  "minute-four",
   "last-minute",
   "repair-party",
   "win",

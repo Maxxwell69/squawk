@@ -42,53 +42,56 @@ export function BattleBoardFrame({ def }: Props) {
     };
   }, [def.slug]);
 
+  const frameStyle = {
+    width: "min(100vw, calc(100dvh * 9 / 16))",
+    height: "min(100dvh, calc(100vw * 16 / 9))",
+  } as const;
+
   return (
     <div className="flex min-h-dvh w-full items-center justify-center bg-black">
       <div
-        className="flex flex-col bg-black text-parchment shadow-none"
-        style={{
-          width: "min(100vw, calc(100dvh * 9 / 16))",
-          height: "min(100dvh, calc(100vw * 16 / 9))",
-        }}
+        className="relative overflow-hidden bg-black text-parchment shadow-none"
+        style={frameStyle}
       >
-        {/* Banner: full width, top, as large as fits */}
-        <div className="flex w-full shrink-0 justify-center px-1 pt-2 pb-1">
-          <div className="flex w-full max-h-[min(52dvh,55%)] min-h-[3rem] items-start justify-center">
-            {bannerUrl ? (
-              // eslint-disable-next-line @next/next/no-img-element -- /public via API
-              <img
-                src={bannerUrl}
-                alt=""
-                className="h-auto w-full max-h-[min(52dvh,55%)] object-contain object-top"
-              />
-            ) : graphicReady ? (
-              <p className="px-2 pt-2 text-center font-display text-xs font-bold uppercase tracking-[0.14em] text-white/45 sm:text-sm">
-                {def.label}
-              </p>
-            ) : (
-              <span className="sr-only">Loading…</span>
-            )}
-          </div>
+        {/* Banner: full 9:16 canvas — image scales to fill width & height (letterbox if needed) */}
+        <div className="absolute inset-0 flex items-start justify-center">
+          {bannerUrl ? (
+            // eslint-disable-next-line @next/next/no-img-element -- /public via API
+            <img
+              src={bannerUrl}
+              alt=""
+              className="h-full w-full object-contain object-top"
+            />
+          ) : graphicReady ? (
+            <p className="px-3 pt-[12%] text-center font-display text-xs font-bold uppercase tracking-[0.14em] text-white/45 sm:text-sm">
+              {def.label}
+            </p>
+          ) : (
+            <span className="sr-only">Loading…</span>
+          )}
         </div>
 
-        {/* Tips graphic: left, slightly below banner; text fallback if no tips image */}
-        <div className="flex min-h-0 flex-1 flex-row items-start gap-3 px-3 pb-5 pt-2">
-          <div className="w-[min(46%,14rem)] shrink-0">
+        {/* Tips: left rail, high on the frame (over main banner lower area is OK) */}
+        <div className="pointer-events-none absolute left-0 top-[6%] z-10 w-[min(54%,18rem)] max-h-[min(52dvh,56%)] px-2">
+          <div className="pointer-events-auto drop-shadow-[0_2px_12px_rgba(0,0,0,0.75)]">
             {tipsUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={tipsUrl}
                 alt=""
-                className="w-full max-h-[min(38dvh,42%)] object-contain object-left-top"
+                className="max-h-[min(50dvh,54%)] w-full object-contain object-left-top"
               />
             ) : graphicReady ? (
               <>
-                <p className="font-display text-[10px] font-bold uppercase tracking-[0.28em] text-amber-400/90">
+                <p className="font-display text-[10px] font-bold uppercase tracking-[0.28em] text-amber-400/90 drop-shadow-md">
                   Tips
                 </p>
-                <ul className="mt-2 space-y-2 font-body text-[11px] leading-snug text-white/80 sm:text-xs">
+                <ul className="mt-1.5 space-y-1.5 font-body text-[11px] leading-snug text-white/90 sm:text-xs">
                   {def.instructions.map((line) => (
-                    <li key={line} className="border-l border-amber-600/40 pl-2">
+                    <li
+                      key={line}
+                      className="border-l-2 border-amber-500/50 bg-black/35 pl-2 backdrop-blur-[2px]"
+                    >
                       {line}
                     </li>
                   ))}
@@ -96,7 +99,6 @@ export function BattleBoardFrame({ def }: Props) {
               </>
             ) : null}
           </div>
-          <div className="min-w-0 flex-1 bg-transparent" aria-hidden />
         </div>
       </div>
     </div>
