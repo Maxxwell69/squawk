@@ -40,6 +40,14 @@ export default function HomePage() {
           <li>
             <Link
               className="text-squawk-gold underline"
+              href="/overlay/battle-board"
+            >
+              Battle title boards (9:16 OBS)
+            </Link>
+          </li>
+          <li>
+            <Link
+              className="text-squawk-gold underline"
               href="/overlay/sea-of-thieves"
             >
               Sea of Thieves voyages board

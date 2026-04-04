@@ -179,6 +179,7 @@ export const RUST_TRIGGERS = {
     "AFK mode — Squawks holds chat hostage with banter while Cap'n Maxx grabs life stuff!",
     "Be right back energy — music's on, bird's talkin', don't touch the loot!",
     "Steppin' away — First Mate Squawks runs mouth until return!",
+    "Cap'n's ashore — First Mate Squawks is in charge; we're keepin' this stream ship shape till he returns!",
   ],
   rust_afk_outro: [
     "AFK over — Cap'n Maxx is back; Squawks bills chat for overtime!",
@@ -189,21 +190,29 @@ export const RUST_TRIGGERS = {
     "Still AFK — chat argue about best gun in Rust while we wait!",
     "Squawks inventories yer excuses — water break valid, rage quit debatable!",
     "If ye're new, type 1; if ye're toxic, type… actually don't!",
+    "First Mate Squawks is runnin' this deck — lines tight, vibes ship shape, no raiding the green room!",
+    "While the Cap'n's gone, Squawks keeps order: hearts up, chaos down, base metaphorically sheet-metal!",
   ],
   rust_afk_banter_b: [
     "This silence is sponsored by real life — rude!",
     "Cap'n'll be back — pretend ye're farming nodes emotionally!",
     "Squawks recommends stretchin' — neck, legs, ego!",
+    "Bird's in charge — that means we swab the chat of bad takes and keep the hype barnacle-free!",
+    "Ship shape report: stream holdin' water, Squawks on watch, Cap'n refittin' somewhere with snacks!",
   ],
   rust_afk_banter_c: [
     "Rust tip: doors exist. Also players behind them. Good luck!",
     "Fun fact: the bird never sleeps. The Cap'n does. Unfair!",
     "Whisper yer wipe stories — Squawks judges silently!",
+    "Chain of command: Cap'n absent, First Mate Squawks — all hands look alive, no slouchin' on the pixels!",
+    "Squawks is keepin' things ship shape — if ye see disorder in chat, that's on ye, not the bird!",
   ],
   rust_afk_banter_d: [
     "Hydrate, hydrate, then door camp responsibly!",
     "If ye hear footsteps, it's not Squawks — he's pixels only!",
     "Chat MVP today: whoever kept the hype while AFK!",
+    "Temporary captain Squawks says: stay civil, stay salty, stay ship shape till Pirate Maxx boards again!",
+    "Deck inspection — Squawks approves this crew if nobody starts a mutiny in the comments!",
   ],
 
   // —— AFK — Cap'n life breaks (drinks, food, throne, phone) ——

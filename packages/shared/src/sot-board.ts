@@ -302,6 +302,7 @@ export const SOT_TRIGGERS = {
     "AFK on the high seas — Squawks keeps chat company while Cap'n Maxx handles land business!",
     "Helm on autopilot — music up, bird yappin', don't steal the ship while we're gone!",
     "Stepped away from the wheel — First Mate Squawks entertains the crew!",
+    "Cap'n's below — First Mate Squawks has the conn; we're keepin' this voyage ship shape!",
   ],
   sot_afk_outro: [
     "Cap'n's back on deck — Squawks hands over the wheel!",
@@ -312,21 +313,29 @@ export const SOT_TRIGGERS = {
     "Still AFK — chat, debate best outpost or worst meg story while we wait!",
     "The ship's driftin' metaphorically — Squawks is fine, the Cap'n's refuelin'!",
     "If ye hear seagulls, that's ambience; if ye hear chaos, that's still ambience!",
+    "First Mate Squawks is in charge — ropes coiled, barrels stowed, chat kept ship shape!",
+    "Bird on the quarterdeck: orders are 'be excellent' and 'don't scuttle the vibe' — ship shape, crew!",
   ],
   sot_afk_banter_b: [
     "Quiet deck? Someone tell a shanty in chat — Squawks is listenin'!",
     "This pause is sponsored by hydration and sanity — pirates need both!",
     "Cap'n'll return — pretend ye're fishin' for likes in the meantime!",
+    "Deck inspection while AFK — Squawks sees tidy energy; keep it ship shape or walk the plank… metaphorically!",
+    "Squawks runnin' a tight ship: no bilge in the comments, all hands respect the hatch!",
   ],
   sot_afk_banter_c: [
     "Sea tip: mermaids exist; blame them for any missed shots later!",
     "Fun fact: Squawks never sleeps. The Cap'n does. Crew meeting adjourned!",
     "Whisper yer worst skelly ship story — bird rates the drama one to ten!",
+    "Chain o' command: Cap'n away, First Mate Squawks — look alive, swab yer attitudes, stay ship shape!",
+    "The bird's keepin' things ship shape — helm steady, music true, chat not a three-day storm!",
   ],
   sot_afk_banter_d: [
     "Kraken's on break too — even legends respect AFK etiquette!",
     "If ye see a rowboat comin', it's not us — we're pixels and patience!",
     "Chat MVP: whoever kept the tavern energy while the helm was empty!",
+    "Actin' captain Squawks: maintain course, mind the code, return a ship-shape stream when Cap'n's back!",
+    "All hands — Squawks has the wheel; we're presentable, we're pirate-proud, we're ship shape. Carry on!",
   ],
 
   // —— AFK — Cap'n life breaks (drinks, food, throne, phone) ——

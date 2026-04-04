@@ -461,10 +461,24 @@ export default function BattleBoardPage() {
               behind&quot; lines are never auto-fired — use those buttons only.
               Drop tracks in{" "}
               <code className="text-parchment/90">public/battle/music/</code>{" "}
-              — see README there. Bridge secret optional.
+              — see README there. Bridge secret optional.{" "}
+              <Link
+                className="text-squawk-gold underline decoration-amber-700/50 underline-offset-2"
+                href="/overlay/battle-board"
+              >
+                9:16 title &amp; banner overlays
+              </Link>{" "}
+              (separate browser source from parrot; art in{" "}
+              <code className="text-parchment/90">public/battle/board/</code>).
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Link
+              href="/overlay/battle-board"
+              className="rounded-lg border border-zinc-500/45 bg-zinc-950/40 px-3 py-1.5 text-sm text-zinc-100 hover:bg-zinc-900/50"
+            >
+              Title boards (9:16)
+            </Link>
             <Link
               href="/overlay/sea-of-thieves"
               className="rounded-lg border border-cyan-600/40 px-3 py-1.5 text-sm text-cyan-200/90 hover:bg-cyan-950/40"
