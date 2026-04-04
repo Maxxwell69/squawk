@@ -4,7 +4,9 @@ import {
   type BattleBoardSlug,
 } from "@/lib/battle-board-slugs";
 
-function boardHref(slug: BattleBoardSlug): string {
+const DISPLAY = "/overlay/battle-board/display";
+
+function legacyHref(slug: BattleBoardSlug): string {
   return `/overlay/battle-board/${slug}`;
 }
 
@@ -23,28 +25,37 @@ export default function BattleBoardIndexPage() {
             Battle title boards
           </h1>
           <p className="mt-2 font-body text-sm text-white/65">
-            Separate from the parrot overlay. Black frame, main art centered top,
-            instructions on the left. Add images under{" "}
-            <code className="text-amber-200/90">public/battle/board/</code> — see{" "}
+            Use <strong className="text-white/90">one</strong> browser source:{" "}
+            <code className="break-all text-amber-200/90">{DISPLAY}</code>
+            . On the{" "}
+            <Link className="text-squawk-gold underline" href="/overlay/battle">
+              TikTok battle board
+            </Link>
+            , tap level / banner buttons — the OBS view updates (same site,
+            another tab). Optional <code className="text-amber-200/90">?scene=</code>{" "}
+            on the display URL for a default (e.g.{" "}
+            <code className="text-amber-200/90">{DISPLAY}?scene=prepare</code>).
+          </p>
+          <p className="mt-2 font-body text-sm text-white/55">
+            Art: <code className="text-amber-200/90">public/battle/board/</code>{" "}
+            — any image in each folder (first filename A→Z). See{" "}
             <code className="text-amber-200/90">README.md</code> there.
           </p>
         </div>
 
         <section>
           <h2 className="font-display text-sm font-bold uppercase tracking-widest text-cyan-300/90">
-            Battle levels
+            Scene slugs (for ?scene=)
           </h2>
           <ul className="mt-3 space-y-2 font-body text-sm">
             {levels.map((d) => (
               <li key={d.slug}>
-                <Link
-                  className="text-squawk-gold underline decoration-amber-600/50 underline-offset-2 hover:text-amber-200"
-                  href={boardHref(d.slug)}
-                >
-                  {d.label}
-                </Link>
+                <span className="text-white/90">{d.label}</span>
                 <span className="ml-2 font-mono text-[11px] text-white/40">
-                  {boardHref(d.slug)}
+                  {d.slug}
+                </span>
+                <span className="ml-2 font-mono text-[10px] text-white/30">
+                  ({legacyHref(d.slug)} → display)
                 </span>
               </li>
             ))}
@@ -58,14 +69,9 @@ export default function BattleBoardIndexPage() {
           <ul className="mt-3 space-y-2 font-body text-sm">
             {banners.map((d) => (
               <li key={d.slug}>
-                <Link
-                  className="text-squawk-gold underline decoration-amber-600/50 underline-offset-2 hover:text-amber-200"
-                  href={boardHref(d.slug)}
-                >
-                  {d.label}
-                </Link>
+                <span className="text-white/90">{d.label}</span>
                 <span className="ml-2 font-mono text-[11px] text-white/40">
-                  {boardHref(d.slug)}
+                  {d.slug}
                 </span>
               </li>
             ))}

@@ -40,9 +40,17 @@ export default function HomePage() {
           <li>
             <Link
               className="text-squawk-gold underline"
+              href="/overlay/battle-board/display"
+            >
+              Battle title display (9:16 OBS — single URL)
+            </Link>
+          </li>
+          <li>
+            <Link
+              className="text-squawk-gold underline"
               href="/overlay/battle-board"
             >
-              Battle title boards (9:16 OBS)
+              Battle title board notes
             </Link>
           </li>
           <li>

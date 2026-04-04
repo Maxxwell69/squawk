@@ -10,3 +10,4 @@ export * from "./stream-deck";
 export * from "./battle";
 export * from "./sot-board";
 export * from "./rust-board";
+export * from "./battle-board-scene";

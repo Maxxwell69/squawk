@@ -1,40 +1,45 @@
-# Battle title boards (9:16 OBS sources)
+# Battle title boards (9:16 OBS)
 
-Use **`/overlay/battle-board`** for the index of links, or open a board directly (see below).
+## Single browser source
+
+1. In OBS add one **Browser** source:  
+   **`https://<your-overlay-host>/overlay/battle-board/display`**  
+   (local dev: `http://127.0.0.1:3000/overlay/battle-board/display`)
+
+2. Open the **TikTok battle board** (`/overlay/battle`) on the **same overlay host** you deployed (e.g. Railway). Scene buttons **POST** to your **bridge** (`/api/battle-board/scene`); the bridge pushes **`BATTLE_BOARD_SCENE`** over **`/ws`** so OBS updates even though OBS and Chrome do not share `localStorage`.
+
+3. **Railway:** set `NEXT_PUBLIC_BRIDGE_HTTP` + `NEXT_PUBLIC_WS_URL` on the overlay build (see repo **`RAILWAY.md`**). Use the **hosted** `/overlay/battle` URL to control the board — not `localhost` — unless your bridge is also local.
+
+4. Same-tab extras: `BroadcastChannel` + `localStorage` still help if two tabs share one browser profile.
+
+5. Optional default when the source loads:  
+   **`/overlay/battle-board/display?scene=prepare`** (or any slug below).
+
+Legacy paths like `/overlay/battle-board/prepare` **redirect** to `display?scene=prepare`.
 
 ## Layout
 
 - **Black** frame, **9:16** (TikTok vertical).
-- **Main graphic**: centered **top** — drop an image in the matching folder.
-- **Instructions**: **left** side (below the graphic area) — copy is built into the page; edit `battle-board-slugs.ts` if you want different text.
+- **Graphic**: centered **top** — first image file in the folder (sorted A→Z by filename).
+- **Tips**: **left** — text from `apps/overlay/src/lib/battle-board-slugs.ts`.
 
-## Filenames (any one that exists is used; first match wins)
+Supported extensions: `.webp`, `.png`, `.jpg`, `.jpeg`, `.gif`.
 
-1. `title.webp`
-2. `title.png`
-3. `banner.webp`
-4. `banner.png`
+## Folders → scene slugs (`?scene=`)
 
-## Level folders → URLs
+| Folder | `scene` value |
+|--------|----------------|
+| `levels/prepare/` | `prepare` |
+| `levels/minute-one/` | `minute-one` |
+| `levels/phase-two/` | `phase-two` |
+| `levels/phase-three/` | `phase-three` |
+| `levels/last-minute/` | `last-minute` |
+| `levels/repair-party/` | `repair-party` |
+| `banners/win/` | `win` |
+| `banners/lose/` | `lose` |
+| `banners/repair/` | `repair` |
+| `banners/party/` | `party` |
 
-| Folder | Overlay URL |
-|--------|-------------|
-| `levels/prepare/` | `/overlay/battle-board/prepare` |
-| `levels/minute-one/` | `/overlay/battle-board/minute-one` |
-| `levels/phase-two/` | `/overlay/battle-board/phase-two` |
-| `levels/phase-three/` | `/overlay/battle-board/phase-three` |
-| `levels/last-minute/` | `/overlay/battle-board/last-minute` |
-| `levels/repair-party/` | `/overlay/battle-board/repair-party` |
+## OBS sizing
 
-## Banner folders → URLs
-
-| Folder | Overlay URL |
-|--------|-------------|
-| `banners/win/` | `/overlay/battle-board/win` |
-| `banners/lose/` | `/overlay/battle-board/lose` |
-| `banners/repair/` | `/overlay/battle-board/repair` |
-| `banners/party/` | `/overlay/battle-board/party` |
-
-## OBS
-
-Add a **Browser** source, paste your overlay origin + path (e.g. `https://yoursite.com/overlay/battle-board/win`), size **1080×1920** or let the page letterbox in a 9:16 dock.
+**1080×1920** or full-screen; the page letterboxes to 9:16 with black bars on wide monitors.

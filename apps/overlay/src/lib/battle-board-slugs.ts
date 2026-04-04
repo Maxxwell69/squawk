@@ -1,14 +1,10 @@
-export type BattleBoardSlug =
-  | "prepare"
-  | "minute-one"
-  | "phase-two"
-  | "phase-three"
-  | "last-minute"
-  | "repair-party"
-  | "win"
-  | "lose"
-  | "repair"
-  | "party";
+import {
+  BATTLE_BOARD_SCENE_SLUGS,
+  type BattleBoardSceneSlug,
+  isBattleBoardSceneSlug,
+} from "@captain-squawks/shared";
+
+export type BattleBoardSlug = BattleBoardSceneSlug;
 
 export type BattleBoardKind = "level" | "banner";
 
@@ -76,17 +72,15 @@ export const BATTLE_BOARD_DEFS: BattleBoardDef[] = [
   ]),
 ];
 
-export const BATTLE_BOARD_SLUGS: BattleBoardSlug[] = BATTLE_BOARD_DEFS.map(
-  (d) => d.slug
-);
+export const BATTLE_BOARD_SLUGS: BattleBoardSlug[] = [
+  ...BATTLE_BOARD_SCENE_SLUGS,
+];
 
 export function isBattleBoardSlug(v: string): v is BattleBoardSlug {
-  return (BATTLE_BOARD_SLUGS as string[]).includes(v);
+  return isBattleBoardSceneSlug(v);
 }
 
-export function getBattleBoardDef(
-  slug: string
-): BattleBoardDef | undefined {
+export function getBattleBoardDef(slug: string): BattleBoardDef | undefined {
   return BATTLE_BOARD_DEFS.find((d) => d.slug === slug);
 }
 

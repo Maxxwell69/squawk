@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { battleBoardSceneWsSchema } from "../battle-board-scene";
 import { parrotSpeakMessageSchema, parrotStateSchema } from "./parrot-speak";
 
 export const parrotOverlayPayloadSchema = z.object({
@@ -26,6 +27,7 @@ export const bridgeWsMessageSchema = z.discriminatedUnion("type", [
   z.object({
     type: z.literal("ping"),
   }),
+  battleBoardSceneWsSchema,
 ]);
 
 export type BridgeWsMessage = z.infer<typeof bridgeWsMessageSchema>;

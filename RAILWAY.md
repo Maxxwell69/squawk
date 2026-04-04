@@ -95,11 +95,22 @@ Use that in **OBS** and anywhere you need a **public** link (not TikTok’s loca
 - Paste the **overlay** HTTPS URL above (path `/overlay/parrot`).
 - The **bridge** must be **reachable** from the browser at the `wss://` URL you set in `NEXT_PUBLIC_WS_URL`.
 
+### Battle title board (9:16) — why Railway matters here
+
+The **TikTok battle board** (`/overlay/battle`) and the **title display** (`/overlay/battle-board/display`) are usually **two different browser contexts** (your control tab vs OBS). They do **not** share `localStorage`, so scene changes are relayed through the **same Railway bridge** you already use for Squawk:
+
+1. **Overlay** build args: same `NEXT_PUBLIC_BRIDGE_HTTP` and `NEXT_PUBLIC_WS_URL` as the parrot overlay (§3).
+2. **OBS** browser source URL: `https://YOUR-OVERLAY…/overlay/battle-board/display` (optional `?scene=prepare` for the first paint).
+3. **You** open the battle board on the **hosted** overlay too (`https://YOUR-OVERLAY…/overlay/battle`) so `fetch` + WebSocket hit the **public** bridge, not `127.0.0.1`.
+
+When you tap a level or banner, the page **POSTs** `https://YOUR-BRIDGE…/api/battle-board/scene` with `{ "slug": "win" }` (same `x-stream-deck-key` as other bridge routes when `STREAM_DECK_SECRET` is set). The bridge **broadcasts** `BATTLE_BOARD_SCENE` on `/ws`, and the OBS display updates.
+
 ## 5. Troubleshooting
 
 | Issue | What to check |
 |-------|----------------|
 | Overlay shows OFFLINE | `NEXT_PUBLIC_WS_URL` must match the bridge’s **public** `wss://…/ws` URL; redeploy overlay after changing it. |
+| Title display never changes from battle buttons | Control the battle board from the **same deployed overlay URL** (not localhost) so POSTs go to your Railway bridge; OBS source must use the same overlay + `NEXT_PUBLIC_*` bridge vars. |
 | **404** on `/api/test/follow` | The hostname in `NEXT_PUBLIC_BRIDGE_HTTP` is **not** running the bridge. Root `railway.toml` builds the **Next.js overlay** only. The **bridge** service must use Dockerfile path **`apps/local-bridge/Dockerfile`**. Open `https://YOUR-BRIDGE/health` — expect JSON with `"service":"captain-squawks-bridge"`. |
 | Bridge 502 | Check Railway logs; ensure `PORT` is used (already wired). |
 | CORS | Bridge allows `origin: true` for MVP. |

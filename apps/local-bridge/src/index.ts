@@ -19,6 +19,8 @@ import {
   testGiftBodySchema,
   testLikeMilestoneBodySchema,
   testShareBodySchema,
+  battleBoardScenePostBodySchema,
+  type BattleBoardSceneSlug,
 } from "@captain-squawks/shared";
 import { loadConfig } from "./config.js";
 import { BrainService } from "./brain/service.js";
@@ -33,6 +35,8 @@ const brain = new BrainService();
 const voice = createVoiceProvider(config.ttsProvider);
 const audioStore = new AudioFileStore(config.audioTempDir, config.publicBaseUrl);
 const hub = new WsHub();
+
+let lastBattleBoardScene: BattleBoardSceneSlug | null = null;
 
 /** Ignore duplicate Stream Deck POSTs within this window (hardware often double-fires). */
 const STREAM_DECK_ANIM_DEDUP_MS = 3500;
@@ -182,6 +186,7 @@ ${overlayBlock}
 <p><strong>Battle UI:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "battle_prepare_1" }))}</code> (same auth header as Stream Deck when a secret is set).</p>
 <p><strong>Sea of Thieves board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/sot/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "sot_island_arrival_1" }))}</code> (same auth).</p>
 <p><strong>Rust adventure board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/rust/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "rust_roam_1" }))}</code> (same auth).</p>
+<p><strong>Battle title display:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle-board/scene</code> with JSON <code>${escapeHtml(JSON.stringify({ slug: "prepare" }))}</code> — broadcasts <code>BATTLE_BOARD_SCENE</code> on <code>/ws</code> for the 9:16 overlay (same auth when secret is set).</p>
 </body>
 </html>`;
 });
@@ -198,6 +203,12 @@ app.get("/ws", { websocket: true }, (socket) => {
     type: "server_hello",
     payload: { version: "0.2.0" },
   });
+  if (lastBattleBoardScene) {
+    hub.sendToSocket(socket, {
+      type: "BATTLE_BOARD_SCENE",
+      slug: lastBattleBoardScene,
+    });
+  }
   socket.on("message", (raw: Buffer) => {
     try {
       const text = raw.toString();
@@ -405,6 +416,13 @@ app.post("/api/battle/trigger", streamDeckOpts, async (req) => {
   });
   const message = await handleNormalizedEvent(ev);
   return { ok: true, message };
+});
+
+app.post("/api/battle-board/scene", streamDeckOpts, async (req) => {
+  const body = battleBoardScenePostBodySchema.parse(req.body ?? {});
+  lastBattleBoardScene = body.slug;
+  hub.broadcastJson({ type: "BATTLE_BOARD_SCENE", slug: body.slug });
+  return { ok: true, slug: body.slug };
 });
 
 app.post("/api/sot/trigger", streamDeckOpts, async (req) => {

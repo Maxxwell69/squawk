@@ -17,6 +17,11 @@ export class WsHub {
     });
   }
 
+  sendToSocket(socket: WebSocket, obj: unknown): void {
+    if (socket.readyState !== 1) return;
+    socket.send(JSON.stringify(obj));
+  }
+
   /** @deprecated Prefer PARROT_SPEAK */
   broadcastParrotUpdate(payload: ParrotOverlayPayload): void {
     const msg = JSON.stringify({

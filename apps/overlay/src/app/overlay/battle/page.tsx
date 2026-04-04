@@ -22,6 +22,8 @@ import {
   readSquawkVolume01,
   SQUAWK_VOL_EVENT,
 } from "@/lib/squawk-volume";
+import { BATTLE_BOARD_DEFS } from "@/lib/battle-board-slugs";
+import { publishBattleBoardScene } from "@/lib/battle-board-sync";
 
 const LS_BRIDGE = "squawk-battle-bridge";
 const LS_DECK_KEY = "squawk-parrot-test-stream-deck-key";
@@ -30,6 +32,8 @@ const LS_MUSIC_VOL = "squawk-battle-music-vol";
 const LS_MUSIC_MUTE = "squawk-battle-music-muted";
 
 const BATTLE_PATH = "/api/battle/trigger";
+/** One OBS browser source: banners + tips switch from buttons below. */
+const BATTLE_BOARD_DISPLAY_PATH = "/overlay/battle-board/display";
 const STREAM_DECK_VICTORY_DANCE = "/api/streamdeck/victory-dance";
 const TOTAL_SEC = 5 * 60;
 const VICTORY_PARTY_SEC = 120;
@@ -464,20 +468,26 @@ export default function BattleBoardPage() {
               — see README there. Bridge secret optional.{" "}
               <Link
                 className="text-squawk-gold underline decoration-amber-700/50 underline-offset-2"
-                href="/overlay/battle-board"
+                href={BATTLE_BOARD_DISPLAY_PATH}
               >
-                9:16 title &amp; banner overlays
+                9:16 title display
               </Link>{" "}
-              (separate browser source from parrot; art in{" "}
+              (one URL for OBS; pick scenes below — same origin as this page; art in{" "}
               <code className="text-parchment/90">public/battle/board/</code>).
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
-              href="/overlay/battle-board"
+              href={BATTLE_BOARD_DISPLAY_PATH}
               className="rounded-lg border border-zinc-500/45 bg-zinc-950/40 px-3 py-1.5 text-sm text-zinc-100 hover:bg-zinc-900/50"
             >
-              Title boards (9:16)
+              OBS title display
+            </Link>
+            <Link
+              href="/overlay/battle-board"
+              className="rounded-lg border border-zinc-600/35 px-3 py-1.5 text-sm text-zinc-300/90 hover:bg-zinc-950/50"
+            >
+              Title board index
             </Link>
             <Link
               href="/overlay/sea-of-thieves"
@@ -505,6 +515,59 @@ export default function BattleBoardPage() {
             </Link>
           </div>
         </div>
+
+        <section className="rounded-xl border border-zinc-600/40 bg-zinc-950/25 p-4">
+          <h2 className="font-display text-sm font-bold text-zinc-100">
+            OBS — 9:16 title &amp; tips (single browser source)
+          </h2>
+          <p className="mt-1 font-body text-xs text-parchment/70">
+            Add one Browser source pointing at{" "}
+            <code className="break-all text-parchment/90">
+              …your-overlay-origin…{BATTLE_BOARD_DISPLAY_PATH}
+            </code>
+            . Open this battle page on the{" "}
+            <strong className="text-parchment/85">same overlay host</strong>{" "}
+            (e.g. your Railway URL — see repo{" "}
+            <code className="text-parchment/85">RAILWAY.md</code>
+            ). Each tap POSTs to your bridge and broadcasts on{" "}
+            <code className="text-parchment/85">/ws</code> so OBS updates; local
+            BroadcastChannel only helps extra tabs on the same machine.
+          </p>
+          <div className="mt-3">
+            <p className="font-display text-[11px] font-bold uppercase tracking-widest text-cyan-400/90">
+              Battle levels
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {BATTLE_BOARD_DEFS.filter((d) => d.kind === "level").map((d) => (
+                <button
+                  key={d.slug}
+                  type="button"
+                  className="rounded-lg border border-cyan-700/40 bg-black/40 px-2.5 py-1.5 font-body text-xs font-semibold text-cyan-100/95 hover:bg-cyan-950/40"
+                  onClick={() => publishBattleBoardScene(d.slug)}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+          <div className="mt-4">
+            <p className="font-display text-[11px] font-bold uppercase tracking-widest text-violet-400/90">
+              Banners
+            </p>
+            <div className="mt-2 flex flex-wrap gap-2">
+              {BATTLE_BOARD_DEFS.filter((d) => d.kind === "banner").map((d) => (
+                <button
+                  key={d.slug}
+                  type="button"
+                  className="rounded-lg border border-violet-600/40 bg-black/40 px-2.5 py-1.5 font-body text-xs font-semibold text-violet-100/95 hover:bg-violet-950/35"
+                  onClick={() => publishBattleBoardScene(d.slug)}
+                >
+                  {d.label}
+                </button>
+              ))}
+            </div>
+          </div>
+        </section>
 
         <section className="rounded-xl border border-emerald-600/35 bg-black/30 p-4">
           <h2 className="font-display text-sm font-bold text-emerald-200">
