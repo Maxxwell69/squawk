@@ -11,7 +11,7 @@ Use your **local bridge** base URL everywhere below (example: `http://127.0.0.1:
 
 **Overlay:** Parrot listens on WebSocket `GET /ws` (e.g. `wss://your-bridge.example/ws`). Point the overlay at the bridge with `NEXT_PUBLIC_BRIDGE_HTTP`, `NEXT_PUBLIC_WS_URL`, or `?squawk_bridge=https://…` on the overlay URL.
 
-**Squawk voice volume:** On any parrot overlay route, use the **Squawk** slider (bottom-right). It controls bridge TTS (`<audio>` + Web Audio fallback) and browser speech volume; level is stored in `localStorage` as `squawk-overlay-tts-vol`. Battle board music volume is separate (battle page only).
+**Squawk voice volume:** Controls bridge TTS (`<audio>` + Web Audio fallback) and browser speech on the **parrot overlay**. Set it from the **Battle board** page (section under Battle music) or the **Squawk** slider on parrot overlay routes (bottom-right). Same `localStorage` key: `squawk-overlay-tts-vol`. Changing it in one tab updates the other via a browser event when both are open; **OBS** uses its own storage — set level on the overlay URL inside OBS, or adjust there after changing in Chrome.
 
 **Victory vs general dance (video files):**
 

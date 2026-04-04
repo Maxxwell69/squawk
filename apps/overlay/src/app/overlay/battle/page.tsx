@@ -12,10 +12,16 @@ import {
   BATTLE_MINUTE_MARK_SECONDS,
 } from "@/lib/battle-auto-milestones";
 import { pickRandomSprinkleTrigger } from "@/lib/battle-sprinkle-pools";
+import { SquawkVolumeSlider } from "@/components/SquawkVolumeSlider";
 import {
   useBattleMusic,
   type BattleMatchStatus,
 } from "@/hooks/useBattleMusic";
+import {
+  persistSquawkVolume01,
+  readSquawkVolume01,
+  SQUAWK_VOL_EVENT,
+} from "@/lib/squawk-volume";
 
 const LS_BRIDGE = "squawk-battle-bridge";
 const LS_DECK_KEY = "squawk-parrot-test-stream-deck-key";
@@ -223,6 +229,7 @@ export default function BattleBoardPage() {
   const [partyRemainingSec, setPartyRemainingSec] = useState(0);
   const [musicVolume01, setMusicVolume01] = useState(0.75);
   const [musicMuted, setMusicMuted] = useState(false);
+  const [squawkVoiceVol01, setSquawkVoiceVol01] = useState(0.9);
   const tickRef = useRef<ReturnType<typeof setInterval> | null>(null);
   const autoFiredRef = useRef<Set<number>>(new Set());
   /** Seconds until next random sprinkle (board-style line); not used on minute marks. */
@@ -252,6 +259,18 @@ export default function BattleBoardPage() {
       setMusicVolume01(v);
     }
     setMusicMuted(window.localStorage.getItem(LS_MUSIC_MUTE) === "1");
+    setSquawkVoiceVol01(readSquawkVolume01());
+  }, []);
+
+  useEffect(() => {
+    const onVol = (e: Event) => {
+      const d = (e as CustomEvent<number>).detail;
+      if (typeof d === "number" && Number.isFinite(d)) {
+        setSquawkVoiceVol01(Math.min(1, Math.max(0, d)));
+      }
+    };
+    window.addEventListener(SQUAWK_VOL_EVENT, onVol);
+    return () => window.removeEventListener(SQUAWK_VOL_EVENT, onVol);
   }, []);
 
   useEffect(() => {
@@ -548,6 +567,27 @@ export default function BattleBoardPage() {
             >
               {musicMuted ? "Unmute music" : "Mute music"}
             </button>
+          </div>
+          <div className="mt-4 border-t border-white/10 pt-4">
+            <h3 className="font-display text-xs font-bold text-parchment/90">
+              Squawk voice (parrot overlay)
+            </h3>
+            <p className="mt-1 font-body text-xs text-parchment/60">
+              TTS and browser speech on the parrot browser source. Same setting as
+              the overlay&apos;s corner slider — saved in this browser (
+              <code className="text-parchment/75">squawk-overlay-tts-vol</code>
+              ). Refresh the OBS source if it was open before you changed this.
+            </p>
+            <div className="mt-3">
+              <SquawkVolumeSlider
+                variant="inline"
+                volume01={squawkVoiceVol01}
+                onVolumeChange={(v) => {
+                  setSquawkVoiceVol01(v);
+                  persistSquawkVolume01(v);
+                }}
+              />
+            </div>
           </div>
         </section>
 

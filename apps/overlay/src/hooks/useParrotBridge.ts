@@ -15,21 +15,12 @@ import {
 } from "@/lib/audio-player";
 import { getClientWsUrl } from "@/lib/bridge-urls";
 import { getSilentWavDataUri } from "@/lib/silent-wav-data-uri";
+import {
+  persistSquawkVolume01,
+  readSquawkVolume01,
+  SQUAWK_VOL_EVENT,
+} from "@/lib/squawk-volume";
 import { useAudioUnlock } from "./useAudioUnlock";
-
-const LS_SQUAWK_VOL = "squawk-overlay-tts-vol";
-
-function readSquawkVolume01(): number {
-  if (typeof window === "undefined") return 0.9;
-  try {
-    const raw = window.localStorage.getItem(LS_SQUAWK_VOL);
-    if (raw == null) return 0.9;
-    const n = Number.parseFloat(raw);
-    return Number.isFinite(n) ? Math.min(1, Math.max(0, n)) : 0.9;
-  } catch {
-    return 0.9;
-  }
-}
 
 /**
  * FIFO queue: one PARROT_SPEAK at a time; new lines wait until the current line
@@ -64,15 +55,20 @@ export function useParrotBridge() {
   }, []);
 
   useEffect(() => {
-    try {
-      window.localStorage.setItem(LS_SQUAWK_VOL, String(squawkVolume01));
-    } catch {
-      /* ignore */
-    }
-  }, [squawkVolume01]);
+    const onVol = (e: Event) => {
+      const d = (e as CustomEvent<number>).detail;
+      if (typeof d === "number" && Number.isFinite(d)) {
+        setSquawkVolume01State(Math.min(1, Math.max(0, d)));
+      }
+    };
+    window.addEventListener(SQUAWK_VOL_EVENT, onVol);
+    return () => window.removeEventListener(SQUAWK_VOL_EVENT, onVol);
+  }, []);
 
   const setSquawkVolume01 = useCallback((v: number) => {
-    setSquawkVolume01State(Math.min(1, Math.max(0, v)));
+    const c = Math.min(1, Math.max(0, v));
+    setSquawkVolume01State(c);
+    persistSquawkVolume01(c);
   }, []);
 
   function isExitAnimationDupState(s: ParrotState): boolean {
