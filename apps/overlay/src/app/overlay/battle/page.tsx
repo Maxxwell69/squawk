@@ -147,7 +147,11 @@ function normalizeBase(raw: string): string {
 }
 
 function bridgeUsesSecret(path: string): boolean {
-  return path.includes("/api/streamdeck/") || path.includes("/api/battle/");
+  return (
+    path.includes("/api/streamdeck/") ||
+    path.includes("/api/battle/") ||
+    path.includes("/api/sot/")
+  );
 }
 
 async function postBattleTrigger(
@@ -460,6 +464,12 @@ export default function BattleBoardPage() {
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
+            <Link
+              href="/overlay/sea-of-thieves"
+              className="rounded-lg border border-cyan-600/40 px-3 py-1.5 text-sm text-cyan-200/90 hover:bg-cyan-950/40"
+            >
+              Sea of Thieves board
+            </Link>
             <Link
               href="/overlay/parrot-with-bubble"
               className="rounded-lg border border-parchment/40 px-3 py-1.5 text-sm text-squawk-gold hover:bg-white/5"

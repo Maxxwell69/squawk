@@ -62,7 +62,9 @@ function normalizeBase(raw: string): string {
 /** Routes that require the same secret as Stream Deck when STREAM_DECK_SECRET is set. */
 function bridgeSecretPath(path: string): boolean {
   return (
-    path.includes("/api/streamdeck/") || path.includes("/api/battle/")
+    path.includes("/api/streamdeck/") ||
+    path.includes("/api/battle/") ||
+    path.includes("/api/sot/")
   );
 }
 

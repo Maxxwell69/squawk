@@ -2,7 +2,7 @@
 
 Use your **local bridge** base URL everywhere below (example: `http://127.0.0.1:8787` or your Railway bridge).
 
-**Auth (Stream Deck + battle):** If `STREAM_DECK_SECRET` is set on the bridge, send either:
+**Auth (Stream Deck + battle + Sea of Thieves board):** If `STREAM_DECK_SECRET` is set on the bridge, send either:
 
 - Header: `x-stream-deck-key: <secret>`, or  
 - Header: `Authorization: Bearer <secret>`
@@ -11,7 +11,7 @@ Use your **local bridge** base URL everywhere below (example: `http://127.0.0.1:
 
 **Overlay:** Parrot listens on WebSocket `GET /ws` (e.g. `wss://your-bridge.example/ws`). Point the overlay at the bridge with `NEXT_PUBLIC_BRIDGE_HTTP`, `NEXT_PUBLIC_WS_URL`, or `?squawk_bridge=https://…` on the overlay URL.
 
-**Squawk voice volume:** Controls bridge TTS (`<audio>` + Web Audio fallback) and browser speech on the **parrot overlay**. Set it from the **Battle board** page (section under Battle music) or the **Squawk** slider on parrot overlay routes (bottom-right). Same `localStorage` key: `squawk-overlay-tts-vol`. Changing it in one tab updates the other via a browser event when both are open; **OBS** uses its own storage — set level on the overlay URL inside OBS, or adjust there after changing in Chrome.
+**Squawk voice volume:** Controls bridge TTS (`<audio>` + Web Audio fallback) and browser speech on the **parrot overlay**. Set it from the **Battle board** or **Sea of Thieves** board (bridge section) or the **Squawk** slider on parrot overlay routes (bottom-right). Same `localStorage` key: `squawk-overlay-tts-vol`. Changing it in one tab updates the other via a browser event when both are open; **OBS** uses its own storage — set level on the overlay URL inside OBS, or adjust there after changing in Chrome.
 
 **Victory vs general dance (video files):**
 
@@ -149,6 +149,84 @@ curl -X POST -H "Content-Type: application/json" \
 
 ---
 
+## Sea of Thieves board → `POST /api/sot/trigger`
+
+Separate UI: **`/overlay/sea-of-thieves`** (same bridge URL + Stream Deck secret `localStorage` keys as the battle board).
+
+**Body (JSON):**
+
+```json
+{ "triggerId": "sot_island_arrival_1" }
+```
+
+No `opponentName`; each `triggerId` picks a random line from its pool and drives parrot emote per `SOT_PARROT_STATE` in shared.
+
+### Island visit
+
+| `triggerId` |
+|-------------|
+| `sot_island_arrival_1`, `sot_island_arrival_2` |
+| `sot_island_explore_1` |
+| `sot_island_rumor_1` |
+
+### Fight other crews
+
+| `triggerId` |
+|-------------|
+| `sot_pvp_spot_1` |
+| `sot_pvp_engaged_1` |
+| `sot_pvp_sink_1` |
+| `sot_pvp_respawn_1` |
+
+### Reaper chase
+
+| `triggerId` |
+|-------------|
+| `sot_reaper_spotted_1` |
+| `sot_reaper_chase_1` |
+| `sot_reaper_close_1` |
+| `sot_reaper_escape_1` |
+
+### Treasure & digging
+
+| `triggerId` |
+|-------------|
+| `sot_dig_map_1` |
+| `sot_dig_x_marks_1` |
+| `sot_chest_up_1` |
+| `sot_turn_in_1` |
+
+### Thanks viewers
+
+| `triggerId` |
+|-------------|
+| `sot_thanks_gifts_1` |
+| `sot_thanks_raiders_1` |
+| `sot_thanks_hype_1` |
+| `sot_thanks_mvp_chat_1` |
+
+### Feeding / drink / dance
+
+| `triggerId` | Parrot emote (typical) |
+|-------------|-------------------------|
+| `sot_feeding_time` | Feeding time clip |
+| `sot_drink_cheers_1` | Talking |
+| `sot_drink_grog_1` | Talking |
+| `sot_drink_break_1` | Talking |
+| `sot_dance_shanty_1` | Dancing Squawk |
+| `sot_dance_victory_sea_1` | Victory dance |
+
+**Example:**
+
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -H "x-stream-deck-key: YOUR_SECRET" \
+  -d '{"triggerId":"sot_reaper_chase_1"}' \
+  "http://127.0.0.1:8787/api/sot/trigger"
+```
+
+---
+
 ## Dev test → `POST /api/test/*` (JSON body, optional fields)
 
 | Path | Body fields (all optional) |
@@ -187,3 +265,4 @@ Body: TikFinity-style JSON (see bridge normalize heuristics in repo).
 - Stream Deck paths: `apps/local-bridge/src/index.ts`  
 - Line pools + trigger ids: `packages/shared/src/stream-deck.ts`  
 - Battle triggers + emote map: `packages/shared/src/battle.ts` (`BATTLE_TRIGGERS`, `BATTLE_PARROT_STATE`)
+- Sea of Thieves triggers: `packages/shared/src/sot-board.ts` (`SOT_TRIGGERS`, `SOT_PARROT_STATE`)

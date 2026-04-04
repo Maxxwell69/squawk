@@ -8,3 +8,4 @@ export * from "./utils/id";
 export * from "./rules";
 export * from "./stream-deck";
 export * from "./battle";
+export * from "./sot-board";

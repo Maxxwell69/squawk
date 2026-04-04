@@ -29,6 +29,22 @@ export default function HomePage() {
               Dev test panel
             </Link>
           </li>
+          <li>
+            <Link
+              className="text-squawk-gold underline"
+              href="/overlay/battle"
+            >
+              TikTok battle board
+            </Link>
+          </li>
+          <li>
+            <Link
+              className="text-squawk-gold underline"
+              href="/overlay/sea-of-thieves"
+            >
+              Sea of Thieves voyages board
+            </Link>
+          </li>
         </ul>
       </div>
     </main>

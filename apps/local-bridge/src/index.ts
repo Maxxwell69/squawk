@@ -7,6 +7,9 @@ import {
   battleTriggerBodySchema,
   type BattleTriggerId,
   type NormalizedStreamEvent,
+  SOT_PARROT_STATE,
+  sotTriggerBodySchema,
+  type SotTriggerId,
   testChaosBodySchema,
   testCommentBodySchema,
   testFollowBodySchema,
@@ -174,6 +177,7 @@ h1{font-size:1.35rem;font-weight:600}
 ${overlayBlock}
 <p><strong>Stream Deck:</strong> <code>POST</code> to <code>${escapeHtml(origin)}/api/streamdeck/hello</code> (and other routes — see repo).</p>
 <p><strong>Battle UI:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "battle_prepare_1" }))}</code> (same auth header as Stream Deck when a secret is set).</p>
+<p><strong>Sea of Thieves board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/sot/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "sot_island_arrival_1" }))}</code> (same auth).</p>
 </body>
 </html>`;
 });
@@ -393,6 +397,21 @@ app.post("/api/battle/trigger", streamDeckOpts, async (req) => {
       source: "battle_ui",
       parrotState,
       ...(name ? { opponentName: name } : {}),
+    },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/sot/trigger", streamDeckOpts, async (req) => {
+  const body = sotTriggerBodySchema.parse(req.body ?? {});
+  const triggerId = body.triggerId as SotTriggerId;
+  const parrotState = SOT_PARROT_STATE[triggerId];
+  const ev = makeTestEvent("custom", {
+    detail: body.triggerId,
+    raw: {
+      source: "sot_board",
+      parrotState,
     },
   });
   const message = await handleNormalizedEvent(ev);
