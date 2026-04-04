@@ -153,6 +153,109 @@ export const SOT_TRIGGERS = {
     "We earned this moment — celebrate like pirates who paid taxes!",
     "That's how you sail — dance it out, crew!",
   ],
+
+  // —— Scripted automations (SoT board Start / Finish) ——
+  /** Skeleton ship: opening — crew of skellies on the waves. */
+  sot_seq_skel_start: [
+    "Skeleton ship rising — that's a whole crew of boneheads with paychecks due!",
+    "Undead galleon on the scope — skellies don't negotiate, they decorate the sea!",
+    "First Mate Squawks sees ribs and rigging — skeleton crew, live-fire rehearsal!",
+  ],
+  /** Skeleton ship: mid — fire + cursed / wraith shots. */
+  sot_seq_skel_fire_magic: [
+    "Keep the cannons hot — burn 'em down before they patch their planks!",
+    "Watch the waterline for green flashes — cursed balls love our hull!",
+    "If ye see a wraith trail, brace — that's not fireworks, that's rude!",
+    "Fire discipline, crew — chain 'em, flame 'em, don't let 'em breathe!",
+  ],
+  /** Skeleton ship: mid — repairs + other players. */
+  sot_seq_skel_repair_players: [
+    "Someone grab wood — holes don't fix themselves while skellies cheer!",
+    "Buckets and boards — we're trading paint with bones AND the clock!",
+    "Eyes on the horizon — players love third-partying a skeleton brawl!",
+    "Repair under fire — if a rival ship smells blood, assume they're hungry!",
+  ],
+  sot_seq_skel_finish: [
+    "Skeleton scrap wrapped — planks patched, ego inflated, Squawks exhausted!",
+    "Skelly ship handled — chat, rate that broadside ballet!",
+    "Bones sent home — Cap'n Maxx, that's how ye filet a crew without skin!",
+  ],
+
+  /** Player ship: ruthless pirate vs humble crew. */
+  sot_seq_player_ship_start: [
+    "Player ship — they think we're humble merchants; Squawks says we're drama bait!",
+    "Hostile crew sizing us up — ruthless pirates versus Cap'n Maxx's reasonable chaos!",
+    "That's not a parley flag — that's greed with better graphics!",
+  ],
+  sot_seq_player_ship_mid: [
+    "They want our loot — joke's on 'em, half of it's bananas!",
+    "Hold the line — we're the underbirds with the bigger mouth!",
+    "They're playing cutthroat; we're playing Sea of Thieves — same thing, louder!",
+    "Chat, manifest polite disrespect — we're humble until we're not!",
+    "Board 'em, sink 'em, or run — Squawks votes for whatever looks funniest!",
+  ],
+  sot_seq_player_ship_finish: [
+    "Player brawl settled — win or learn, but never bore the stream!",
+    "That crew met Pirate Maxx — tuition paid in cannonballs!",
+    "PvP chapter closed — First Mate Squawks needs a cracker and a lie-down!",
+  ],
+
+  /** Kraken: beast fight + stuck / feast banter. */
+  sot_seq_kraken_start: [
+    "Kraken on the hull — this is a beast of an action sequence, chat!",
+    "Tentacles and terror — Squawks didn't sign up for seafood THIS personal!",
+    "The kraken wants a hug — decline politely with cannons!",
+  ],
+  sot_seq_kraken_mid: [
+    "If we're stuck in the wrap — keep shooting; hope the ugly chokes on us!",
+    "Feast on kraken later — right now, make it regret the appetizer!",
+    "Tangle feels hopeless? Joke's on him — we're spicy and hard to swallow!",
+    "Harpoons, holes, screaming — classic family dinner with a kraken!",
+    "Stay moving — if ye go still, ye become today's special!",
+  ],
+  sot_seq_kraken_finish: [
+    "Kraken beat or fled — either way, Squawks needs dry feathers!",
+    "Tentacle tantrum over — Cap'n Maxx, that's legendary stress management!",
+    "Sea monster chapter done — someone tell the fish we're closed!",
+  ],
+
+  /** Megalodon: greatness + feast / cook banter. */
+  sot_seq_meg_start: [
+    "Meg on the line — tales of greatness for this beauty, chat!",
+    "Big fish energy — First Mate Squawks respects the teeth!",
+    "Megalodon incoming — that's not a dolphin, that's a lifestyle!",
+  ],
+  sot_seq_meg_mid: [
+    "If we land this beast, Squawks votes fish fry — chat brings sides!",
+    "Feast talk later — first, don't become the appetizer!",
+    "Cookin' meg is a dream — surviving meg is the homework!",
+    "Chum in the water, drama in the air — peak Sea of Thieves cuisine!",
+    "Keep the rail clear — this one's a moving buffet with attitude!",
+  ],
+  sot_seq_meg_finish: [
+    "Meg chapter closed — grill's cold, hearts loud, Squawks impressed!",
+    "Big shark handled — someone write a shanty with too many teeth!",
+    "Fish tale secured — Cap'n Maxx, that's how ye filet legend!",
+  ],
+
+  /** Island run: players + loot focus. */
+  sot_seq_island_run_start: [
+    "Island run — eyes up for other crews, pockets down for every shiny!",
+    "We're beachin' for loot — assume players already staked the good sand!",
+    "Shore party rules: watch the tree line, grab the gold, don't trip!",
+  ],
+  sot_seq_island_run_mid: [
+    "Loot fast — the map ain't the only thing that knows we're here!",
+    "Listen for shots — if players farm us, we farm drama back!",
+    "Stack chests, stack caution — outposts aren't the only exit!",
+    "Dig, grab, scan horizon — multitask like pirates with ADHD!",
+    "Every barrel might be bait — every bush might be a rival!",
+  ],
+  sot_seq_island_run_finish: [
+    "Island haul wrapped — bags heavy, paranoia healthy!",
+    "Back to the ship — Squawks counts loot; chat counts close calls!",
+    "Shore leave over — Cap'n Maxx, that's how ye shop with cannons nearby!",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type SotTriggerId = keyof typeof SOT_TRIGGERS;
@@ -193,6 +296,23 @@ export const SOT_PARROT_STATE: Record<SotTriggerId, ParrotState> = {
   sot_drink_break_1: "talking",
   sot_dance_shanty_1: "dancing_squawk",
   sot_dance_victory_sea_1: "victory_dance",
+
+  sot_seq_skel_start: "chaos",
+  sot_seq_skel_fire_magic: "chaos",
+  sot_seq_skel_repair_players: "hype",
+  sot_seq_skel_finish: "talking",
+  sot_seq_player_ship_start: "hype",
+  sot_seq_player_ship_mid: "hype",
+  sot_seq_player_ship_finish: "talking",
+  sot_seq_kraken_start: "chaos",
+  sot_seq_kraken_mid: "chaos",
+  sot_seq_kraken_finish: "talking",
+  sot_seq_meg_start: "hype",
+  sot_seq_meg_mid: "hype",
+  sot_seq_meg_finish: "talking",
+  sot_seq_island_run_start: "talking",
+  sot_seq_island_run_mid: "talking",
+  sot_seq_island_run_finish: "hype",
 };
 
 export const sotTriggerBodySchema = z.object({

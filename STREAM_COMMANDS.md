@@ -216,6 +216,18 @@ No `opponentName`; each `triggerId` picks a random line from its pool and drives
 | `sot_dance_shanty_1` | Dancing Squawk |
 | `sot_dance_victory_sea_1` | Victory dance |
 
+### Action automations (`sot_seq_*`)
+
+Used by **`/overlay/sea-of-thieves`** Start/Finish buttons (or call manually). Each id picks a random line from its pool.
+
+| Scene | `triggerId` (start → mid → finish) | Notes |
+|-------|-------------------------------------|--------|
+| Skeleton ship | `sot_seq_skel_start` → `sot_seq_skel_fire_magic` + `sot_seq_skel_repair_players` (two POSTs per wave) → `sot_seq_skel_finish` | UI sends fire/magic then ~0.85s later repair/players |
+| Player ship | `sot_seq_player_ship_start` → `sot_seq_player_ship_mid` → `sot_seq_player_ship_finish` | |
+| Kraken | `sot_seq_kraken_start` → `sot_seq_kraken_mid` → `sot_seq_kraken_finish` | |
+| Megalodon | `sot_seq_meg_start` → `sot_seq_meg_mid` → `sot_seq_meg_finish` | |
+| Island run | `sot_seq_island_run_start` → `sot_seq_island_run_mid` → `sot_seq_island_run_finish` | |
+
 **Example:**
 
 ```bash

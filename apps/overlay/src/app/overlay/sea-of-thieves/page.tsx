@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import type { SotTriggerId } from "@captain-squawks/shared";
 import { SquawkVolumeSlider } from "@/components/SquawkVolumeSlider";
 import {
@@ -18,6 +18,88 @@ import {
 const LS_BRIDGE = "squawk-battle-bridge";
 const LS_DECK_KEY = "squawk-parrot-test-stream-deck-key";
 const SOT_PATH = "/api/sot/trigger";
+
+/** Start → periodic callouts → Finish (same button toggles). */
+type SotAutomationId =
+  | "skel"
+  | "player_ship"
+  | "kraken"
+  | "meg"
+  | "island_run";
+
+type SotAutomationDef = {
+  id: SotAutomationId;
+  title: string;
+  hint: string;
+  /** Skeleton ship fires two mid lines per wave (fire/magic, then repair/players). */
+  midMode: "skel_double" | "single_mid";
+  start: SotTriggerId;
+  finish: SotTriggerId;
+  midSingle?: SotTriggerId;
+  midFireMagic?: SotTriggerId;
+  midRepairPlayers?: SotTriggerId;
+};
+
+const SOT_AUTOMATIONS: SotAutomationDef[] = [
+  {
+    id: "skel",
+    title: "Skeleton ship battle",
+    hint: "Start: skelly crew intro. Every ~30–45s: fire & cursed shots, then repairs & watch players. Finish wraps the fight.",
+    midMode: "skel_double",
+    start: "sot_seq_skel_start",
+    finish: "sot_seq_skel_finish",
+    midFireMagic: "sot_seq_skel_fire_magic",
+    midRepairPlayers: "sot_seq_skel_repair_players",
+  },
+  {
+    id: "player_ship",
+    title: "Player ship battle",
+    hint: "Start: ruthless pirates vs our humble chaos. Periodic banter while it lasts. Finish when the scrap ends.",
+    midMode: "single_mid",
+    start: "sot_seq_player_ship_start",
+    finish: "sot_seq_player_ship_finish",
+    midSingle: "sot_seq_player_ship_mid",
+  },
+  {
+    id: "kraken",
+    title: "Kraken battle",
+    hint: "Beast-mode action. Mid lines: feast jokes, hope he chokes on us, stuck banter. Finish when you're clear.",
+    midMode: "single_mid",
+    start: "sot_seq_kraken_start",
+    finish: "sot_seq_kraken_finish",
+    midSingle: "sot_seq_kraken_mid",
+  },
+  {
+    id: "meg",
+    title: "Megalodon battle",
+    hint: "Tales of greatness. Mid: feasting dreams, cooking meg jokes. Finish when the shark show ends.",
+    midMode: "single_mid",
+    start: "sot_seq_meg_start",
+    finish: "sot_seq_meg_finish",
+    midSingle: "sot_seq_meg_mid",
+  },
+  {
+    id: "island_run",
+    title: "Going to an island",
+    hint: "Start: watch for players, grab loot. Periodic reminders while you're ashore. Finish when you're leaving.",
+    midMode: "single_mid",
+    start: "sot_seq_island_run_start",
+    finish: "sot_seq_island_run_finish",
+    midSingle: "sot_seq_island_run_mid",
+  },
+];
+
+const AUTO_TICK_MIN_MS = 26_000;
+const AUTO_TICK_MAX_MS = 44_000;
+const SKEL_SECOND_LINE_DELAY_MS = 850;
+
+function randomInt(min: number, max: number): number {
+  return min + Math.floor(Math.random() * (max - min + 1));
+}
+
+function sleep(ms: number): Promise<void> {
+  return new Promise((r) => setTimeout(r, ms));
+}
 
 type SotSection = {
   title: string;
@@ -159,6 +241,18 @@ export default function SeaOfThievesBoardPage() {
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState("");
   const [squawkVoiceVol01, setSquawkVoiceVol01] = useState(0.9);
+  const [activeAutomation, setActiveAutomation] =
+    useState<SotAutomationId | null>(null);
+
+  /** Clears pending automation tick timer; does not POST finish. */
+  const stopAutomationTicksRef = useRef<(() => void) | null>(null);
+
+  const stopAutomationTicks = useCallback(() => {
+    stopAutomationTicksRef.current?.();
+    stopAutomationTicksRef.current = null;
+  }, []);
+
+  useEffect(() => () => stopAutomationTicks(), [stopAutomationTicks]);
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -208,6 +302,120 @@ export default function SeaOfThievesBoardPage() {
     [bridgeUrl, streamDeckKey]
   );
 
+  const fireQuiet = useCallback(
+    async (triggerId: SotTriggerId, label: string) => {
+      try {
+        const data = await postSotTrigger(bridgeUrl, triggerId, streamDeckKey);
+        setLog(`[auto: ${label}]\n${JSON.stringify(data, null, 2)}`);
+      } catch (e) {
+        setLog(`[auto: ${label}]\n${String(e)}`);
+      }
+    },
+    [bridgeUrl, streamDeckKey]
+  );
+
+  const beginAutomation = useCallback(
+    (def: SotAutomationDef) => {
+      stopAutomationTicks();
+      setActiveAutomation(def.id);
+
+      void (async () => {
+        await fireQuiet(def.start, `${def.title} — start`);
+      })();
+
+      let cancelled = false;
+      let timeoutId: ReturnType<typeof setTimeout> | null = null;
+      const clearTimer = () => {
+        if (timeoutId !== null) {
+          clearTimeout(timeoutId);
+          timeoutId = null;
+        }
+      };
+      stopAutomationTicksRef.current = () => {
+        cancelled = true;
+        clearTimer();
+      };
+
+      const scheduleNext = () => {
+        if (cancelled) return;
+        clearTimer();
+        const waitMs = randomInt(AUTO_TICK_MIN_MS, AUTO_TICK_MAX_MS);
+        timeoutId = setTimeout(() => {
+          timeoutId = null;
+          if (cancelled) return;
+          void (async () => {
+            try {
+              if (
+                def.midMode === "skel_double" &&
+                def.midFireMagic &&
+                def.midRepairPlayers
+              ) {
+                const d1 = await postSotTrigger(
+                  bridgeUrl,
+                  def.midFireMagic,
+                  streamDeckKey
+                );
+                await sleep(SKEL_SECOND_LINE_DELAY_MS);
+                if (cancelled) return;
+                const d2 = await postSotTrigger(
+                  bridgeUrl,
+                  def.midRepairPlayers,
+                  streamDeckKey
+                );
+                setLog(
+                  `[auto: ${def.title} — mid wave ×2]\n${JSON.stringify(
+                    { fireMagic: d1, repairPlayers: d2 },
+                    null,
+                    2
+                  )}`
+                );
+              } else if (def.midSingle) {
+                const data = await postSotTrigger(
+                  bridgeUrl,
+                  def.midSingle,
+                  streamDeckKey
+                );
+                setLog(
+                  `[auto: ${def.title} — mid]\n${JSON.stringify(data, null, 2)}`
+                );
+              }
+            } catch (e) {
+              setLog(`[auto: ${def.title} — mid]\n${String(e)}`);
+            }
+            scheduleNext();
+          })();
+        }, waitMs);
+      };
+
+      scheduleNext();
+    },
+    [bridgeUrl, streamDeckKey, fireQuiet, stopAutomationTicks]
+  );
+
+  const finishAutomation = useCallback(
+    (def: SotAutomationDef) => {
+      stopAutomationTicks();
+      setActiveAutomation(null);
+      void fireQuiet(def.finish, `${def.title} — finish`);
+    },
+    [fireQuiet, stopAutomationTicks]
+  );
+
+  const onAutomationButton = useCallback(
+    (def: SotAutomationDef) => {
+      if (activeAutomation === def.id) {
+        finishAutomation(def);
+        return;
+      }
+      if (activeAutomation !== null) {
+        stopAutomationTicks();
+        setActiveAutomation(null);
+      }
+      beginAutomation(def);
+    },
+    [activeAutomation, beginAutomation, finishAutomation, stopAutomationTicks]
+  );
+
   const btn =
     "rounded-lg border border-white/15 bg-black/40 px-3 py-2.5 font-body text-xs font-semibold text-parchment transition hover:bg-white/10 hover:border-white/25 disabled:opacity-45 sm:text-sm";
 
@@ -224,8 +432,8 @@ export default function SeaOfThievesBoardPage() {
             </h1>
             <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-parchment/70">
               First Mate Squawks voice-overs for Pirate Maxx&apos;s SoT sessions.
-              Each button picks a random line from that moment and sends it to
-              the bridge → parrot overlay (TTS when enabled). Separate from the
+              Quick buttons fire one line; <strong className="text-cyan-200/90">action</strong>{" "}
+              buttons start timed callouts until you hit Finish. Separate from the
               TikTok battle timer board.
             </p>
           </div>
@@ -287,6 +495,49 @@ export default function SeaOfThievesBoardPage() {
                 }}
               />
             </div>
+          </div>
+        </section>
+
+        <section className="rounded-xl border border-teal-500/40 bg-teal-950/20 p-4">
+          <h2 className="font-display text-lg font-bold text-teal-200/95">
+            Action automations
+          </h2>
+          <p className="mt-1 max-w-3xl font-body text-xs text-parchment/65">
+            Tap <span className="text-teal-200/90">Start</span> to send the opening line and begin
+            random mid callouts every ~26–44s (skeleton fights send{" "}
+            <em>two</em> lines per wave: fire / cursed shots, then repairs / watch
+            players). Tap again — <span className="text-rose-300/90">Finish</span> — to
+            stop timers and send the closing line. Starting another action stops the
+            previous one without a finish line.
+          </p>
+          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+            {SOT_AUTOMATIONS.map((def) => {
+              const running = activeAutomation === def.id;
+              return (
+                <div
+                  key={def.id}
+                  className="rounded-lg border border-teal-600/30 bg-black/35 p-3"
+                >
+                  <h3 className="font-display text-sm font-bold text-parchment">
+                    {def.title}
+                  </h3>
+                  <p className="mt-1 font-body text-[11px] leading-snug text-parchment/55">
+                    {def.hint}
+                  </p>
+                  <button
+                    type="button"
+                    className={
+                      running
+                        ? "mt-3 w-full rounded-lg border border-rose-500/55 bg-rose-950/40 px-3 py-2.5 font-body text-xs font-bold text-rose-100 transition hover:bg-rose-900/45 sm:text-sm"
+                        : `mt-3 w-full ${btn}`
+                    }
+                    onClick={() => onAutomationButton(def)}
+                  >
+                    {running ? `Finish — ${def.title}` : `Start — ${def.title}`}
+                  </button>
+                </div>
+              );
+            })}
           </div>
         </section>
 
