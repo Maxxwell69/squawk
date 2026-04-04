@@ -43,7 +43,6 @@ type SotAutomationId =
 type SotAutomationDef = {
   id: SotAutomationId;
   title: string;
-  hint: string;
   /** Skeleton ship fires two mid lines per wave (fire/magic, then repair/players). */
   midMode: "skel_double" | "single_mid";
   start: SotTriggerId;
@@ -57,7 +56,6 @@ const SOT_AUTOMATIONS: SotAutomationDef[] = [
   {
     id: "skel",
     title: "Skeleton ship battle",
-    hint: "Start: skelly crew intro. Every ~30–45s: fire & cursed shots, then repairs & watch players. Finish wraps the fight.",
     midMode: "skel_double",
     start: "sot_seq_skel_start",
     finish: "sot_seq_skel_finish",
@@ -67,7 +65,6 @@ const SOT_AUTOMATIONS: SotAutomationDef[] = [
   {
     id: "player_ship",
     title: "Player ship battle",
-    hint: "Start: ruthless pirates vs our humble chaos. Periodic banter while it lasts. Finish when the scrap ends.",
     midMode: "single_mid",
     start: "sot_seq_player_ship_start",
     finish: "sot_seq_player_ship_finish",
@@ -76,7 +73,6 @@ const SOT_AUTOMATIONS: SotAutomationDef[] = [
   {
     id: "kraken",
     title: "Kraken battle",
-    hint: "Beast-mode action. Mid lines: feast jokes, hope he chokes on us, stuck banter. Finish when you're clear.",
     midMode: "single_mid",
     start: "sot_seq_kraken_start",
     finish: "sot_seq_kraken_finish",
@@ -85,7 +81,6 @@ const SOT_AUTOMATIONS: SotAutomationDef[] = [
   {
     id: "meg",
     title: "Megalodon battle",
-    hint: "Tales of greatness. Mid: feasting dreams, cooking meg jokes. Finish when the shark show ends.",
     midMode: "single_mid",
     start: "sot_seq_meg_start",
     finish: "sot_seq_meg_finish",
@@ -94,7 +89,6 @@ const SOT_AUTOMATIONS: SotAutomationDef[] = [
   {
     id: "island_run",
     title: "Going to an island",
-    hint: "Start: watch for players, grab loot. Periodic reminders while you're ashore. Finish when you're leaving.",
     midMode: "single_mid",
     start: "sot_seq_island_run_start",
     finish: "sot_seq_island_run_finish",
@@ -116,7 +110,6 @@ function sleep(ms: number): Promise<void> {
 
 type SotSection = {
   title: string;
-  hint: string;
   panel: string;
   buttons: { label: string; triggerId: SotTriggerId }[];
 };
@@ -124,7 +117,6 @@ type SotSection = {
 const SOT_SECTIONS: SotSection[] = [
   {
     title: "Island visit",
-    hint: "Drop anchor, explore, rumors.",
     panel: "border-cyan-500/35 bg-cyan-950/15",
     buttons: [
       { label: "Arrival A", triggerId: "sot_island_arrival_1" },
@@ -135,7 +127,6 @@ const SOT_SECTIONS: SotSection[] = [
   },
   {
     title: "Fight other crews",
-    hint: "Spot, engage, sink, respawn.",
     panel: "border-rose-500/40 bg-rose-950/10",
     buttons: [
       { label: "Spotted players", triggerId: "sot_pvp_spot_1" },
@@ -146,7 +137,6 @@ const SOT_SECTIONS: SotSection[] = [
   },
   {
     title: "Reaper chase",
-    hint: "Spotted, chase, danger, escape.",
     panel: "border-red-600/45 bg-red-950/15",
     buttons: [
       { label: "Reaper spotted", triggerId: "sot_reaper_spotted_1" },
@@ -157,7 +147,6 @@ const SOT_SECTIONS: SotSection[] = [
   },
   {
     title: "Treasure & digging",
-    hint: "Map, X marks, chest, sell.",
     panel: "border-amber-400/35 bg-amber-950/10",
     buttons: [
       { label: "Reading map", triggerId: "sot_dig_map_1" },
@@ -168,7 +157,6 @@ const SOT_SECTIONS: SotSection[] = [
   },
   {
     title: "Thanks viewers",
-    hint: "Gifts, raids, hype, MVPs.",
     panel: "border-emerald-500/35 bg-emerald-950/15",
     buttons: [
       { label: "Thanks gifts", triggerId: "sot_thanks_gifts_1" },
@@ -179,13 +167,11 @@ const SOT_SECTIONS: SotSection[] = [
   },
   {
     title: "Feeding time — Squawk",
-    hint: "Plays feeding emote + line (same clip as Stream Deck feeding).",
     panel: "border-orange-400/40 bg-orange-950/10",
     buttons: [{ label: "Feeding time", triggerId: "sot_feeding_time" }],
   },
   {
     title: "Drink time",
-    hint: "Cheers, grog, IRL break.",
     panel: "border-indigo-400/35 bg-indigo-950/15",
     buttons: [
       { label: "Cheers", triggerId: "sot_drink_cheers_1" },
@@ -195,7 +181,6 @@ const SOT_SECTIONS: SotSection[] = [
   },
   {
     title: "Music & dance",
-    hint: "Shanty dance emote + victory dance clip.",
     panel: "border-violet-500/40 bg-violet-950/15",
     buttons: [
       { label: "Shanty / dancing", triggerId: "sot_dance_shanty_1" },
@@ -347,16 +332,6 @@ export default function SeaOfThievesBoardPage() {
     window.addEventListener(SQUAWK_VOL_EVENT, onVol);
     return () => window.removeEventListener(SQUAWK_VOL_EVENT, onVol);
   }, []);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(LS_BRIDGE, bridgeUrl);
-  }, [bridgeUrl]);
-
-  useEffect(() => {
-    if (typeof window === "undefined") return;
-    window.localStorage.setItem(LS_DECK_KEY, streamDeckKey);
-  }, [streamDeckKey]);
 
   const postTracked = useCallback(
     async (triggerId: SotTriggerId): Promise<unknown> => {
@@ -541,14 +516,6 @@ export default function SeaOfThievesBoardPage() {
             <h1 className="mt-1 font-display text-3xl font-bold tracking-tight text-parchment md:text-4xl">
               Voyages board
             </h1>
-            <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-parchment/70">
-              First Mate Squawks voice-overs for Pirate Maxx&apos;s SoT sessions.
-              Quick buttons fire one line; <strong className="text-cyan-200/90">action</strong>{" "}
-              buttons start timed callouts and <strong className="text-sky-200/90">adventure music</strong>{" "}
-              (random start, then the rest of the playlist) until Finish. Separate from the
-              TikTok battle timer board. <strong className="text-fuchsia-200/85">Streaming assist</strong>{" "}
-              nudges likes / shares / reposts if this page goes quiet a minute.
-            </p>
           </div>
           <div className="flex flex-wrap gap-2">
             <Link
@@ -568,36 +535,12 @@ export default function SeaOfThievesBoardPage() {
 
         <section className="rounded-xl border border-white/10 bg-black/30 p-4">
           <h2 className="font-display text-sm font-bold text-cyan-200/90">
-            Bridge, voice &amp; music
+            Voice &amp; music
           </h2>
-          <label className="mt-3 block font-body text-xs text-parchment/75">
-            Bridge base URL
-            <input
-              type="text"
-              value={bridgeUrl}
-              onChange={(e) => setBridgeUrl(e.target.value)}
-              spellCheck={false}
-              className="mt-1 w-full rounded-lg border border-white/15 bg-black/50 px-3 py-2 font-mono text-xs text-parchment outline-none focus:border-cyan-500/50"
-            />
-          </label>
-          <label className="mt-3 block font-body text-xs text-parchment/75">
-            Stream Deck secret (optional — same as{" "}
-            <code className="text-parchment/85">STREAM_DECK_SECRET</code>)
-            <input
-              type="password"
-              autoComplete="off"
-              value={streamDeckKey}
-              onChange={(e) => setStreamDeckKey(e.target.value)}
-              className="mt-1 w-full max-w-md rounded-lg border border-white/15 bg-black/50 px-3 py-2 font-mono text-xs text-parchment outline-none focus:border-cyan-500/50"
-            />
-          </label>
-          <div className="mt-4 border-t border-white/10 pt-4">
+          <div className="mt-3">
             <h3 className="font-display text-xs font-bold text-parchment/90">
-              Squawk voice (parrot overlay)
+              Squawk voice
             </h3>
-            <p className="mt-1 font-body text-xs text-parchment/55">
-              Same slider as the battle board — TTS / browser speech level.
-            </p>
             <div className="mt-2 max-w-md">
               <SquawkVolumeSlider
                 variant="inline"
@@ -612,15 +555,8 @@ export default function SeaOfThievesBoardPage() {
 
           <div className="mt-4 border-t border-white/10 pt-4">
             <h3 className="font-display text-xs font-bold text-sky-200/95">
-              Sea of Thieves background music
+              Background music
             </h3>
-            <p className="mt-1 font-body text-xs text-parchment/55">
-              Adventure playlist in{" "}
-              <code className="text-parchment/75">public/sea-of-thieves/adventure-music/</code>{" "}
-              (any filenames; A→Z order). Action <span className="text-sky-200/85">Start</span>{" "}
-              picks a random first track, then plays through the rest until{" "}
-              <span className="text-rose-300/85">Finish</span> or the list ends.
-            </p>
             {adventureTracksError ? (
               <p className="mt-2 font-body text-xs text-rose-300/95">{adventureTracksError}</p>
             ) : (
@@ -680,14 +616,6 @@ export default function SeaOfThievesBoardPage() {
           <h2 className="font-display text-sm font-bold text-fuchsia-200/95">
             Streaming assist
           </h2>
-          <p className="mt-1 max-w-3xl font-body text-xs text-parchment/65">
-            <span className="text-fuchsia-200/90">Start</span> arms Squawk to hype chat for likes,
-            shares, and reposts. Any line sent from <strong className="font-normal text-parchment/75">this</strong>{" "}
-            page (quick buttons or action automations) resets the clock. If nobody&apos;s squawked
-            for <strong className="font-normal text-parchment/80">one full minute</strong>, a random
-            chat nudge fires automatically. <span className="text-rose-300/90">Finish</span> stops
-            the timer and sends a short sign-off line.
-          </p>
           <button
             type="button"
             className={
@@ -701,27 +629,13 @@ export default function SeaOfThievesBoardPage() {
               ? "Finish — streaming assist"
               : "Start — streaming assist"}
           </button>
-          {streamingAssist ? (
-            <p className="mt-2 font-body text-[11px] text-fuchsia-200/70">
-              Active — idle nudge every ~{STREAMING_IDLE_POLL_MS / 1000}s check after{" "}
-              {STREAMING_SQUAWK_IDLE_MS / 1000}s quiet on this board.
-            </p>
-          ) : null}
         </section>
 
         <section className="rounded-xl border border-teal-500/40 bg-teal-950/20 p-4">
           <h2 className="font-display text-lg font-bold text-teal-200/95">
             Action automations
           </h2>
-          <p className="mt-1 max-w-3xl font-body text-xs text-parchment/65">
-            Tap <span className="text-teal-200/90">Start</span> to send the opening line, begin
-            adventure music (if tracks are loaded), and run random mid callouts every ~26–44s
-            (skeleton fights send <em>two</em> lines per wave: fire / cursed shots, then repairs /
-            watch players). Tap again — <span className="text-rose-300/90">Finish</span> — to
-            stop music and timers and send the closing line. Starting another action stops the
-            previous one without a finish line.
-          </p>
-          <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-3 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {SOT_AUTOMATIONS.map((def) => {
               const running = activeAutomation === def.id;
               return (
@@ -732,9 +646,6 @@ export default function SeaOfThievesBoardPage() {
                   <h3 className="font-display text-sm font-bold text-parchment">
                     {def.title}
                   </h3>
-                  <p className="mt-1 font-body text-[11px] leading-snug text-parchment/55">
-                    {def.hint}
-                  </p>
                   <button
                     type="button"
                     className={
@@ -778,12 +689,6 @@ export default function SeaOfThievesBoardPage() {
             </section>
           ))}
         </div>
-
-        <p className="font-body text-center text-[11px] text-parchment/45">
-          API: <code className="text-parchment/60">POST /api/sot/trigger</code>{" "}
-          JSON <code className="text-parchment/60">{`{ "triggerId": "…" }`}</code>{" "}
-          — see <code className="text-parchment/60">STREAM_COMMANDS.md</code>
-        </p>
 
         {log ? (
           <pre className="max-h-56 overflow-auto rounded-xl border border-white/10 bg-black/50 p-4 font-mono text-[11px] text-parchment/85">
