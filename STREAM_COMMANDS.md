@@ -153,7 +153,7 @@ curl -X POST -H "Content-Type: application/json" \
 
 Separate UI: **`/overlay/sea-of-thieves`** (same bridge URL + Stream Deck secret `localStorage` keys as the battle board).
 
-**Adventure music:** add audio files under **`public/sea-of-thieves/adventure-music/`** with any filenames (MP3, M4A, etc.). The page lists them via **`GET /api/sot-adventure-music`** (sorted A→Z). When you tap **Start** on an action automation, playback picks a **random** first track, then plays **through the rest of the list** in order until the last file ends or you tap **Finish**. **Music volume and mute** are on the Sea of Thieves board in the **Bridge, voice & music** panel (`squawk-sot-adventure-music-vol` / `squawk-sot-adventure-music-muted` in `localStorage`).
+**Adventure music:** add audio files under **`public/sea-of-thieves/adventure-music/`** with any filenames (MP3, M4A, etc.). The page lists them via **`GET /api/sot-adventure-music`** (sorted A→Z). When you tap **Start** on an **action automation** or **AFK mode**, playback picks a **random** first track, then plays **through the rest of the list** in order until the last file ends or you tap **Finish** / end AFK. **Music volume and mute** are on the Sea of Thieves board in the **Bridge, voice & music** panel (`squawk-sot-adventure-music-vol` / `squawk-sot-adventure-music-muted` in `localStorage`). **AFK** is disabled while an action automation is running; starting an automation ends AFK and sends the matching AFK outro.
 
 **Body (JSON):**
 
@@ -242,6 +242,26 @@ When **Streaming assist** is on, the board tracks the last successful line sent 
 | `sot_stream_nudge_share_repost` | Idle 60s |
 | `sot_stream_nudge_combo` | Idle 60s |
 
+### AFK mode (SoT board)
+
+Same adventure-music playlist as automations. Banter every **40s**. **Finish** stops music + interval. **Cap'n away** lines cover drinks, snacks, head, TikTok-on-the-loo, etc. On **`/overlay/sea-of-thieves`**, AFK buttons are disabled while an **action automation** is running; starting an automation sends `sot_afk_outro` or `sot_afk_captain_outro` if AFK was on.
+
+**General AFK:**
+
+| `triggerId` | When |
+|-------------|------|
+| `sot_afk_intro` | Start general AFK |
+| `sot_afk_outro` | Finish general AFK |
+| `sot_afk_banter_a` … `sot_afk_banter_d` | Every 40s while general AFK |
+
+**Cap'n away AFK:**
+
+| `triggerId` | When |
+|-------------|------|
+| `sot_afk_captain_intro` | Start Cap'n-away AFK |
+| `sot_afk_captain_outro` | Finish Cap'n-away AFK |
+| `sot_afk_captain_banter_a` … `sot_afk_captain_banter_d` | Every 40s while Cap'n-away AFK |
+
 **Example:**
 
 ```bash
@@ -304,13 +324,23 @@ Idle **60s** from **that page** → random among `rust_stream_nudge_like`, `rust
 
 ### AFK mode
 
-Music playlist + banter every **40s** (`rust_afk_banter_a`–`d` rotated randomly). **Finish** sends `rust_afk_outro` and stops music + interval.
+Music playlist + banter every **40s**. **Finish** stops music + interval and sends the matching outro.
+
+**General AFK** — Rust / chat banter pools:
 
 | `triggerId` | When |
 |-------------|------|
-| `rust_afk_intro` | Start AFK |
-| `rust_afk_outro` | Finish AFK |
-| `rust_afk_banter_a` … `rust_afk_banter_d` | Every 40s while AFK |
+| `rust_afk_intro` | Start general AFK |
+| `rust_afk_outro` | Finish general AFK |
+| `rust_afk_banter_a` … `rust_afk_banter_d` | Every 40s while general AFK |
+
+**Cap'n away AFK** — Pirate Maxx off-deck (drinks, snacks, throne, TikTok-on-the-loo, fell asleep scrolling, etc.):
+
+| `triggerId` | When |
+|-------------|------|
+| `rust_afk_captain_intro` | Start Cap'n-away AFK |
+| `rust_afk_captain_outro` | Finish Cap'n-away AFK |
+| `rust_afk_captain_banter_a` … `rust_afk_captain_banter_d` | Every 40s while Cap'n-away AFK |
 
 **Example:**
 

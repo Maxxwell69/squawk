@@ -3,6 +3,8 @@
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
+  SOT_AFK_BANTER_TRIGGER_IDS,
+  SOT_AFK_CAPTAIN_BANTER_TRIGGER_IDS,
   SOT_STREAM_IDLE_TRIGGER_IDS,
   type SotTriggerId,
 } from "@captain-squawks/shared";
@@ -32,6 +34,9 @@ const SOT_PATH = "/api/sot/trigger";
 /** Any SoT board line to overlay resets this; streaming assist nudges chat if idle longer. */
 const STREAMING_SQUAWK_IDLE_MS = 60_000;
 const STREAMING_IDLE_POLL_MS = 4_000;
+const AFK_BANTER_MS = 40_000;
+
+type AfkVariant = "general" | "captain";
 
 /** Start → periodic callouts → Finish (same button toggles). */
 type SotAutomationId =
@@ -244,6 +249,7 @@ export default function SeaOfThievesBoardPage() {
   const [activeAutomation, setActiveAutomation] =
     useState<SotAutomationId | null>(null);
   const [streamingAssist, setStreamingAssist] = useState(false);
+  const [afkVariant, setAfkVariant] = useState<AfkVariant | null>(null);
   const [adventureTracks, setAdventureTracks] = useState<SotAdventureMusicTrack[]>(
     []
   );
@@ -267,6 +273,15 @@ export default function SeaOfThievesBoardPage() {
   /** Last time this page successfully sent any line to the bridge (all buttons + automations). */
   const lastSquawkAtRef = useRef<number>(Date.now());
 
+  const afkIntervalRef = useRef<number | null>(null);
+
+  const clearAfkInterval = useCallback(() => {
+    if (afkIntervalRef.current !== null) {
+      window.clearInterval(afkIntervalRef.current);
+      afkIntervalRef.current = null;
+    }
+  }, []);
+
   /** Clears pending automation tick timer; does not POST finish. */
   const stopAutomationTicksRef = useRef<(() => void) | null>(null);
 
@@ -276,6 +291,13 @@ export default function SeaOfThievesBoardPage() {
   }, []);
 
   useEffect(() => () => stopAutomationTicks(), [stopAutomationTicks]);
+
+  useEffect(
+    () => () => {
+      clearAfkInterval();
+    },
+    [clearAfkInterval]
+  );
 
   useEffect(() => {
     if (typeof window === "undefined") return;
@@ -410,6 +432,69 @@ export default function SeaOfThievesBoardPage() {
     void fireQuiet("sot_stream_mode_intro", "Streaming assist — on");
   }, [fireQuiet, streamingAssist]);
 
+  const startAfkInterval = useCallback(
+    (kind: AfkVariant) => {
+      const pool =
+        kind === "general"
+          ? SOT_AFK_BANTER_TRIGGER_IDS
+          : SOT_AFK_CAPTAIN_BANTER_TRIGGER_IDS;
+      afkIntervalRef.current = window.setInterval(() => {
+        const pick = pool[randomInt(0, pool.length - 1)]!;
+        void (async () => {
+          try {
+            const data = await postTracked(pick);
+            setLog(`[AFK banter]\n${JSON.stringify(data, null, 2)}`);
+          } catch (e) {
+            setLog(`[AFK banter]\n${String(e)}`);
+          }
+        })();
+      }, AFK_BANTER_MS);
+    },
+    [postTracked]
+  );
+
+  const onAfkToggle = useCallback(
+    (kind: AfkVariant) => {
+      if (afkVariant === kind) {
+        clearAfkInterval();
+        setAfkVariant(null);
+        stopPlaylist();
+        void fireQuiet(
+          kind === "general" ? "sot_afk_outro" : "sot_afk_captain_outro",
+          kind === "general" ? "AFK — off" : "AFK Cap'n — off"
+        );
+        return;
+      }
+      if (afkVariant !== null) {
+        clearAfkInterval();
+        void fireQuiet(
+          afkVariant === "general"
+            ? "sot_afk_outro"
+            : "sot_afk_captain_outro",
+          afkVariant === "general" ? "AFK — switch" : "AFK Cap'n — switch"
+        );
+      } else {
+        clearAfkInterval();
+        startPlaylistFromRandom();
+      }
+      lastSquawkAtRef.current = Date.now();
+      setAfkVariant(kind);
+      void fireQuiet(
+        kind === "general" ? "sot_afk_intro" : "sot_afk_captain_intro",
+        kind === "general" ? "AFK — on" : "AFK Cap'n — on"
+      );
+      startAfkInterval(kind);
+    },
+    [
+      afkVariant,
+      clearAfkInterval,
+      fireQuiet,
+      startAfkInterval,
+      startPlaylistFromRandom,
+      stopPlaylist,
+    ]
+  );
+
   const beginAutomation = useCallback(
     (def: SotAutomationDef) => {
       stopAutomationTicks();
@@ -492,6 +577,16 @@ export default function SeaOfThievesBoardPage() {
         finishAutomation(def);
         return;
       }
+      if (afkVariant !== null) {
+        clearAfkInterval();
+        const v = afkVariant;
+        setAfkVariant(null);
+        stopPlaylist();
+        void fireQuiet(
+          v === "general" ? "sot_afk_outro" : "sot_afk_captain_outro",
+          "AFK — off (automation)"
+        );
+      }
       if (activeAutomation !== null) {
         stopAutomationTicks();
         stopPlaylist();
@@ -502,8 +597,11 @@ export default function SeaOfThievesBoardPage() {
     },
     [
       activeAutomation,
+      afkVariant,
       beginAutomation,
+      clearAfkInterval,
       finishAutomation,
+      fireQuiet,
       startPlaylistFromRandom,
       stopAutomationTicks,
       stopPlaylist,
@@ -643,6 +741,46 @@ export default function SeaOfThievesBoardPage() {
               ? "Finish — streaming assist"
               : "Start — streaming assist"}
           </button>
+        </section>
+
+        <section className="rounded-xl border border-amber-600/45 bg-amber-950/15 p-4">
+          <h2 className="font-display text-sm font-bold text-amber-200/95">
+            AFK mode
+          </h2>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={activeAutomation !== null}
+              className={
+                activeAutomation !== null
+                  ? "cursor-not-allowed rounded-lg border border-white/10 bg-black/25 px-4 py-2.5 font-body text-sm font-bold text-parchment/40"
+                  : afkVariant === "general"
+                    ? "rounded-lg border border-rose-500/55 bg-rose-950/40 px-4 py-2.5 font-body text-sm font-bold text-rose-100 transition hover:bg-rose-900/45"
+                    : "rounded-lg border border-amber-500/55 bg-amber-900/30 px-4 py-2.5 font-body text-sm font-bold text-amber-100 transition hover:bg-amber-900/45"
+              }
+              onClick={() => onAfkToggle("general")}
+            >
+              {afkVariant === "general"
+                ? "Finish — general AFK"
+                : "Start — general AFK"}
+            </button>
+            <button
+              type="button"
+              disabled={activeAutomation !== null}
+              className={
+                activeAutomation !== null
+                  ? "cursor-not-allowed rounded-lg border border-white/10 bg-black/25 px-4 py-2.5 font-body text-sm font-bold text-parchment/40"
+                  : afkVariant === "captain"
+                    ? "rounded-lg border border-rose-500/55 bg-rose-950/40 px-4 py-2.5 font-body text-sm font-bold text-rose-100 transition hover:bg-rose-900/45"
+                    : "rounded-lg border border-violet-500/50 bg-violet-950/25 px-4 py-2.5 font-body text-sm font-bold text-violet-100 transition hover:bg-violet-900/35"
+              }
+              onClick={() => onAfkToggle("captain")}
+            >
+              {afkVariant === "captain"
+                ? "Finish — Cap'n away"
+                : "Start — Cap'n away"}
+            </button>
+          </div>
         </section>
 
         <section className="rounded-xl border border-teal-500/40 bg-teal-950/20 p-4">

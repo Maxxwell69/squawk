@@ -205,6 +205,42 @@ export const RUST_TRIGGERS = {
     "If ye hear footsteps, it's not Squawks — he's pixels only!",
     "Chat MVP today: whoever kept the hype while AFK!",
   ],
+
+  // —— AFK — Cap'n life breaks (drinks, food, throne, phone) ——
+  rust_afk_captain_intro: [
+    "Cap'n Maxx stepped off-camera — Squawks's on damage control; rumor is beverages may be involved!",
+    "BRB mode: Pirate Maxx is negotiatin' with a fridge. First Mate holds the fort!",
+    "The human has left the deck — Squawks assumes snack, sip, or strategic bathroom diplomacy!",
+  ],
+  rust_afk_captain_outro: [
+    "Cap'n's back — hopefully with fewer crumbs and more focus!",
+    "Return of Pirate Maxx — the bird retires from explainin' yer captain's life choices!",
+    "Feet on deck again — Squawks is done coverin' for the snack run!",
+  ],
+  rust_afk_captain_banter_a: [
+    "Right now Cap'n Maxx is huntin' hydration — pirates get thirsty; science!",
+    "He's on a drink mission — could be water, could be grog-colored something. Squawks ain't judgin'!",
+    "Thirst level: critical — the Cap'n vanished toward liquids like a moth to a cooler!",
+  ],
+  rust_afk_captain_banter_b: [
+    "Snack break energy — Pirate Maxx is feedin' the machine so the machine can feed the wipe!",
+    "He's raiding the pantry IRL — zero sulfur, maximum crunch!",
+    "If ye hear crunchin' off-mic later, that was this expedition. Squawks takes no responsibility!",
+  ],
+  rust_afk_captain_banter_c: [
+    "Potty break — even captains have boss fights on the porcelain sea!",
+    "He's visitin' the little admiral's room — dignity intact, timer runnin'!",
+    "Nature called; Cap'n answered. Squawks stays here so chat don't picture it too hard!",
+  ],
+  rust_afk_captain_banter_d: [
+    "Plot twist: Cap'n Maxx is on the throne scrollin' TikTok — throne in both senses, chat!",
+    "He's in the loo with his phone — FYP won, Rust lost, dignity… negotiable!",
+    "Phone + bathroom + algorithm = Pirate Maxx fell into a scroll hole. Squawks is embarrassed for him!",
+    "He swore 'one minute' — that was three TikToks ago. The bird counts time; the Cap'n counts likes!",
+    "AFK sponsored by: autoplay and poor impulse control on the ceramic deck!",
+    "Squawks peeked — Cap'n's eyes closed, phone still glowin'. That's not AFK, that's a nap with Wi-Fi!",
+    "He dozed off mid-scroll — TikTok 1, Pirate Maxx 0. Someone poke him gently!",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type RustTriggerId = keyof typeof RUST_TRIGGERS;
@@ -220,6 +256,13 @@ export const RUST_AFK_BANTER_TRIGGER_IDS: readonly RustTriggerId[] = [
   "rust_afk_banter_b",
   "rust_afk_banter_c",
   "rust_afk_banter_d",
+];
+
+export const RUST_AFK_CAPTAIN_BANTER_TRIGGER_IDS: readonly RustTriggerId[] = [
+  "rust_afk_captain_banter_a",
+  "rust_afk_captain_banter_b",
+  "rust_afk_captain_banter_c",
+  "rust_afk_captain_banter_d",
 ];
 
 export function isRustTriggerId(v: string): v is RustTriggerId {
@@ -268,6 +311,12 @@ export const RUST_PARROT_STATE: Record<RustTriggerId, ParrotState> = {
   rust_afk_banter_b: "talking",
   rust_afk_banter_c: "talking",
   rust_afk_banter_d: "hype",
+  rust_afk_captain_intro: "talking",
+  rust_afk_captain_outro: "talking",
+  rust_afk_captain_banter_a: "talking",
+  rust_afk_captain_banter_b: "talking",
+  rust_afk_captain_banter_c: "hype",
+  rust_afk_captain_banter_d: "hype",
 };
 
 export const rustTriggerBodySchema = z.object({

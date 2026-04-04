@@ -296,6 +296,74 @@ export const SOT_TRIGGERS = {
     "If ye watched this long, ye owe the timeline one like and one repost. Maritime law. Probably.",
     "Like for Cap'n Maxx, share for yer crew, repost for the algorithm gods — balance restored!",
   ],
+
+  // —— AFK mode (Voyages board: music + banter every 40s) ——
+  sot_afk_intro: [
+    "AFK on the high seas — Squawks keeps chat company while Cap'n Maxx handles land business!",
+    "Helm on autopilot — music up, bird yappin', don't steal the ship while we're gone!",
+    "Stepped away from the wheel — First Mate Squawks entertains the crew!",
+  ],
+  sot_afk_outro: [
+    "Cap'n's back on deck — Squawks hands over the wheel!",
+    "Return aboard — the voyage resumes, the bird goes back to hecklin'!",
+    "AFK anchor weighed — thanks for mindin' the rum… I mean morale!",
+  ],
+  sot_afk_banter_a: [
+    "Still AFK — chat, debate best outpost or worst meg story while we wait!",
+    "The ship's driftin' metaphorically — Squawks is fine, the Cap'n's refuelin'!",
+    "If ye hear seagulls, that's ambience; if ye hear chaos, that's still ambience!",
+  ],
+  sot_afk_banter_b: [
+    "Quiet deck? Someone tell a shanty in chat — Squawks is listenin'!",
+    "This pause is sponsored by hydration and sanity — pirates need both!",
+    "Cap'n'll return — pretend ye're fishin' for likes in the meantime!",
+  ],
+  sot_afk_banter_c: [
+    "Sea tip: mermaids exist; blame them for any missed shots later!",
+    "Fun fact: Squawks never sleeps. The Cap'n does. Crew meeting adjourned!",
+    "Whisper yer worst skelly ship story — bird rates the drama one to ten!",
+  ],
+  sot_afk_banter_d: [
+    "Kraken's on break too — even legends respect AFK etiquette!",
+    "If ye see a rowboat comin', it's not us — we're pixels and patience!",
+    "Chat MVP: whoever kept the tavern energy while the helm was empty!",
+  ],
+
+  // —— AFK — Cap'n life breaks (drinks, food, throne, phone) ——
+  sot_afk_captain_intro: [
+    "Cap'n Maxx left the deck — Squawks covers; odds are grog, grub, or the head!",
+    "BRB voyage: Pirate Maxx is negotiatin' with a cooler. Bird's on watch!",
+    "Human overboard… to the kitchen. Squawks assumes snacks or strategic bathroom diplomacy!",
+  ],
+  sot_afk_captain_outro: [
+    "Cap'n's back — hopefully bilge-free and ready to sail!",
+    "Return of Pirate Maxx — Squawks retires from explainin' the captain's shore leave!",
+    "Feet on deck again — thanks for not scuttlin' the stream!",
+  ],
+  sot_afk_captain_banter_a: [
+    "He's huntin' hydration — pirates get thirsty; science says blame the salt air!",
+    "Drink run — could be water, could be something grog-colored. Squawks asks no questions!",
+    "Thirst level: legendary — Cap'n vanished toward liquids like a sloop to an outpost!",
+  ],
+  sot_afk_captain_banter_b: [
+    "Snack sortie — Pirate Maxx is feedin' the engine so the engine can feed the grind!",
+    "Galley raid IRL — zero doubloons, maximum crunch!",
+    "If ye hear crunchin' off-mic, that's this expedition. Squawks disavows all crumbs!",
+  ],
+  sot_afk_captain_banter_c: [
+    "Head call — even captains duel the porcelain kraken sometimes!",
+    "Visitin' the captain's quarters… the small one astern. Dignity intact, timer runnin'!",
+    "Nature sounded the bell; Cap'n answered. Squawks stays here so chat don't picture the waves!",
+  ],
+  sot_afk_captain_banter_d: [
+    "Plot twist: Cap'n Maxx is on the throne scrollin' TikTok — two thrones, one algorithm!",
+    "He's in the head with his phone — FYP won, Sea of Thieves paused, pride… negotiable!",
+    "Phone + bathroom + autoplay = Pirate Maxx in a scroll hole. Squawks is mortified!",
+    "He said 'one minute' — that was three TikToks ago. The bird keeps ship's log; the Cap'n keeps likes!",
+    "AFK brought to ye by: autoplay and weak will on the ceramic deck!",
+    "Squawks peeked — Cap'n's eyes closed, phone glowin'. That's a nap with Wi-Fi, not a break!",
+    "Dozed mid-scroll — TikTok one, Pirate Maxx nil. Someone ring the bell gently!",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type SotTriggerId = keyof typeof SOT_TRIGGERS;
@@ -305,6 +373,20 @@ export const SOT_STREAM_IDLE_TRIGGER_IDS: readonly SotTriggerId[] = [
   "sot_stream_nudge_like",
   "sot_stream_nudge_share_repost",
   "sot_stream_nudge_combo",
+];
+
+export const SOT_AFK_BANTER_TRIGGER_IDS: readonly SotTriggerId[] = [
+  "sot_afk_banter_a",
+  "sot_afk_banter_b",
+  "sot_afk_banter_c",
+  "sot_afk_banter_d",
+];
+
+export const SOT_AFK_CAPTAIN_BANTER_TRIGGER_IDS: readonly SotTriggerId[] = [
+  "sot_afk_captain_banter_a",
+  "sot_afk_captain_banter_b",
+  "sot_afk_captain_banter_c",
+  "sot_afk_captain_banter_d",
 ];
 
 export function isSotTriggerId(v: string): v is SotTriggerId {
@@ -366,6 +448,19 @@ export const SOT_PARROT_STATE: Record<SotTriggerId, ParrotState> = {
   sot_stream_nudge_like: "hype",
   sot_stream_nudge_share_repost: "hype",
   sot_stream_nudge_combo: "hype",
+
+  sot_afk_intro: "talking",
+  sot_afk_outro: "talking",
+  sot_afk_banter_a: "talking",
+  sot_afk_banter_b: "talking",
+  sot_afk_banter_c: "talking",
+  sot_afk_banter_d: "hype",
+  sot_afk_captain_intro: "talking",
+  sot_afk_captain_outro: "talking",
+  sot_afk_captain_banter_a: "talking",
+  sot_afk_captain_banter_b: "talking",
+  sot_afk_captain_banter_c: "hype",
+  sot_afk_captain_banter_d: "hype",
 };
 
 export const sotTriggerBodySchema = z.object({

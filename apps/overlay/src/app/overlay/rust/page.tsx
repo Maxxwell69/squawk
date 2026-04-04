@@ -4,6 +4,7 @@ import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   RUST_AFK_BANTER_TRIGGER_IDS,
+  RUST_AFK_CAPTAIN_BANTER_TRIGGER_IDS,
   RUST_STREAM_IDLE_TRIGGER_IDS,
   type RustTriggerId,
 } from "@captain-squawks/shared";
@@ -32,6 +33,8 @@ const RUST_PATH = "/api/rust/trigger";
 const STREAMING_SQUAWK_IDLE_MS = 60_000;
 const STREAMING_IDLE_POLL_MS = 4_000;
 const AFK_BANTER_MS = 40_000;
+
+type AfkVariant = "general" | "captain";
 
 type RustSection = {
   title: string;
@@ -166,7 +169,7 @@ export default function RustAdventureBoardPage() {
   const [log, setLog] = useState("");
   const [squawkVoiceVol01, setSquawkVoiceVol01] = useState(0.9);
   const [streamingAssist, setStreamingAssist] = useState(false);
-  const [afkMode, setAfkMode] = useState(false);
+  const [afkVariant, setAfkVariant] = useState<AfkVariant | null>(null);
   const [rustTracks, setRustTracks] = useState<AdventureMusicTrack[]>([]);
   const [rustTracksError, setRustTracksError] = useState<string | null>(null);
   const [rustMusicVol01, setRustMusicVol01] = useState(0.75);
@@ -332,39 +335,68 @@ export default function RustAdventureBoardPage() {
     void fireQuiet("rust_stream_mode_intro", "Streaming assist — on");
   }, [fireQuiet, streamingAssist]);
 
-  const onAfkToggle = useCallback(() => {
-    if (afkMode) {
-      clearAfkInterval();
-      setAfkMode(false);
-      stopPlaylist();
-      void fireQuiet("rust_afk_outro", "AFK — off");
-      return;
-    }
-    clearAfkInterval();
-    lastSquawkAtRef.current = Date.now();
-    setAfkMode(true);
-    startPlaylistFromRandom();
-    void fireQuiet("rust_afk_intro", "AFK — on");
-    afkIntervalRef.current = window.setInterval(() => {
-      const pool = RUST_AFK_BANTER_TRIGGER_IDS;
-      const pick = pool[randomInt(0, pool.length - 1)]!;
-      void (async () => {
-        try {
-          const data = await postTracked(pick);
-          setLog(`[AFK banter]\n${JSON.stringify(data, null, 2)}`);
-        } catch (e) {
-          setLog(`[AFK banter]\n${String(e)}`);
-        }
-      })();
-    }, AFK_BANTER_MS);
-  }, [
-    afkMode,
-    clearAfkInterval,
-    fireQuiet,
-    postTracked,
-    startPlaylistFromRandom,
-    stopPlaylist,
-  ]);
+  const startAfkInterval = useCallback(
+    (kind: AfkVariant) => {
+      const pool =
+        kind === "general"
+          ? RUST_AFK_BANTER_TRIGGER_IDS
+          : RUST_AFK_CAPTAIN_BANTER_TRIGGER_IDS;
+      afkIntervalRef.current = window.setInterval(() => {
+        const pick = pool[randomInt(0, pool.length - 1)]!;
+        void (async () => {
+          try {
+            const data = await postTracked(pick);
+            setLog(`[AFK banter]\n${JSON.stringify(data, null, 2)}`);
+          } catch (e) {
+            setLog(`[AFK banter]\n${String(e)}`);
+          }
+        })();
+      }, AFK_BANTER_MS);
+    },
+    [postTracked]
+  );
+
+  const onAfkToggle = useCallback(
+    (kind: AfkVariant) => {
+      if (afkVariant === kind) {
+        clearAfkInterval();
+        setAfkVariant(null);
+        stopPlaylist();
+        void fireQuiet(
+          kind === "general" ? "rust_afk_outro" : "rust_afk_captain_outro",
+          kind === "general" ? "AFK — off" : "AFK Cap'n — off"
+        );
+        return;
+      }
+      if (afkVariant !== null) {
+        clearAfkInterval();
+        void fireQuiet(
+          afkVariant === "general"
+            ? "rust_afk_outro"
+            : "rust_afk_captain_outro",
+          afkVariant === "general" ? "AFK — switch" : "AFK Cap'n — switch"
+        );
+      } else {
+        clearAfkInterval();
+        startPlaylistFromRandom();
+      }
+      lastSquawkAtRef.current = Date.now();
+      setAfkVariant(kind);
+      void fireQuiet(
+        kind === "general" ? "rust_afk_intro" : "rust_afk_captain_intro",
+        kind === "general" ? "AFK — on" : "AFK Cap'n — on"
+      );
+      startAfkInterval(kind);
+    },
+    [
+      afkVariant,
+      clearAfkInterval,
+      fireQuiet,
+      startAfkInterval,
+      startPlaylistFromRandom,
+      stopPlaylist,
+    ]
+  );
 
   const btn =
     "rounded-lg border border-white/15 bg-black/40 px-3 py-2.5 font-body text-xs font-semibold text-parchment transition hover:bg-white/10 hover:border-white/25 disabled:opacity-45 sm:text-sm";
@@ -505,17 +537,34 @@ export default function RustAdventureBoardPage() {
           <h2 className="font-display text-sm font-bold text-amber-200/95">
             AFK mode
           </h2>
-          <button
-            type="button"
-            className={
-              afkMode
-                ? "mt-3 rounded-lg border border-rose-500/55 bg-rose-950/40 px-4 py-2.5 font-body text-sm font-bold text-rose-100 transition hover:bg-rose-900/45"
-                : "mt-3 rounded-lg border border-amber-500/55 bg-amber-900/30 px-4 py-2.5 font-body text-sm font-bold text-amber-100 transition hover:bg-amber-900/45"
-            }
-            onClick={() => onAfkToggle()}
-          >
-            {afkMode ? "Finish — AFK" : "Start — AFK"}
-          </button>
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              className={
+                afkVariant === "general"
+                  ? "rounded-lg border border-rose-500/55 bg-rose-950/40 px-4 py-2.5 font-body text-sm font-bold text-rose-100 transition hover:bg-rose-900/45"
+                  : "rounded-lg border border-amber-500/55 bg-amber-900/30 px-4 py-2.5 font-body text-sm font-bold text-amber-100 transition hover:bg-amber-900/45"
+              }
+              onClick={() => onAfkToggle("general")}
+            >
+              {afkVariant === "general"
+                ? "Finish — general AFK"
+                : "Start — general AFK"}
+            </button>
+            <button
+              type="button"
+              className={
+                afkVariant === "captain"
+                  ? "rounded-lg border border-rose-500/55 bg-rose-950/40 px-4 py-2.5 font-body text-sm font-bold text-rose-100 transition hover:bg-rose-900/45"
+                  : "rounded-lg border border-violet-500/50 bg-violet-950/25 px-4 py-2.5 font-body text-sm font-bold text-violet-100 transition hover:bg-violet-900/35"
+              }
+              onClick={() => onAfkToggle("captain")}
+            >
+              {afkVariant === "captain"
+                ? "Finish — Cap'n away"
+                : "Start — Cap'n away"}
+            </button>
+          </div>
         </section>
 
         <div className="grid gap-5 md:grid-cols-2">
