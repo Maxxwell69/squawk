@@ -9,7 +9,7 @@ export const BATTLE_BOARD_LAYOUT = {
   bannerMinHeight: "min(36dvh, 38%)",
   /** Lower-left tips card — align with the “tips” rectangle in your PNG guides. */
   tipsLeft: "4%",
-  tipsTop: "47%",
+  tipsTop: "30%",
   tipsWidth: "min(44%, 17rem)",
   tipsMaxHeight: "min(34dvh, 38%)",
 } as const;
