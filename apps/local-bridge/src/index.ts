@@ -7,8 +7,11 @@ import {
   battleTriggerBodySchema,
   type BattleTriggerId,
   type NormalizedStreamEvent,
+  RUST_PARROT_STATE,
+  rustTriggerBodySchema,
   SOT_PARROT_STATE,
   sotTriggerBodySchema,
+  type RustTriggerId,
   type SotTriggerId,
   testChaosBodySchema,
   testCommentBodySchema,
@@ -178,6 +181,7 @@ ${overlayBlock}
 <p><strong>Stream Deck:</strong> <code>POST</code> to <code>${escapeHtml(origin)}/api/streamdeck/hello</code> (and other routes — see repo).</p>
 <p><strong>Battle UI:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "battle_prepare_1" }))}</code> (same auth header as Stream Deck when a secret is set).</p>
 <p><strong>Sea of Thieves board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/sot/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "sot_island_arrival_1" }))}</code> (same auth).</p>
+<p><strong>Rust adventure board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/rust/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "rust_roam_1" }))}</code> (same auth).</p>
 </body>
 </html>`;
 });
@@ -411,6 +415,21 @@ app.post("/api/sot/trigger", streamDeckOpts, async (req) => {
     detail: body.triggerId,
     raw: {
       source: "sot_board",
+      parrotState,
+    },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/rust/trigger", streamDeckOpts, async (req) => {
+  const body = rustTriggerBodySchema.parse(req.body ?? {});
+  const triggerId = body.triggerId as RustTriggerId;
+  const parrotState = RUST_PARROT_STATE[triggerId];
+  const ev = makeTestEvent("custom", {
+    detail: body.triggerId,
+    raw: {
+      source: "rust_board",
       parrotState,
     },
   });

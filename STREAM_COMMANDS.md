@@ -253,6 +253,76 @@ curl -X POST -H "Content-Type: application/json" \
 
 ---
 
+## Rust adventure board → `POST /api/rust/trigger`
+
+UI: **`/overlay/rust`** (same bridge URL + Stream Deck secret `localStorage` keys as battle / SoT).
+
+**Adventure music:** add audio under **`public/rust/adventure-music/`**. Listed via **`GET /api/rust-adventure-music`**. **Start** on an action automation picks a **random** first track, then plays the rest in order until the last file ends or **Finish**. Volume / mute keys: `squawk-rust-adventure-music-vol` / `squawk-rust-adventure-music-muted`.
+
+**Body (JSON):**
+
+```json
+{ "triggerId": "rust_roam_1" }
+```
+
+### Roaming / boat / base / raids
+
+| `triggerId` |
+|-------------|
+| `rust_roam_1`, `rust_roam_2`, `rust_roam_3` |
+| `rust_boat_1`, `rust_boat_2`, `rust_boat_3` |
+| `rust_base_build_1`, `rust_base_build_2`, `rust_base_build_3` |
+| `rust_raid_1`, `rust_raid_2`, `rust_raid_3` |
+| `rust_raided_1`, `rust_raided_2`, `rust_raided_3` |
+
+### Monuments
+
+| `triggerId` |
+|-------------|
+| `rust_monument_enter_1`, `rust_monument_enter_2` |
+| `rust_mon_small_oil`, `rust_mon_large_oil`, `rust_mon_water_treat`, `rust_mon_airfield` |
+| `rust_monuments_more` |
+
+### Farming
+
+| `triggerId` |
+|-------------|
+| `rust_farm_ore_1`, `rust_farm_ore_2` |
+| `rust_farm_tree_1`, `rust_farm_tree_2` |
+
+### Streaming assist (Rust board)
+
+Idle **60s** from **that page** → random among `rust_stream_nudge_like`, `rust_stream_nudge_share_repost`, `rust_stream_nudge_combo`.
+
+| `triggerId` | When |
+|-------------|------|
+| `rust_stream_mode_intro` | Start streaming assist |
+| `rust_stream_mode_outro` | Finish streaming assist |
+| `rust_stream_nudge_like` | Idle 60s |
+| `rust_stream_nudge_share_repost` | Idle 60s |
+| `rust_stream_nudge_combo` | Idle 60s |
+
+### AFK mode
+
+Music playlist + banter every **40s** (`rust_afk_banter_a`–`d` rotated randomly). **Finish** sends `rust_afk_outro` and stops music + interval.
+
+| `triggerId` | When |
+|-------------|------|
+| `rust_afk_intro` | Start AFK |
+| `rust_afk_outro` | Finish AFK |
+| `rust_afk_banter_a` … `rust_afk_banter_d` | Every 40s while AFK |
+
+**Example:**
+
+```bash
+curl -X POST -H "Content-Type: application/json" \
+  -H "x-stream-deck-key: YOUR_SECRET" \
+  -d '{"triggerId":"rust_mon_large_oil"}' \
+  "http://127.0.0.1:8787/api/rust/trigger"
+```
+
+---
+
 ## Dev test → `POST /api/test/*` (JSON body, optional fields)
 
 | Path | Body fields (all optional) |

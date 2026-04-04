@@ -4,14 +4,17 @@ import {
   holdMsForState,
   isBattleTriggerId,
   isParrotState,
+  isRustTriggerId,
   isSotTriggerId,
   isStreamDeckTriggerId,
   lineForBattleTrigger,
+  lineForRustTrigger,
   lineForSotTrigger,
   lineForStreamDeckTrigger,
   parrotStateForEventKind,
   pickRandomLine,
   PARROT_LINES,
+  RUST_PARROT_STATE,
   SOT_PARROT_STATE,
   STREAM_DECK_PARROT_STATE,
   type NormalizedStreamEvent,
@@ -78,6 +81,9 @@ export class BrainService {
         if (event.detail && isSotTriggerId(event.detail)) {
           return lineForSotTrigger(event.detail);
         }
+        if (event.detail && isRustTriggerId(event.detail)) {
+          return lineForRustTrigger(event.detail);
+        }
         if (event.detail && isStreamDeckTriggerId(event.detail)) {
           return (
             lineForStreamDeckTrigger(event.detail) ??
@@ -105,6 +111,9 @@ export class BrainService {
     if (event.kind === "custom" && event.detail && isSotTriggerId(event.detail)) {
       return SOT_PARROT_STATE[event.detail];
     }
+    if (event.kind === "custom" && event.detail && isRustTriggerId(event.detail)) {
+      return RUST_PARROT_STATE[event.detail];
+    }
     if (event.kind === "custom" && event.detail && isStreamDeckTriggerId(event.detail)) {
       return STREAM_DECK_PARROT_STATE[event.detail];
     }
@@ -117,11 +126,12 @@ export class BrainService {
     const baseHoldMs = holdMsForState(state);
     let holdMs = baseHoldMs;
     if (event.kind === "custom" && event.detail) {
-      const battleOrDeckOrSot =
+      const battleOrDeckOrSotOrRust =
         isBattleTriggerId(event.detail) ||
         isStreamDeckTriggerId(event.detail) ||
-        isSotTriggerId(event.detail);
-      if (battleOrDeckOrSot && subtitle.trim()) {
+        isSotTriggerId(event.detail) ||
+        isRustTriggerId(event.detail);
+      if (battleOrDeckOrSotOrRust && subtitle.trim()) {
         // Don't let subtitle-based estimates undercut clip/TTS floors from holdMsForState.
         holdMs = Math.max(baseHoldMs, estimateHoldMsFromText(subtitle));
       }

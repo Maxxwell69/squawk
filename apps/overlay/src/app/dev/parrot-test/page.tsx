@@ -64,7 +64,8 @@ function bridgeSecretPath(path: string): boolean {
   return (
     path.includes("/api/streamdeck/") ||
     path.includes("/api/battle/") ||
-    path.includes("/api/sot/")
+    path.includes("/api/sot/") ||
+    path.includes("/api/rust/")
   );
 }
 

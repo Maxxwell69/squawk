@@ -10,6 +10,7 @@ import { SquawkVolumeSlider } from "@/components/SquawkVolumeSlider";
 import {
   DEFAULT_LOCAL_BRIDGE_HTTP,
   getClientBridgeHttp,
+  normalizeHttpOrigin,
 } from "@/lib/bridge-urls";
 import {
   persistSquawkVolume01,
@@ -201,7 +202,8 @@ function bridgeUsesSecret(path: string): boolean {
   return (
     path.includes("/api/streamdeck/") ||
     path.includes("/api/battle/") ||
-    path.includes("/api/sot/")
+    path.includes("/api/sot/") ||
+    path.includes("/api/rust/")
   );
 }
 
@@ -277,13 +279,19 @@ export default function SeaOfThievesBoardPage() {
 
   useEffect(() => {
     if (typeof window === "undefined") return;
-    const fromLs = window.localStorage.getItem(LS_BRIDGE)?.trim();
-    setBridgeUrl(fromLs || getClientBridgeHttp());
-    const keyFromLs =
-      window.localStorage.getItem(LS_DECK_KEY)?.trim() ??
-      process.env.NEXT_PUBLIC_STREAM_DECK_TEST_KEY?.trim() ??
-      "";
-    setStreamDeckKey(keyFromLs);
+    /** Deployed overlay: env wins so Voyages board needs no bridge URL field or battle-page visit. */
+    const envBridge =
+      process.env.NEXT_PUBLIC_BRIDGE_HTTP?.trim() ||
+      process.env.NEXT_PUBLIC_RAILWAY_BRIDGE_HTTP?.trim();
+    const bridgeFromLs = window.localStorage.getItem(LS_BRIDGE)?.trim();
+    setBridgeUrl(
+      envBridge
+        ? normalizeHttpOrigin(envBridge)
+        : (bridgeFromLs || getClientBridgeHttp())
+    );
+    const keyEnv = process.env.NEXT_PUBLIC_STREAM_DECK_TEST_KEY?.trim() ?? "";
+    const keyLs = window.localStorage.getItem(LS_DECK_KEY)?.trim() ?? "";
+    setStreamDeckKey(keyEnv || keyLs);
     setSquawkVoiceVol01(readSquawkVolume01());
     const advVol = window.localStorage.getItem(LS_SOT_ADV_VOL);
     if (advVol != null) {
@@ -530,6 +538,12 @@ export default function SeaOfThievesBoardPage() {
             >
               Parrot overlay
             </Link>
+            <Link
+              href="/overlay/rust"
+              className="rounded-lg border border-amber-600/40 px-3 py-1.5 text-sm text-amber-200/90 hover:bg-amber-950/30"
+            >
+              Rust board
+            </Link>
           </div>
         </header>
 
@@ -672,7 +686,6 @@ export default function SeaOfThievesBoardPage() {
               <h2 className="font-display text-lg font-bold text-parchment">
                 {sec.title}
               </h2>
-              <p className="mt-1 font-body text-xs text-parchment/60">{sec.hint}</p>
               <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
                 {sec.buttons.map((b) => (
                   <button

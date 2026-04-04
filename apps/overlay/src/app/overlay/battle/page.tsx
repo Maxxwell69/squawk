@@ -150,7 +150,8 @@ function bridgeUsesSecret(path: string): boolean {
   return (
     path.includes("/api/streamdeck/") ||
     path.includes("/api/battle/") ||
-    path.includes("/api/sot/")
+    path.includes("/api/sot/") ||
+    path.includes("/api/rust/")
   );
 }
 
@@ -469,6 +470,12 @@ export default function BattleBoardPage() {
               className="rounded-lg border border-cyan-600/40 px-3 py-1.5 text-sm text-cyan-200/90 hover:bg-cyan-950/40"
             >
               Sea of Thieves board
+            </Link>
+            <Link
+              href="/overlay/rust"
+              className="rounded-lg border border-amber-600/40 px-3 py-1.5 text-sm text-amber-200/90 hover:bg-amber-950/30"
+            >
+              Rust board
             </Link>
             <Link
               href="/overlay/parrot-with-bubble"

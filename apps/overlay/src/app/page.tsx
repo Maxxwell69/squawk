@@ -45,6 +45,11 @@ export default function HomePage() {
               Sea of Thieves voyages board
             </Link>
           </li>
+          <li>
+            <Link className="text-squawk-gold underline" href="/overlay/rust">
+              Rust adventure board
+            </Link>
+          </li>
         </ul>
       </div>
     </main>
