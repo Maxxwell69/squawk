@@ -230,6 +230,18 @@ Used by **`/overlay/sea-of-thieves`** Start/Finish buttons (or call manually). E
 | Megalodon | `sot_seq_meg_start` → `sot_seq_meg_mid` → `sot_seq_meg_finish` | |
 | Island run | `sot_seq_island_run_start` → `sot_seq_island_run_mid` → `sot_seq_island_run_finish` | |
 
+### Streaming assist (SoT board)
+
+When **Streaming assist** is on, the board tracks the last successful line sent from **that page**; if **60s** pass with no new line, it POSTs **one** of `sot_stream_nudge_like`, `sot_stream_nudge_share_repost`, or `sot_stream_nudge_combo` (random).
+
+| `triggerId` | When |
+|-------------|------|
+| `sot_stream_mode_intro` | Tap **Start — streaming assist** |
+| `sot_stream_mode_outro` | Tap **Finish — streaming assist** |
+| `sot_stream_nudge_like` | Idle 60s (random among the three nudges) |
+| `sot_stream_nudge_share_repost` | Idle 60s |
+| `sot_stream_nudge_combo` | Idle 60s |
+
 **Example:**
 
 ```bash

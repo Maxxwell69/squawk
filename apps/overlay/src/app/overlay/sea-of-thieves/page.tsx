@@ -2,7 +2,10 @@
 
 import Link from "next/link";
 import { useCallback, useEffect, useRef, useState } from "react";
-import type { SotTriggerId } from "@captain-squawks/shared";
+import {
+  SOT_STREAM_IDLE_TRIGGER_IDS,
+  type SotTriggerId,
+} from "@captain-squawks/shared";
 import { SquawkVolumeSlider } from "@/components/SquawkVolumeSlider";
 import {
   DEFAULT_LOCAL_BRIDGE_HTTP,
@@ -24,6 +27,10 @@ const LS_DECK_KEY = "squawk-parrot-test-stream-deck-key";
 const LS_SOT_ADV_VOL = "squawk-sot-adventure-music-vol";
 const LS_SOT_ADV_MUTE = "squawk-sot-adventure-music-muted";
 const SOT_PATH = "/api/sot/trigger";
+
+/** Any SoT board line to overlay resets this; streaming assist nudges chat if idle longer. */
+const STREAMING_SQUAWK_IDLE_MS = 60_000;
+const STREAMING_IDLE_POLL_MS = 4_000;
 
 /** Start → periodic callouts → Finish (same button toggles). */
 type SotAutomationId =
@@ -249,6 +256,7 @@ export default function SeaOfThievesBoardPage() {
   const [squawkVoiceVol01, setSquawkVoiceVol01] = useState(0.9);
   const [activeAutomation, setActiveAutomation] =
     useState<SotAutomationId | null>(null);
+  const [streamingAssist, setStreamingAssist] = useState(false);
   const [adventureTracks, setAdventureTracks] = useState<SotAdventureMusicTrack[]>(
     []
   );
@@ -268,6 +276,9 @@ export default function SeaOfThievesBoardPage() {
     muted: sotMusicMuted,
     tracks: adventureTracks,
   });
+
+  /** Last time this page successfully sent any line to the bridge (all buttons + automations). */
+  const lastSquawkAtRef = useRef<number>(Date.now());
 
   /** Clears pending automation tick timer; does not POST finish. */
   const stopAutomationTicksRef = useRef<(() => void) | null>(null);
@@ -347,11 +358,20 @@ export default function SeaOfThievesBoardPage() {
     window.localStorage.setItem(LS_DECK_KEY, streamDeckKey);
   }, [streamDeckKey]);
 
+  const postTracked = useCallback(
+    async (triggerId: SotTriggerId): Promise<unknown> => {
+      const data = await postSotTrigger(bridgeUrl, triggerId, streamDeckKey);
+      lastSquawkAtRef.current = Date.now();
+      return data;
+    },
+    [bridgeUrl, streamDeckKey]
+  );
+
   const fire = useCallback(
     async (triggerId: SotTriggerId, label: string) => {
       setBusy(true);
       try {
-        const data = await postSotTrigger(bridgeUrl, triggerId, streamDeckKey);
+        const data = await postTracked(triggerId);
         setLog(`[${label}]\n${JSON.stringify(data, null, 2)}`);
       } catch (e) {
         setLog(`[${label}]\n${String(e)}`);
@@ -359,20 +379,53 @@ export default function SeaOfThievesBoardPage() {
         setBusy(false);
       }
     },
-    [bridgeUrl, streamDeckKey]
+    [postTracked]
   );
 
   const fireQuiet = useCallback(
     async (triggerId: SotTriggerId, label: string) => {
       try {
-        const data = await postSotTrigger(bridgeUrl, triggerId, streamDeckKey);
+        const data = await postTracked(triggerId);
         setLog(`[auto: ${label}]\n${JSON.stringify(data, null, 2)}`);
       } catch (e) {
         setLog(`[auto: ${label}]\n${String(e)}`);
       }
     },
-    [bridgeUrl, streamDeckKey]
+    [postTracked]
   );
+
+  useEffect(() => {
+    if (!streamingAssist) return;
+    const id = window.setInterval(() => {
+      if (Date.now() - lastSquawkAtRef.current < STREAMING_SQUAWK_IDLE_MS) {
+        return;
+      }
+      const pool = SOT_STREAM_IDLE_TRIGGER_IDS;
+      const pick = pool[randomInt(0, pool.length - 1)]!;
+      void (async () => {
+        try {
+          const data = await postTracked(pick);
+          setLog(
+            `[streaming assist — idle ${STREAMING_SQUAWK_IDLE_MS / 1000}s]\n${JSON.stringify(data, null, 2)}`
+          );
+        } catch (e) {
+          setLog(`[streaming assist — idle nudge]\n${String(e)}`);
+        }
+      })();
+    }, STREAMING_IDLE_POLL_MS);
+    return () => window.clearInterval(id);
+  }, [streamingAssist, postTracked]);
+
+  const onStreamingAssistToggle = useCallback(() => {
+    if (streamingAssist) {
+      setStreamingAssist(false);
+      void fireQuiet("sot_stream_mode_outro", "Streaming assist — off");
+      return;
+    }
+    lastSquawkAtRef.current = Date.now();
+    setStreamingAssist(true);
+    void fireQuiet("sot_stream_mode_intro", "Streaming assist — on");
+  }, [fireQuiet, streamingAssist]);
 
   const beginAutomation = useCallback(
     (def: SotAutomationDef) => {
@@ -410,18 +463,10 @@ export default function SeaOfThievesBoardPage() {
                 def.midFireMagic &&
                 def.midRepairPlayers
               ) {
-                const d1 = await postSotTrigger(
-                  bridgeUrl,
-                  def.midFireMagic,
-                  streamDeckKey
-                );
+                const d1 = await postTracked(def.midFireMagic);
                 await sleep(SKEL_SECOND_LINE_DELAY_MS);
                 if (cancelled) return;
-                const d2 = await postSotTrigger(
-                  bridgeUrl,
-                  def.midRepairPlayers,
-                  streamDeckKey
-                );
+                const d2 = await postTracked(def.midRepairPlayers);
                 setLog(
                   `[auto: ${def.title} — mid wave ×2]\n${JSON.stringify(
                     { fireMagic: d1, repairPlayers: d2 },
@@ -430,11 +475,7 @@ export default function SeaOfThievesBoardPage() {
                   )}`
                 );
               } else if (def.midSingle) {
-                const data = await postSotTrigger(
-                  bridgeUrl,
-                  def.midSingle,
-                  streamDeckKey
-                );
+                const data = await postTracked(def.midSingle);
                 setLog(
                   `[auto: ${def.title} — mid]\n${JSON.stringify(data, null, 2)}`
                 );
@@ -449,7 +490,7 @@ export default function SeaOfThievesBoardPage() {
 
       scheduleNext();
     },
-    [bridgeUrl, streamDeckKey, fireQuiet, stopAutomationTicks]
+    [fireQuiet, postTracked, stopAutomationTicks]
   );
 
   const finishAutomation = useCallback(
@@ -505,7 +546,8 @@ export default function SeaOfThievesBoardPage() {
               Quick buttons fire one line; <strong className="text-cyan-200/90">action</strong>{" "}
               buttons start timed callouts and <strong className="text-sky-200/90">adventure music</strong>{" "}
               (random start, then the rest of the playlist) until Finish. Separate from the
-              TikTok battle timer board.
+              TikTok battle timer board. <strong className="text-fuchsia-200/85">Streaming assist</strong>{" "}
+              nudges likes / shares / reposts if this page goes quiet a minute.
             </p>
           </div>
           <div className="flex flex-wrap gap-2">
@@ -632,6 +674,39 @@ export default function SeaOfThievesBoardPage() {
               </button>
             </div>
           </div>
+        </section>
+
+        <section className="rounded-xl border border-fuchsia-500/40 bg-fuchsia-950/20 p-4">
+          <h2 className="font-display text-sm font-bold text-fuchsia-200/95">
+            Streaming assist
+          </h2>
+          <p className="mt-1 max-w-3xl font-body text-xs text-parchment/65">
+            <span className="text-fuchsia-200/90">Start</span> arms Squawk to hype chat for likes,
+            shares, and reposts. Any line sent from <strong className="font-normal text-parchment/75">this</strong>{" "}
+            page (quick buttons or action automations) resets the clock. If nobody&apos;s squawked
+            for <strong className="font-normal text-parchment/80">one full minute</strong>, a random
+            chat nudge fires automatically. <span className="text-rose-300/90">Finish</span> stops
+            the timer and sends a short sign-off line.
+          </p>
+          <button
+            type="button"
+            className={
+              streamingAssist
+                ? "mt-3 rounded-lg border border-rose-500/55 bg-rose-950/40 px-4 py-2.5 font-body text-sm font-bold text-rose-100 transition hover:bg-rose-900/45"
+                : `mt-3 rounded-lg border border-fuchsia-500/50 bg-fuchsia-950/35 px-4 py-2.5 font-body text-sm font-bold text-fuchsia-100 transition hover:bg-fuchsia-900/35`
+            }
+            onClick={() => onStreamingAssistToggle()}
+          >
+            {streamingAssist
+              ? "Finish — streaming assist"
+              : "Start — streaming assist"}
+          </button>
+          {streamingAssist ? (
+            <p className="mt-2 font-body text-[11px] text-fuchsia-200/70">
+              Active — idle nudge every ~{STREAMING_IDLE_POLL_MS / 1000}s check after{" "}
+              {STREAMING_SQUAWK_IDLE_MS / 1000}s quiet on this board.
+            </p>
+          ) : null}
         </section>
 
         <section className="rounded-xl border border-teal-500/40 bg-teal-950/20 p-4">

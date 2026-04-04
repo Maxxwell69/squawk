@@ -101,6 +101,7 @@ export function useSotAdventureMusic(opts: UseSotAdventureMusicOpts): {
 
     const n = list.length;
     const start = randomStartIndex(n);
+    /** Index of the track we are loading (do not advance until `ended` or a real failure). */
     let idx = start;
 
     const playOne = () => {
@@ -112,21 +113,24 @@ export function useSotAdventureMusic(opts: UseSotAdventureMusicOpts): {
         return;
       }
       const t = list[idx]!;
-      idx += 1;
       a.onerror = () => {
         if (stoppedRef.current) return;
+        idx += 1;
         playOne();
       };
       a.onended = () => {
         if (stoppedRef.current) return;
+        idx += 1;
         playOne();
       };
       a.pause();
       a.src = t.url;
+      a.load();
       a.volume = targetVolumeRef.current;
       setNowPlaying(t.name);
       void a.play().catch(() => {
         if (stoppedRef.current) return;
+        idx += 1;
         playOne();
       });
     };

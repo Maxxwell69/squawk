@@ -256,9 +256,56 @@ export const SOT_TRIGGERS = {
     "Back to the ship — Squawks counts loot; chat counts close calls!",
     "Shore leave over — Cap'n Maxx, that's how ye shop with cannons nearby!",
   ],
+
+  // —— Live streaming assist (SoT board: Start / Finish) ——
+  sot_stream_mode_intro: [
+    "Streaming assist armed — First Mate Squawks'll nag chat for likes, shares, and reposts when it goes quiet!",
+    "We're live and shameless — chat, warm those hearts, spread the link, smash repost if ye love chaos!",
+    "Voyage's broadcasting — Squawks is on hype duty: like, share, repost, pretend ye're proud of us!",
+    "Deck's open to the world — if ye enjoy the show, tell the algorithm with thumbs and shares!",
+    "Cap'n Maxx is sailing; Squawks is marketing — hearts up, shares out, reposts for the culture!",
+  ],
+  sot_stream_mode_outro: [
+    "Streaming assist standin' down — Squawks rests his pitchfork. Back to pure sea nonsense!",
+    "Auto-hype paused — thanks for lettin' this bird bark at chat. See ye next broadcast!",
+    "Engagement bird clockin' out — manual buttons still work if ye need a fresh squawk!",
+  ],
+  sot_stream_nudge_like: [
+    "Minute of silence? Unacceptable — tap like if Squawks still has yer attention!",
+    "Hearts look lonely — give this stream a thumb before the kraken judges us!",
+    "If ye're vibin', double-tap the love — Cap'n Maxx feeds on validation!",
+    "Like button's collectin' dust — one tap keeps the parrot off strike!",
+    "Ye've been lurkin' like pros — now bless the feed with a heart, ye beautiful ghosts!",
+    "No likes in a bit — Squawks assumes ye're stunned. Prove it with a tap!",
+    "The algorithm forgets us without hearts — pound that like for Pirate Maxx!",
+  ],
+  sot_stream_nudge_share_repost: [
+    "Chat gone quiet? Share this voyage — draft a mate into the mess!",
+    "Repost if ye'd watch this nonsense again — let the FYP learn yer taste!",
+    "One share recruits another scallywag — pass the link like a secret map!",
+    "If this made ye smirk, repost it — Squawks demands cultural distribution!",
+    "Spread the stream like gossip in a tavern — share, repost, recruit the fleet!",
+    "Shares and reposts be wind in our sails — ye know what to do, deckhands!",
+    "Quiet deck? Loud links — share or repost before we start beggin' in shanty form!",
+  ],
+  sot_stream_nudge_combo: [
+    "Like if ye're here, share if ye know a troublemaker, repost if ye dare — pick yer weapon!",
+    "Triple threat ask: heart it, share it, repost it — Squawks ain't proud, just effective!",
+    "Engagement combo: tap like, yeet a share, slap repost — First Mate Squawks counts to three!",
+    "We need noise on the feed — likes for love, shares for friends, reposts for chaos!",
+    "If ye watched this long, ye owe the timeline one like and one repost. Maritime law. Probably.",
+    "Like for Cap'n Maxx, share for yer crew, repost for the algorithm gods — balance restored!",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type SotTriggerId = keyof typeof SOT_TRIGGERS;
+
+/** One of these fires when streaming assist is on and no Squawk line ran for 60s. */
+export const SOT_STREAM_IDLE_TRIGGER_IDS: readonly SotTriggerId[] = [
+  "sot_stream_nudge_like",
+  "sot_stream_nudge_share_repost",
+  "sot_stream_nudge_combo",
+];
 
 export function isSotTriggerId(v: string): v is SotTriggerId {
   return Object.prototype.hasOwnProperty.call(SOT_TRIGGERS, v.trim());
@@ -313,6 +360,12 @@ export const SOT_PARROT_STATE: Record<SotTriggerId, ParrotState> = {
   sot_seq_island_run_start: "talking",
   sot_seq_island_run_mid: "talking",
   sot_seq_island_run_finish: "hype",
+
+  sot_stream_mode_intro: "hype",
+  sot_stream_mode_outro: "talking",
+  sot_stream_nudge_like: "hype",
+  sot_stream_nudge_share_repost: "hype",
+  sot_stream_nudge_combo: "hype",
 };
 
 export const sotTriggerBodySchema = z.object({
