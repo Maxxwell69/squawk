@@ -38,7 +38,9 @@ export default function BattleBoardIndexPage() {
           </p>
           <p className="mt-2 font-body text-sm text-white/55">
             Art: <code className="text-amber-200/90">public/battle/board/</code>{" "}
-            — any image in each folder (first filename A→Z). See{" "}
+            — each scene uses <code className="text-amber-200/90">banner/</code>{" "}
+            (top, full width) and <code className="text-amber-200/90">tips/</code>{" "}
+            (left, under banner). First image A→Z per folder. See{" "}
             <code className="text-amber-200/90">README.md</code> there.
           </p>
         </div>

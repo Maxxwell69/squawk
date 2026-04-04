@@ -2,44 +2,49 @@
 
 ## Single browser source
 
-1. In OBS add one **Browser** source:  
-   **`https://<your-overlay-host>/overlay/battle-board/display`**  
-   (local dev: `http://127.0.0.1:3000/overlay/battle-board/display`)
+**`https://<overlay-host>/overlay/battle-board/display`**  
+Optional default: **`?scene=prepare`** (stays on Prepare until you tap **Minute one** on the battle board).
 
-2. Open the **TikTok battle board** (`/overlay/battle`) on the **same overlay host** you deployed (e.g. Railway). Scene buttons **POST** to your **bridge** (`/api/battle-board/scene`); the bridge pushes **`BATTLE_BOARD_SCENE`** over **`/ws`** so OBS updates even though OBS and Chrome do not share `localStorage`.
+Scene buttons on **`/overlay/battle`** POST to the bridge; **`BATTLE_BOARD_SCENE`** on **`/ws`** updates OBS. See repo **`RAILWAY.md`**.
 
-3. **Railway:** set `NEXT_PUBLIC_BRIDGE_HTTP` + `NEXT_PUBLIC_WS_URL` on the overlay build (see repo **`RAILWAY.md`**). Use the **hosted** `/overlay/battle` URL to control the board — not `localhost` — unless your bridge is also local.
+## Folder layout (every scene)
 
-4. Same-tab extras: `BroadcastChannel` + `localStorage` still help if two tabs share one browser profile.
+Each scene has a **`banner/`** folder and a **`tips/`** folder.
 
-5. Optional default when the source loads:  
-   **`/overlay/battle-board/display?scene=prepare`** (or any slug below).
+| Kind | Path pattern |
+|------|----------------|
+| Level | `levels/<slug>/banner/` · `levels/<slug>/tips/` |
+| End banners | `banners/<slug>/banner/` · `banners/<slug>/tips/` |
 
-Legacy paths like `/overlay/battle-board/prepare` **redirect** to `display?scene=prepare`.
+### Level slugs
 
-## Layout
+| Folder | Meaning |
+|--------|---------|
+| `levels/prepare/` | **Default** — before the match starts |
+| `levels/minute-one/` | Clock started — minute one |
+| `levels/minute-two/` | Minute two |
+| `levels/minute-three/` | Minute three |
+| `levels/last-minute/` | Last minute |
+| `levels/repair-party/` | After the clock |
 
-- **Black** frame, **9:16** (TikTok vertical).
-- **Graphic**: centered **top** — first image file in the folder (sorted A→Z by filename).
-- **Tips**: **left** — text from `apps/overlay/src/lib/battle-board-slugs.ts`.
+### Banner slugs
 
-Supported extensions: `.webp`, `.png`, `.jpg`, `.jpeg`, `.gif`.
+`banners/win/`, `banners/lose/`, `banners/repair/`, `banners/party/` — each with `banner/` + `tips/`.
 
-## Folders → scene slugs (`?scene=`)
+## Images
 
-| Folder | `scene` value |
-|--------|----------------|
-| `levels/prepare/` | `prepare` |
-| `levels/minute-one/` | `minute-one` |
-| `levels/phase-two/` | `phase-two` |
-| `levels/phase-three/` | `phase-three` |
-| `levels/last-minute/` | `last-minute` |
-| `levels/repair-party/` | `repair-party` |
-| `banners/win/` | `win` |
-| `banners/lose/` | `lose` |
-| `banners/repair/` | `repair` |
-| `banners/party/` | `party` |
+- Put **any number** of images in each folder; the **first filename A→Z** is used.
+- Extensions: `.webp`, `.png`, `.jpg`, `.jpeg`, `.gif`
+- **`banner/`** — shown **full width** at the **top** (large, `object-contain`).
+- **`tips/`** — shown on the **left**, **below** the banner row (smaller strip).
+- If **`tips/`** is empty, the page shows **text tips** from code (`battle-board-slugs.ts`).
 
-## OBS sizing
+## Legacy URLs
 
-**1080×1920** or full-screen; the page letterboxes to 9:16 with black bars on wide monitors.
+Old paths **`phase-two`** / **`phase-three`** redirect to **`minute-two`** / **`minute-three`**.
+
+## Moving old flat files
+
+If you still have PNGs **directly under** `levels/<slug>/` (not in `banner/` or `tips/`), the API uses the **first A→Z file there as the banner only** until you move assets into `banner/` and `tips/`.
+
+Rename folders **`phase-two`** → **`minute-two`** and **`phase-three`** → **`minute-three`** if you still use the old names.

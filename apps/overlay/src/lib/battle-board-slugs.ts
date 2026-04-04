@@ -13,7 +13,7 @@ export type BattleBoardDef = {
   kind: BattleBoardKind;
   /** Short label for hub + battle page links */
   label: string;
-  /** Left-side instruction lines */
+  /** Fallback text tips if `tips/` folder has no image */
   instructions: string[];
 };
 
@@ -24,27 +24,27 @@ const BANNER = (slug: BattleBoardSlug, label: string, instructions: string[]) =>
   ({ slug, kind: "banner" as const, label, instructions });
 
 export const BATTLE_BOARD_DEFS: BattleBoardDef[] = [
-  LEVEL("prepare", "Prepare for battle", [
+  LEVEL("prepare", "Prepare (default before battle)", [
     "Warm the deck: taps and small gifts first.",
     "Pace the fodder — save your biggest swings for later calls.",
-    "Marathon energy: rhythm beats one-shot dumps.",
+    "Tap Minute one when the match clock starts.",
   ]),
-  LEVEL("minute-one", "Battle — minute one", [
+  LEVEL("minute-one", "Minute one", [
     "Nice and easy — fun first.",
     "Watch for extras on early gifts.",
     "Build tempo; the storm comes later.",
   ]),
-  LEVEL("phase-two", "Battle — phase two", [
+  LEVEL("minute-two", "Minute two", [
     "3× gifting can flip a fight — read the board.",
     "Cannons ready: steady stacks, call your shots.",
-    "Stay loud in chat; battle two is live.",
+    "Stay loud in chat.",
   ]),
-  LEVEL("phase-three", "Battle — phase three", [
+  LEVEL("minute-three", "Minute three", [
     "Chain-shot energy — break their rhythm.",
     "More than halfway — positive push only.",
     "Stack with purpose; every gift counts.",
   ]),
-  LEVEL("last-minute", "Battle — last minute", [
+  LEVEL("last-minute", "Last minute", [
     "Watch for snipers — big gifts at the wire.",
     "Prepare to board: final coordinated push.",
     "Ahead: hold the line. Behind: one clean swing.",
@@ -82,10 +82,4 @@ export function isBattleBoardSlug(v: string): v is BattleBoardSlug {
 
 export function getBattleBoardDef(slug: string): BattleBoardDef | undefined {
   return BATTLE_BOARD_DEFS.find((d) => d.slug === slug);
-}
-
-export function assetBasePath(def: BattleBoardDef): string {
-  return def.kind === "level"
-    ? `/battle/board/levels/${def.slug}`
-    : `/battle/board/banners/${def.slug}`;
 }

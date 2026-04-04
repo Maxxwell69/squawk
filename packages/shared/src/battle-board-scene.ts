@@ -4,8 +4,8 @@ import { z } from "zod";
 export const BATTLE_BOARD_SCENE_SLUGS = [
   "prepare",
   "minute-one",
-  "phase-two",
-  "phase-three",
+  "minute-two",
+  "minute-three",
   "last-minute",
   "repair-party",
   "win",
@@ -38,3 +38,10 @@ export type BattleBoardSceneWsMessage = z.infer<
 export function isBattleBoardSceneSlug(v: string): v is BattleBoardSceneSlug {
   return (BATTLE_BOARD_SCENE_SLUGS as readonly string[]).includes(v);
 }
+
+/** Old URLs → current slug (display redirect). */
+export const BATTLE_BOARD_LEGACY_SLUGS: Record<string, BattleBoardSceneSlug> =
+  {
+    "phase-two": "minute-two",
+    "phase-three": "minute-three",
+  };
