@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { BATTLE_BOARD_LAYOUT } from "@/lib/battle-board-layout";
 import type { BattleBoardDef } from "@/lib/battle-board-slugs";
 
 type Props = {
@@ -53,8 +54,18 @@ export function BattleBoardFrame({ def }: Props) {
         className="relative overflow-hidden bg-black text-parchment shadow-none"
         style={frameStyle}
       >
-        {/* Banner: full 9:16 canvas — image scales to fill width & height (letterbox if needed) */}
-        <div className="absolute inset-0 flex items-start justify-center">
+        {/*
+          Two slots (match guides in your art): top banner strip = full width;
+          tips = lower-left rectangle (e.g. red outline in mockups).
+          Edit `battle-board-layout.ts` to nudge positions per scene pack.
+        */}
+        <div
+          className="absolute inset-x-0 top-0 flex items-start justify-center"
+          style={{
+            height: BATTLE_BOARD_LAYOUT.bannerSlotHeight,
+            minHeight: BATTLE_BOARD_LAYOUT.bannerMinHeight,
+          }}
+        >
           {bannerUrl ? (
             // eslint-disable-next-line @next/next/no-img-element -- /public via API
             <img
@@ -63,7 +74,7 @@ export function BattleBoardFrame({ def }: Props) {
               className="h-full w-full object-contain object-top"
             />
           ) : graphicReady ? (
-            <p className="px-3 pt-[12%] text-center font-display text-xs font-bold uppercase tracking-[0.14em] text-white/45 sm:text-sm">
+            <p className="px-3 pt-4 text-center font-display text-xs font-bold uppercase tracking-[0.14em] text-white/45 sm:text-sm">
               {def.label}
             </p>
           ) : (
@@ -71,15 +82,25 @@ export function BattleBoardFrame({ def }: Props) {
           )}
         </div>
 
-        {/* Tips: left rail, high on the frame (over main banner lower area is OK) */}
-        <div className="pointer-events-none absolute left-0 top-[6%] z-10 w-[min(54%,18rem)] max-h-[min(52dvh,56%)] px-2">
+        <div
+          className="pointer-events-none absolute z-10 px-1"
+          style={{
+            left: BATTLE_BOARD_LAYOUT.tipsLeft,
+            top: BATTLE_BOARD_LAYOUT.tipsTop,
+            width: BATTLE_BOARD_LAYOUT.tipsWidth,
+            maxHeight: BATTLE_BOARD_LAYOUT.tipsMaxHeight,
+          }}
+        >
           <div className="pointer-events-auto drop-shadow-[0_2px_12px_rgba(0,0,0,0.75)]">
             {tipsUrl ? (
               // eslint-disable-next-line @next/next/no-img-element
               <img
                 src={tipsUrl}
                 alt=""
-                className="max-h-[min(50dvh,54%)] w-full object-contain object-left-top"
+                className="w-full object-contain object-left-top"
+                style={{
+                  maxHeight: BATTLE_BOARD_LAYOUT.tipsMaxHeight,
+                }}
               />
             ) : graphicReady ? (
               <>
