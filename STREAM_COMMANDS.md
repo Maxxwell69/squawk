@@ -153,6 +153,8 @@ curl -X POST -H "Content-Type: application/json" \
 
 Separate UI: **`/overlay/sea-of-thieves`** (same bridge URL + Stream Deck secret `localStorage` keys as the battle board).
 
+**Adventure music:** add audio files under **`public/sea-of-thieves/adventure-music/`** with any filenames (MP3, M4A, etc.). The page lists them via **`GET /api/sot-adventure-music`** (sorted A→Z). When you tap **Start** on an action automation, playback picks a **random** first track, then plays **through the rest of the list** in order until the last file ends or you tap **Finish**. **Music volume and mute** are on the Sea of Thieves board in the **Bridge, voice & music** panel (`squawk-sot-adventure-music-vol` / `squawk-sot-adventure-music-muted` in `localStorage`).
+
 **Body (JSON):**
 
 ```json

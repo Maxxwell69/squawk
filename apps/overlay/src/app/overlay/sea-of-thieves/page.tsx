@@ -13,10 +13,16 @@ import {
   readSquawkVolume01,
   SQUAWK_VOL_EVENT,
 } from "@/lib/squawk-volume";
+import {
+  useSotAdventureMusic,
+  type SotAdventureMusicTrack,
+} from "@/hooks/useSotAdventureMusic";
 
 /** Same keys as battle board — one bridge setup for both UIs. */
 const LS_BRIDGE = "squawk-battle-bridge";
 const LS_DECK_KEY = "squawk-parrot-test-stream-deck-key";
+const LS_SOT_ADV_VOL = "squawk-sot-adventure-music-vol";
+const LS_SOT_ADV_MUTE = "squawk-sot-adventure-music-muted";
 const SOT_PATH = "/api/sot/trigger";
 
 /** Start → periodic callouts → Finish (same button toggles). */
@@ -243,6 +249,25 @@ export default function SeaOfThievesBoardPage() {
   const [squawkVoiceVol01, setSquawkVoiceVol01] = useState(0.9);
   const [activeAutomation, setActiveAutomation] =
     useState<SotAutomationId | null>(null);
+  const [adventureTracks, setAdventureTracks] = useState<SotAdventureMusicTrack[]>(
+    []
+  );
+  const [adventureTracksError, setAdventureTracksError] = useState<string | null>(
+    null
+  );
+  const [sotMusicVol01, setSotMusicVol01] = useState(0.75);
+  const [sotMusicMuted, setSotMusicMuted] = useState(false);
+
+  const {
+    nowPlaying,
+    playlistRunning,
+    startPlaylistFromRandom,
+    stopPlaylist,
+  } = useSotAdventureMusic({
+    volume01: sotMusicVol01,
+    muted: sotMusicMuted,
+    tracks: adventureTracks,
+  });
 
   /** Clears pending automation tick timer; does not POST finish. */
   const stopAutomationTicksRef = useRef<(() => void) | null>(null);
@@ -264,7 +289,42 @@ export default function SeaOfThievesBoardPage() {
       "";
     setStreamDeckKey(keyFromLs);
     setSquawkVoiceVol01(readSquawkVolume01());
+    const advVol = window.localStorage.getItem(LS_SOT_ADV_VOL);
+    if (advVol != null) {
+      const n = Number(advVol);
+      if (Number.isFinite(n)) {
+        setSotMusicVol01(Math.min(1, Math.max(0, n)));
+      }
+    }
+    if (window.localStorage.getItem(LS_SOT_ADV_MUTE) === "1") {
+      setSotMusicMuted(true);
+    }
   }, []);
+
+  useEffect(() => {
+    void fetch("/api/sot-adventure-music")
+      .then((r) => {
+        if (!r.ok) throw new Error(`${r.status}`);
+        return r.json() as Promise<{ tracks?: SotAdventureMusicTrack[] }>;
+      })
+      .then((d) => {
+        setAdventureTracks(Array.isArray(d.tracks) ? d.tracks : []);
+        setAdventureTracksError(null);
+      })
+      .catch(() => {
+        setAdventureTracksError("Could not load adventure track list.");
+      });
+  }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(LS_SOT_ADV_VOL, String(sotMusicVol01));
+  }, [sotMusicVol01]);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(LS_SOT_ADV_MUTE, sotMusicMuted ? "1" : "0");
+  }, [sotMusicMuted]);
 
   useEffect(() => {
     const onVol = (e: Event) => {
@@ -394,11 +454,12 @@ export default function SeaOfThievesBoardPage() {
 
   const finishAutomation = useCallback(
     (def: SotAutomationDef) => {
+      stopPlaylist();
       stopAutomationTicks();
       setActiveAutomation(null);
       void fireQuiet(def.finish, `${def.title} — finish`);
     },
-    [fireQuiet, stopAutomationTicks]
+    [fireQuiet, stopAutomationTicks, stopPlaylist]
   );
 
   const onAutomationButton = useCallback(
@@ -409,11 +470,20 @@ export default function SeaOfThievesBoardPage() {
       }
       if (activeAutomation !== null) {
         stopAutomationTicks();
+        stopPlaylist();
         setActiveAutomation(null);
       }
       beginAutomation(def);
+      startPlaylistFromRandom();
     },
-    [activeAutomation, beginAutomation, finishAutomation, stopAutomationTicks]
+    [
+      activeAutomation,
+      beginAutomation,
+      finishAutomation,
+      startPlaylistFromRandom,
+      stopAutomationTicks,
+      stopPlaylist,
+    ]
   );
 
   const btn =
@@ -433,7 +503,8 @@ export default function SeaOfThievesBoardPage() {
             <p className="mt-2 max-w-2xl font-body text-sm leading-relaxed text-parchment/70">
               First Mate Squawks voice-overs for Pirate Maxx&apos;s SoT sessions.
               Quick buttons fire one line; <strong className="text-cyan-200/90">action</strong>{" "}
-              buttons start timed callouts until you hit Finish. Separate from the
+              buttons start timed callouts and <strong className="text-sky-200/90">adventure music</strong>{" "}
+              (random start, then the rest of the playlist) until Finish. Separate from the
               TikTok battle timer board.
             </p>
           </div>
@@ -455,7 +526,7 @@ export default function SeaOfThievesBoardPage() {
 
         <section className="rounded-xl border border-white/10 bg-black/30 p-4">
           <h2 className="font-display text-sm font-bold text-cyan-200/90">
-            Bridge &amp; voice
+            Bridge, voice &amp; music
           </h2>
           <label className="mt-3 block font-body text-xs text-parchment/75">
             Bridge base URL
@@ -496,6 +567,71 @@ export default function SeaOfThievesBoardPage() {
               />
             </div>
           </div>
+
+          <div className="mt-4 border-t border-white/10 pt-4">
+            <h3 className="font-display text-xs font-bold text-sky-200/95">
+              Sea of Thieves background music
+            </h3>
+            <p className="mt-1 font-body text-xs text-parchment/55">
+              Adventure playlist in{" "}
+              <code className="text-parchment/75">public/sea-of-thieves/adventure-music/</code>{" "}
+              (any filenames; A→Z order). Action <span className="text-sky-200/85">Start</span>{" "}
+              picks a random first track, then plays through the rest until{" "}
+              <span className="text-rose-300/85">Finish</span> or the list ends.
+            </p>
+            {adventureTracksError ? (
+              <p className="mt-2 font-body text-xs text-rose-300/95">{adventureTracksError}</p>
+            ) : (
+              <p className="mt-2 font-body text-xs text-parchment/55">
+                Tracks loaded:{" "}
+                <span className="tabular-nums font-semibold text-parchment/85">
+                  {adventureTracks.length}
+                </span>
+                {adventureTracks.length === 0 ? (
+                  <span className="text-parchment/45"> — add files and refresh this page.</span>
+                ) : null}
+              </p>
+            )}
+            {(playlistRunning || nowPlaying) && (
+              <p className="mt-1 truncate font-body text-[11px] text-sky-200/85">
+                {nowPlaying ? `Now playing: ${nowPlaying}` : "Loading…"}
+              </p>
+            )}
+            <div className="mt-3 flex max-w-xl flex-wrap items-center gap-4">
+              <label className="flex min-w-[min(100%,320px)] flex-1 flex-col gap-1 sm:flex-row sm:items-center">
+                <span className="shrink-0 font-body text-xs font-semibold text-parchment/85">
+                  Music volume
+                </span>
+                <input
+                  type="range"
+                  min={0}
+                  max={100}
+                  value={Math.round(sotMusicVol01 * 100)}
+                  onChange={(e) =>
+                    setSotMusicVol01(
+                      Math.min(1, Math.max(0, Number(e.target.value) / 100))
+                    )
+                  }
+                  className="h-2 min-w-0 flex-1 cursor-pointer accent-sky-400"
+                  aria-label="Sea of Thieves background music volume"
+                />
+                <span className="w-10 shrink-0 font-mono text-xs tabular-nums text-parchment/75">
+                  {Math.round(sotMusicVol01 * 100)}%
+                </span>
+              </label>
+              <button
+                type="button"
+                className={
+                  sotMusicMuted
+                    ? "rounded-lg border border-sky-400/50 bg-sky-500/20 px-3 py-1.5 font-body text-xs font-semibold text-sky-100 hover:bg-sky-500/30"
+                    : "rounded-lg border border-white/20 bg-black/40 px-3 py-1.5 font-body text-xs font-semibold text-parchment hover:bg-white/10"
+                }
+                onClick={() => setSotMusicMuted((m) => !m)}
+              >
+                {sotMusicMuted ? "Unmute music" : "Mute music"}
+              </button>
+            </div>
+          </div>
         </section>
 
         <section className="rounded-xl border border-teal-500/40 bg-teal-950/20 p-4">
@@ -503,11 +639,11 @@ export default function SeaOfThievesBoardPage() {
             Action automations
           </h2>
           <p className="mt-1 max-w-3xl font-body text-xs text-parchment/65">
-            Tap <span className="text-teal-200/90">Start</span> to send the opening line and begin
-            random mid callouts every ~26–44s (skeleton fights send{" "}
-            <em>two</em> lines per wave: fire / cursed shots, then repairs / watch
-            players). Tap again — <span className="text-rose-300/90">Finish</span> — to
-            stop timers and send the closing line. Starting another action stops the
+            Tap <span className="text-teal-200/90">Start</span> to send the opening line, begin
+            adventure music (if tracks are loaded), and run random mid callouts every ~26–44s
+            (skeleton fights send <em>two</em> lines per wave: fire / cursed shots, then repairs /
+            watch players). Tap again — <span className="text-rose-300/90">Finish</span> — to
+            stop music and timers and send the closing line. Starting another action stops the
             previous one without a finish line.
           </p>
           <div className="mt-4 grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
