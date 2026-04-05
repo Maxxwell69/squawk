@@ -119,6 +119,30 @@ export const BATTLE_TRIGGERS = {
     "First Mate Squawks wants to know — who were our MVPs tonight? Shout their names in chat!",
   ],
 
+  /** Fired once when the 5:00 match starts — immediate battle + tap callout. */
+  battle_match_start: [
+    "Battle's live, crew! This is a fight — tap it out! Hearts, taps, light gifts — warm the deck now!",
+    "We're in battle mode — Squawk's on deck! Tap it out, make noise, let 'em feel us before the heavy shot!",
+    "First Mate Squawks — battle stations! Tap it out nice and easy: likes, roses, small bags. Wake the room!",
+    "It's go time — battle clock is running! Tap it out, crew — rhythm first, cannons when I call it!",
+  ],
+
+  /** Short auto lines from ~0:30 through end of minute one; keeps Squawk chatty without long speeches. */
+  battle_banter_chip: [
+    "Tap it out — light and steady!",
+    "Hearts up — warm the room!",
+    "Small gifts — stack the vibe!",
+    "Chat loud — let 'em hear the flock!",
+    "Easy stacks — we're just getting started!",
+    "Taps count — keep 'em coming!",
+    "Rhythm, not rush — you've got this!",
+    "Nice and easy — fun first!",
+    "Feel the room — light pressure only!",
+    "Squawk says tap — make that board blink!",
+    "Warm the deck — tiny gifts, big energy!",
+    "One tap at a time — we're building!",
+  ],
+
   // —— Timer auto callouts (Squawk names the mode; random line per fire) ——
   battle_auto_phase2: [
     "We just passed our second minute — keep it up! Watch for 3× gifting and keep those cannons warm!",
@@ -305,6 +329,8 @@ export const BATTLE_PARROT_STATE: Record<BattleTriggerId, ParrotState> = {
   battle_phase5_we_won: "talking",
   battle_phase5_we_lost: "talking",
   battle_phase5_mvps_prompt: "talking",
+  battle_match_start: "talking",
+  battle_banter_chip: "talking",
   battle_auto_phase2: "talking",
   battle_auto_phase3: "talking",
   battle_auto_phase4: "talking",

@@ -74,6 +74,8 @@ const SPRINKLE_MINUTE_5: BattleTriggerId[] = [
 ];
 
 export function battleSprinklePool(elapsedSec: number): readonly BattleTriggerId[] {
+  /** After the 0:30 intro chip, minute one uses short banter only until the 1:00 mark. */
+  if (elapsedSec >= 30 && elapsedSec < 60) return ["battle_banter_chip"];
   if (elapsedSec < 60) return SPRINKLE_MINUTE_1;
   if (elapsedSec < 120) return SPRINKLE_MINUTE_2;
   if (elapsedSec < 180) return SPRINKLE_MINUTE_3;

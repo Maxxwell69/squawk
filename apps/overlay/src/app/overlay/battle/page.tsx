@@ -247,6 +247,8 @@ export default function BattleBoardPage() {
   const autoFiredRef = useRef<Set<number>>(new Set());
   /** Seconds until next random sprinkle (board-style line); not used on minute marks. */
   const sprinkleSecsUntilRef = useRef<number | null>(null);
+  /** After 0:30, first scheduled chip + sprinkles; reset each match. */
+  const softLineGate30Ref = useRef(false);
   const lastAutoBoardSlugRef = useRef<BattleBoardSlug | null>(null);
 
   const elapsedSec =
@@ -387,6 +389,23 @@ export default function BattleBoardPage() {
     }
     if (firedMinuteCall) return;
 
+    /* Opening: only the immediate POST from startMatch — silence until 0:30. */
+    if (elapsed < 30) return;
+
+    if (elapsed === 30 && !softLineGate30Ref.current) {
+      softLineGate30Ref.current = true;
+      void postBattleTrigger(
+        bridgeUrl,
+        "battle_banter_chip",
+        streamDeckKey,
+        opponentName
+      ).catch(() => {
+        /* ignore */
+      });
+      sprinkleSecsUntilRef.current = randomInt(14, 28);
+      return;
+    }
+
     if (BATTLE_MINUTE_MARK_SECONDS.has(elapsed)) {
       sprinkleSecsUntilRef.current = randomInt(18, 42);
       return;
@@ -439,11 +458,20 @@ export default function BattleBoardPage() {
 
   const startMatch = () => {
     autoFiredRef.current = new Set();
-    sprinkleSecsUntilRef.current = randomInt(22, 38);
+    softLineGate30Ref.current = false;
+    sprinkleSecsUntilRef.current = null;
     setRemainingSec(TOTAL_SEC);
     setRunning(true);
     setMatchStatus("running");
     primePlayback();
+    void postBattleTrigger(
+      bridgeUrl,
+      "battle_match_start",
+      streamDeckKey,
+      opponentName
+    ).catch(() => {
+      /* bridge offline — match still runs */
+    });
   };
 
   const resetAll = () => {
@@ -452,6 +480,7 @@ export default function BattleBoardPage() {
     setMatchStatus("idle");
     setPartyRemainingSec(0);
     autoFiredRef.current = new Set();
+    softLineGate30Ref.current = false;
     sprinkleSecsUntilRef.current = null;
   };
 
@@ -477,9 +506,11 @@ export default function BattleBoardPage() {
               Battle board
             </h1>
             <p className="mt-1 max-w-xl font-body text-sm text-parchment/75">
-              Timed mode callouts at 1–4 minutes; between those, random sprinkles.
-              The last-minute &quot;we&apos;re ahead&quot; / &quot;we&apos;re
-              behind&quot; lines are never auto-fired — use those buttons only.
+              Squawk opens the battle the moment you start (tap-it-out callout), stays
+              quiet until 0:30, then short auto lines through the end of minute one;
+              minute marks at 1–4 minutes and random sprinkles after that. The
+              last-minute &quot;we&apos;re ahead&quot; / &quot;we&apos;re behind&quot;
+              lines are never auto-fired — use those buttons only.
               Drop tracks in{" "}
               <code className="text-parchment/90">public/battle/music/</code>{" "}
               — see README there. Bridge secret optional.{" "}
