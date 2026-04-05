@@ -584,7 +584,7 @@ export default function BattleBoardPage() {
             <code className="text-parchment/85">RAILWAY.md</code>
             ). While this tab is open, the match clock{" "}
             <strong className="text-parchment/85">auto-switches</strong> banner
-            and tips by phase (and party / lose after the result). Manual scene
+            and tips by phase (win / lose boards after the result). Manual scene
             buttons below still POST immediately. Bridge{" "}
             <code className="text-parchment/85">/ws</code> updates OBS;
             BroadcastChannel only helps extra tabs on the same machine.

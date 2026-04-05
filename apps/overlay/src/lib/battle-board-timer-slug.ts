@@ -23,7 +23,8 @@ export function battleBoardSlugForTimer(
     case "awaiting_result":
       return "repair-party";
     case "victory_party":
-      return "party";
+      /** Win art lives under `banners/win/`; use Party banner button for `party` when you want that asset. */
+      return "win";
     case "defeat":
       return "lose";
     default:
