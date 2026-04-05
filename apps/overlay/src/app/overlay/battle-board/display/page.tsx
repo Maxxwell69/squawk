@@ -5,7 +5,7 @@ export default function BattleBoardDisplayPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-dvh w-full items-center justify-center bg-black" />
+        <div className="flex min-h-dvh w-full items-center justify-center bg-transparent" />
       }
     >
       <BattleBoardDisplayClient />

@@ -542,7 +542,12 @@ export default function BattleBoardPage() {
             <code className="break-all text-parchment/90">
               …your-overlay-origin…{BATTLE_BOARD_DISPLAY_PATH}
             </code>
-            . Open this battle page on the{" "}
+            — add{" "}
+            <code className="text-parchment/85">?transparent=1</code> (or{" "}
+            <code className="text-parchment/85">?obs=1</code>) for a clear
+            background in OBS (also tick{" "}
+            <strong className="text-parchment/85">Transparent</strong> on the
+            Browser Source). Open this battle page on the{" "}
             <strong className="text-parchment/85">same overlay host</strong>{" "}
             (e.g. your Railway URL — see repo{" "}
             <code className="text-parchment/85">RAILWAY.md</code>

@@ -6,9 +6,17 @@ import type { BattleBoardDef } from "@/lib/battle-board-slugs";
 
 type Props = {
   def: BattleBoardDef;
+  /**
+   * No black matte behind the 9:16 frame; sets `overlay-transparent` on
+   * `html`/`body` for OBS. Use URL `?transparent=1` on the display page.
+   */
+  transparentChrome?: boolean;
 };
 
-export function BattleBoardFrame({ def }: Props) {
+export function BattleBoardFrame({
+  def,
+  transparentChrome = false,
+}: Props) {
   const [bannerUrl, setBannerUrl] = useState<string | null>(null);
   const [tipsUrl, setTipsUrl] = useState<string | null>(null);
   const [graphicReady, setGraphicReady] = useState(false);
@@ -43,15 +51,30 @@ export function BattleBoardFrame({ def }: Props) {
     };
   }, [def.slug]);
 
+  useEffect(() => {
+    if (!transparentChrome || typeof document === "undefined") return;
+    const root = document.documentElement;
+    root.classList.add("overlay-transparent");
+    document.body.classList.add("overlay-transparent");
+    return () => {
+      root.classList.remove("overlay-transparent");
+      document.body.classList.remove("overlay-transparent");
+    };
+  }, [transparentChrome]);
+
   const frameStyle = {
     width: "min(100vw, calc(100dvh * 9 / 16))",
     height: "min(100dvh, calc(100vw * 16 / 9))",
   } as const;
 
+  const matte = transparentChrome ? "bg-transparent" : "bg-black";
+
   return (
-    <div className="flex min-h-dvh w-full items-center justify-center bg-black">
+    <div
+      className={`flex min-h-dvh w-full items-center justify-center ${matte}`}
+    >
       <div
-        className="relative overflow-hidden bg-black text-parchment shadow-none"
+        className={`relative overflow-hidden text-parchment shadow-none ${matte}`}
         style={frameStyle}
       >
         {/*

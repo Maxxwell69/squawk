@@ -16,6 +16,14 @@ import {
   type BattleBoardSlug,
 } from "@/lib/battle-board-slugs";
 
+function transparentChromeFromParams(
+  params: ReturnType<typeof useSearchParams>
+): boolean {
+  const t = params.get("transparent")?.toLowerCase();
+  if (t === "1" || t === "true" || t === "yes") return true;
+  return params.get("obs") === "1";
+}
+
 export function BattleBoardDisplayClient() {
   const searchParams = useSearchParams();
   const [slug, setSlug] = useState<BattleBoardSlug>("prepare");
@@ -125,5 +133,10 @@ export function BattleBoardDisplayClient() {
   const def = getBattleBoardDef(slug);
   if (!def) return null;
 
-  return <BattleBoardFrame def={def} />;
+  return (
+    <BattleBoardFrame
+      def={def}
+      transparentChrome={transparentChromeFromParams(searchParams)}
+    />
+  );
 }

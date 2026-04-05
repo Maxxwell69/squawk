@@ -45,9 +45,11 @@ export const BATTLE_BOARD_DEFS: BattleBoardDef[] = [
     "Stack with purpose; every gift counts.",
   ]),
   LEVEL("minute-four", "Minute four", [
-    "Fourth quarter — steady pressure, no panic.",
-    "Read snipers early; protect your stacks.",
-    "One clean plan before the final push.",
+    "Fourth minute — you’re in the deep water: calm calls, clean stacks.",
+    "Don’t burn everything here; save energy for the last 60.",
+    "Watch for late swing gifts and weird timing — read chat, not just the board.",
+    "If you’re ahead: boring is good. If you’re behind: one coordinated push beats spam.",
+    "Set up your last-minute story now (ahead / behind / board) so the room knows the plan.",
   ]),
   LEVEL("last-minute", "Last minute", [
     "Watch for snipers — big gifts at the wire.",
