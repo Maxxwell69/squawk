@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   SOT_AFK_BANTER_TRIGGER_IDS,
   SOT_AFK_CAPTAIN_BANTER_TRIGGER_IDS,
@@ -23,7 +23,10 @@ import {
   useSotAdventureMusic,
   type SotAdventureMusicTrack,
 } from "@/hooks/useSotAdventureMusic";
-import { parseCrewNameLines } from "@/lib/crew-name-lines";
+import {
+  parseCrewNameLines,
+  pickCrewForSquawkOccasionally,
+} from "@/lib/crew-name-lines";
 
 /** Same keys as battle board — one bridge setup for both UIs. */
 const LS_BRIDGE = "squawk-battle-bridge";
@@ -176,7 +179,13 @@ const SOT_SECTIONS: SotSection[] = [
   {
     title: "Feeding time — Squawk",
     panel: "border-orange-400/40 bg-orange-950/10",
-    buttons: [{ label: "Feeding time", triggerId: "sot_feeding_time" }],
+    buttons: [
+      { label: "Feeding time", triggerId: "sot_feeding_time" },
+      {
+        label: "Burning bananas reminder",
+        triggerId: "sot_banana_burn_reminder",
+      },
+    ],
   },
   {
     title: "Drink time",
@@ -431,7 +440,10 @@ export default function SeaOfThievesBoardPage() {
     [postTracked]
   );
 
-  const crewNames = parseCrewNameLines(crewListText);
+  const crewNames = useMemo(
+    () => parseCrewNameLines(crewListText),
+    [crewListText]
+  );
 
   useEffect(() => {
     if (!streamingAssist) return;
@@ -565,10 +577,16 @@ export default function SeaOfThievesBoardPage() {
                 def.midFireMagic &&
                 def.midRepairPlayers
               ) {
-                const d1 = await postTracked(def.midFireMagic);
+                const d1 = await postTracked(
+                  def.midFireMagic,
+                  pickCrewForSquawkOccasionally(crewNames)
+                );
                 await sleep(SKEL_SECOND_LINE_DELAY_MS);
                 if (cancelled) return;
-                const d2 = await postTracked(def.midRepairPlayers);
+                const d2 = await postTracked(
+                  def.midRepairPlayers,
+                  pickCrewForSquawkOccasionally(crewNames)
+                );
                 setLog(
                   `[auto: ${def.title} — mid wave ×2]\n${JSON.stringify(
                     { fireMagic: d1, repairPlayers: d2 },
@@ -592,7 +610,7 @@ export default function SeaOfThievesBoardPage() {
 
       scheduleNext();
     },
-    [fireQuiet, postTracked, stopAutomationTicks]
+    [crewNames, fireQuiet, postTracked, stopAutomationTicks]
   );
 
   const finishAutomation = useCallback(
@@ -600,9 +618,13 @@ export default function SeaOfThievesBoardPage() {
       stopPlaylist();
       stopAutomationTicks();
       setActiveAutomation(null);
-      void fireQuiet(def.finish, `${def.title} — finish`);
+      void fireQuiet(
+        def.finish,
+        `${def.title} — finish`,
+        pickCrewForSquawkOccasionally(crewNames)
+      );
     },
-    [fireQuiet, stopAutomationTicks, stopPlaylist]
+    [crewNames, fireQuiet, stopAutomationTicks, stopPlaylist]
   );
 
   const onAutomationButton = useCallback(
@@ -685,7 +707,8 @@ export default function SeaOfThievesBoardPage() {
           </h2>
           <p className="mt-1 font-body text-xs text-parchment/70">
             One crew name per line (saved in this browser). Squawk praises them on
-            stream; use Intro when Cap&apos;n tells him to introduce himself.
+            stream; he also sometimes names them during action automations and other
+            voyage buttons. Use Intro when Cap&apos;n tells him to introduce himself.
           </p>
           <textarea
             value={crewListText}
@@ -922,7 +945,13 @@ export default function SeaOfThievesBoardPage() {
                     type="button"
                     disabled={busy}
                     className={btn}
-                    onClick={() => void fire(b.triggerId, b.label)}
+                    onClick={() =>
+                      void fire(
+                        b.triggerId,
+                        b.label,
+                        pickCrewForSquawkOccasionally(crewNames)
+                      )
+                    }
                   >
                     {b.label}
                   </button>

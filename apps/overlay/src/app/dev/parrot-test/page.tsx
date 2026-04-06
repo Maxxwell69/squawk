@@ -33,6 +33,11 @@ type SimAction = { label: string; path: string; body: object };
 const SIMULATE_ACTIONS: SimAction[] = [
   { label: "Follow", path: "/api/test/follow", body: { username: "TestMate" } },
   {
+    label: "Subscribe",
+    path: "/api/test/subscribe",
+    body: { username: "SubMate" },
+  },
+  {
     label: "Gift",
     path: "/api/test/gift",
     body: { giftName: "Cannonball", username: "Scallywag42" },

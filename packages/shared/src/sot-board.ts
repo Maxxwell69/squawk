@@ -125,6 +125,15 @@ export const SOT_TRIGGERS = {
     "Galley's open — fuel up, pirates, we've got seas to tilt!",
   ],
 
+  /** Galley PSA — burn bananas on the stove (stream meme / heal meta). */
+  sot_banana_burn_reminder: [
+    "Crew — don't forget yer burnin' bananas! Toss 'em on the stove till they're charred — that's pirate vitamins!",
+    "Reminder from the galley: yellow boys go on the fire — burn those bananas before ye need 'em in a fight!",
+    "First Mate Squawks ain't lettin' ye sink with raw fruit — burn yer bananas, heal like ye mean it!",
+    "Banana check! Cook 'em black on the stove — the crew that burns together returns from the Ferry together!",
+    "If yer pockets are full of yellow — that's not loot, that's homework! Burn those bananas, deckhands!",
+  ],
+
   // —— Drink / grog ——
   sot_drink_cheers_1: [
     "Cheers, crew — raise yer grog, real or imaginary!",
@@ -167,6 +176,7 @@ export const SOT_TRIGGERS = {
     "Watch the waterline for green flashes — cursed balls love our hull!",
     "If ye see a wraith trail, brace — that's not fireworks, that's rude!",
     "Fire discipline, crew — chain 'em, flame 'em, don't let 'em breathe!",
+    "{{CREW}} — keep those cannons hot; don't let skellies breathe!",
   ],
   /** Skeleton ship: mid — repairs + other players. */
   sot_seq_skel_repair_players: [
@@ -174,11 +184,13 @@ export const SOT_TRIGGERS = {
     "Buckets and boards — we're trading paint with bones AND the clock!",
     "Eyes on the horizon — players love third-partying a skeleton brawl!",
     "Repair under fire — if a rival ship smells blood, assume they're hungry!",
+    "{{CREW}} — buckets and boards; watch for third-party players!",
   ],
   sot_seq_skel_finish: [
     "Skeleton scrap wrapped — planks patched, ego inflated, Squawks exhausted!",
     "Skelly ship handled — chat, rate that broadside ballet!",
     "Bones sent home — Cap'n Maxx, that's how ye filet a crew without skin!",
+    "{{CREW}} — skelly scrap done; that was textbook!",
   ],
 
   /** Player ship: ruthless pirate vs humble crew. */
@@ -205,6 +217,7 @@ export const SOT_TRIGGERS = {
     "Kraken on the hull — this is a beast of an action sequence, chat!",
     "Tentacles and terror — Squawks didn't sign up for seafood THIS personal!",
     "The kraken wants a hug — decline politely with cannons!",
+    "{{CREW}} — kraken hug declined — cannons up!",
   ],
   sot_seq_kraken_mid: [
     "If we're stuck in the wrap — keep shooting; hope the ugly chokes on us!",
@@ -212,11 +225,13 @@ export const SOT_TRIGGERS = {
     "Tangle feels hopeless? Joke's on him — we're spicy and hard to swallow!",
     "Harpoons, holes, screaming — classic family dinner with a kraken!",
     "Stay moving — if ye go still, ye become today's special!",
+    "{{CREW}} — keep shootin' in the wrap; we ain't snacks!",
   ],
   sot_seq_kraken_finish: [
     "Kraken beat or fled — either way, Squawks needs dry feathers!",
     "Tentacle tantrum over — Cap'n Maxx, that's legendary stress management!",
     "Sea monster chapter done — someone tell the fish we're closed!",
+    "{{CREW}} — kraken handled; dry feathers for Squawks!",
   ],
 
   /** Megalodon: greatness + feast / cook banter. */
@@ -224,6 +239,7 @@ export const SOT_TRIGGERS = {
     "Meg on the line — tales of greatness for this beauty, chat!",
     "Big fish energy — First Mate Squawks respects the teeth!",
     "Megalodon incoming — that's not a dolphin, that's a lifestyle!",
+    "{{CREW}} — meg incoming; respect the teeth!",
   ],
   sot_seq_meg_mid: [
     "If we land this beast, Squawks votes fish fry — chat brings sides!",
@@ -231,11 +247,13 @@ export const SOT_TRIGGERS = {
     "Cookin' meg is a dream — surviving meg is the homework!",
     "Chum in the water, drama in the air — peak Sea of Thieves cuisine!",
     "Keep the rail clear — this one's a moving buffet with attitude!",
+    "{{CREW}} — rail clear; don't be the appetizer!",
   ],
   sot_seq_meg_finish: [
     "Meg chapter closed — grill's cold, hearts loud, Squawks impressed!",
     "Big shark handled — someone write a shanty with too many teeth!",
     "Fish tale secured — Cap'n Maxx, that's how ye filet legend!",
+    "{{CREW}} — meg chapter closed; fish tale secured!",
   ],
 
   /** Island run: players + loot focus. */
@@ -243,6 +261,7 @@ export const SOT_TRIGGERS = {
     "Island run — eyes up for other crews, pockets down for every shiny!",
     "We're beachin' for loot — assume players already staked the good sand!",
     "Shore party rules: watch the tree line, grab the gold, don't trip!",
+    "{{CREW}} — island run: eyes up, pockets down!",
   ],
   sot_seq_island_run_mid: [
     "Loot fast — the map ain't the only thing that knows we're here!",
@@ -250,11 +269,13 @@ export const SOT_TRIGGERS = {
     "Stack chests, stack caution — outposts aren't the only exit!",
     "Dig, grab, scan horizon — multitask like pirates with ADHD!",
     "Every barrel might be bait — every bush might be a rival!",
+    "{{CREW}} — loot fast; listen for shots!",
   ],
   sot_seq_island_run_finish: [
     "Island haul wrapped — bags heavy, paranoia healthy!",
     "Back to the ship — Squawks counts loot; chat counts close calls!",
     "Shore leave over — Cap'n Maxx, that's how ye shop with cannons nearby!",
+    "{{CREW}} — haul wrapped; back to the ship!",
   ],
 
   // —— Live streaming assist (SoT board: Start / Finish) ——
@@ -454,6 +475,7 @@ export const SOT_PARROT_STATE: Record<SotTriggerId, ParrotState> = {
   sot_thanks_hype_1: "hype",
   sot_thanks_mvp_chat_1: "talking",
   sot_feeding_time: "feeding_time",
+  sot_banana_burn_reminder: "talking",
   sot_drink_cheers_1: "talking",
   sot_drink_grog_1: "talking",
   sot_drink_break_1: "talking",
@@ -507,7 +529,7 @@ export const sotTriggerBodySchema = z.object({
     .refine((v): v is SotTriggerId => isSotTriggerId(v), {
       message: "invalid SoT triggerId",
     }),
-  /** For sot_crew_praise — crew mate name shown on the Voyages board. */
+  /** Crew mate name (praise, action sequences with {{CREW}}, etc.). */
   crewMemberName: z.string().max(80).optional(),
 });
 

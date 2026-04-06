@@ -16,6 +16,7 @@ import {
   testChaosBodySchema,
   testCommentBodySchema,
   testFollowBodySchema,
+  testSubscribeBodySchema,
   testGiftBodySchema,
   testLikeMilestoneBodySchema,
   testShareBodySchema,
@@ -24,7 +25,11 @@ import {
 } from "@captain-squawks/shared";
 import { loadConfig } from "./config.js";
 import { BrainService } from "./brain/service.js";
-import { makeTestEvent, normalizeTikfinityPayload } from "./normalize.js";
+import {
+  makeTestEvent,
+  normalizeTikfinityPayload,
+  normalizeWebhookAsKind,
+} from "./normalize.js";
 import { createVoiceProvider } from "./services/tts/index.js";
 import { AudioFileStore } from "./services/audio/audio-file-store.js";
 import { processParrotReaction } from "./services/parrot-reaction.js";
@@ -183,10 +188,11 @@ h1{font-size:1.35rem;font-weight:600}
 <p><strong>WebSocket for overlays:</strong> <code>${escapeHtml(wsUrl)}</code></p>
 ${overlayBlock}
 <p><strong>Stream Deck:</strong> <code>POST</code> to <code>${escapeHtml(origin)}/api/streamdeck/hello</code> (and other routes — see repo).</p>
-<p><strong>Battle UI:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "battle_prepare_1" }))}</code> (same auth header as Stream Deck when a secret is set).</p>
+<p><strong>Battle UI:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "battle_prepare_1", opponentName: "optional", crewMemberName: "optional" }))}</code> — <code>opponentName</code> / <code>crewMemberName</code> fill <code>{{OPPONENT}}</code> / <code>{{CREW}}</code> in lines (same auth as Stream Deck when a secret is set).</p>
 <p><strong>Sea of Thieves board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/sot/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "sot_island_arrival_1" }))}</code> (same auth).</p>
 <p><strong>Rust adventure board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/rust/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "rust_roam_1" }))}</code> (same auth).</p>
 <p><strong>Battle title display:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle-board/scene</code> with JSON <code>${escapeHtml(JSON.stringify({ slug: "prepare" }))}</code> — broadcasts <code>BATTLE_BOARD_SCENE</code> on <code>/ws</code> for the 9:16 overlay (same auth when secret is set).</p>
+<p><strong>Webhooks (TikFinity-style body):</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/webhooks/tikfinity</code> (auto-detect), or <code>${escapeHtml(origin)}/api/webhooks/follow</code> / <code>${escapeHtml(origin)}/api/webhooks/subscribe</code> — JSON, <code>text/plain</code> JSON, or form fields; username fields: <code>username</code>, <code>user</code>, <code>nickname</code>, or nested under <code>data</code>. Optional <code>tier</code> / <code>level</code> on subscribe.</p>
 </body>
 </html>`;
 });
@@ -404,6 +410,7 @@ app.post("/api/streamdeck/squawk-feeding-time", streamDeckOpts, async () => {
 app.post("/api/battle/trigger", streamDeckOpts, async (req) => {
   const body = battleTriggerBodySchema.parse(req.body ?? {});
   const name = body.opponentName?.trim();
+  const crew = body.crewMemberName?.trim();
   const triggerId = body.triggerId as BattleTriggerId;
   const parrotState = BATTLE_PARROT_STATE[triggerId];
   const ev = makeTestEvent("custom", {
@@ -412,6 +419,7 @@ app.post("/api/battle/trigger", streamDeckOpts, async (req) => {
       source: "battle_ui",
       parrotState,
       ...(name ? { opponentName: name } : {}),
+      ...(crew ? { crewMemberName: crew } : {}),
     },
   });
   const message = await handleNormalizedEvent(ev);
@@ -461,6 +469,32 @@ app.post("/api/rust/trigger", streamDeckOpts, async (req) => {
 
 app.post("/api/webhooks/tikfinity", async (req, reply) => {
   const normalized = normalizeTikfinityPayload(coerceWebhookBody(req.body));
+  if (!normalized) {
+    return reply.code(400).send({ ok: false, error: "invalid_payload" });
+  }
+  const message = await handleNormalizedEvent(normalized);
+  return { ok: true, message };
+});
+
+/** Point TikFinity (or any tool) at this URL for follow-only actions. */
+app.post("/api/webhooks/follow", async (req, reply) => {
+  const normalized = normalizeWebhookAsKind(
+    coerceWebhookBody(req.body),
+    "follow"
+  );
+  if (!normalized) {
+    return reply.code(400).send({ ok: false, error: "invalid_payload" });
+  }
+  const message = await handleNormalizedEvent(normalized);
+  return { ok: true, message };
+});
+
+/** Point TikFinity (or any tool) at this URL for subscribe / membership actions. */
+app.post("/api/webhooks/subscribe", async (req, reply) => {
+  const normalized = normalizeWebhookAsKind(
+    coerceWebhookBody(req.body),
+    "subscribe"
+  );
   if (!normalized) {
     return reply.code(400).send({ ok: false, error: "invalid_payload" });
   }

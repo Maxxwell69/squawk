@@ -7,6 +7,7 @@ export function parrotStateForEventKind(kind: StreamEventKind): ParrotState {
     case "follow":
     case "comment":
       return "talking";
+    case "subscribe":
     case "gift":
     case "like_milestone":
     case "share":

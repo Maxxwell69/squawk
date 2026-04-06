@@ -6,7 +6,6 @@ import { getClientWsUrl } from "@/lib/bridge-urls";
 import { useParrotBridge } from "@/hooks/useParrotBridge";
 import { AudioUnlockButton } from "@/components/AudioUnlockButton";
 import { ParrotMedia } from "@/components/ParrotMedia";
-import { SquawkVolumeSlider } from "@/components/SquawkVolumeSlider";
 import { ParrotSpeechBubble } from "@/components/ParrotSpeechBubble";
 
 const PARROT_SCENE_CLASS =
@@ -82,8 +81,6 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
     subtitle,
     requestAudioUnlock,
     showAudioUnlockButton,
-    squawkVolume01,
-    setSquawkVolume01,
   } = useParrotBridge();
   const parrotOnly = variant === "parrot-only";
   const parrotWithBubble = variant === "parrot-with-bubble";
@@ -129,10 +126,6 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
           visible={showAudioUnlockButton}
           onUnlock={requestAudioUnlock}
         />
-        <SquawkVolumeSlider
-          volume01={squawkVolume01}
-          onVolumeChange={setSquawkVolume01}
-        />
         <div className="flex w-full min-w-0 flex-row flex-nowrap items-center justify-start gap-2 pl-1 pr-2">
           <div
             className={`relative shrink-0 transition-all duration-300 ${parrotOnlyStateClasses(state)}`}
@@ -175,10 +168,6 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
           visible={showAudioUnlockButton}
           onUnlock={requestAudioUnlock}
         />
-        <SquawkVolumeSlider
-          volume01={squawkVolume01}
-          onVolumeChange={setSquawkVolume01}
-        />
         <div
           className={`relative inline-block transition-all duration-300 ${parrotOnlyStateClasses(state)}`}
         >
@@ -197,10 +186,6 @@ export function ParrotOverlay({ variant = "widget" }: Props) {
       <AudioUnlockButton
         visible={showAudioUnlockButton}
         onUnlock={requestAudioUnlock}
-      />
-      <SquawkVolumeSlider
-        volume01={squawkVolume01}
-        onVolumeChange={setSquawkVolume01}
       />
       <div className="mx-auto flex max-w-[320px] flex-col gap-3">
         <div

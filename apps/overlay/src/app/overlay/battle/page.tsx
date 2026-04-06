@@ -28,10 +28,15 @@ import {
 } from "@/lib/battle-board-slugs";
 import { battleBoardSlugForTimer } from "@/lib/battle-board-timer-slug";
 import { publishBattleBoardScene } from "@/lib/battle-board-sync";
+import {
+  parseCrewNameLines,
+  pickCrewForSquawkOccasionally,
+} from "@/lib/crew-name-lines";
 
 const LS_BRIDGE = "squawk-battle-bridge";
 const LS_DECK_KEY = "squawk-parrot-test-stream-deck-key";
 const LS_OPPONENT = "squawk-battle-opponent";
+const LS_BATTLE_CREW = "squawk-battle-crew-names";
 const LS_MUSIC_VOL = "squawk-battle-music-vol";
 const LS_MUSIC_MUTE = "squawk-battle-music-muted";
 
@@ -167,7 +172,8 @@ async function postBattleTrigger(
   base: string,
   triggerId: BattleTriggerId,
   streamDeckKey: string,
-  opponentName?: string
+  opponentName?: string,
+  crewMemberName?: string
 ): Promise<unknown> {
   const origin = normalizeBase(base);
   const url = new URL(BATTLE_PATH, `${origin}/`);
@@ -178,11 +184,17 @@ async function postBattleTrigger(
   if (key && bridgeUsesSecret(BATTLE_PATH)) {
     headers["x-stream-deck-key"] = key;
   }
-  const body: { triggerId: BattleTriggerId; opponentName?: string } = {
+  const body: {
+    triggerId: BattleTriggerId;
+    opponentName?: string;
+    crewMemberName?: string;
+  } = {
     triggerId,
   };
   const n = opponentName?.trim();
   if (n) body.opponentName = n;
+  const c = crewMemberName?.trim();
+  if (c) body.crewMemberName = c;
   const res = await fetch(url.toString(), {
     method: "POST",
     headers,
@@ -234,6 +246,7 @@ export default function BattleBoardPage() {
   const [bridgeUrl, setBridgeUrl] = useState(DEFAULT_LOCAL_BRIDGE_HTTP);
   const [streamDeckKey, setStreamDeckKey] = useState("");
   const [opponentName, setOpponentName] = useState("");
+  const [battleCrewListText, setBattleCrewListText] = useState("");
   const [busy, setBusy] = useState(false);
   const [log, setLog] = useState("");
   const [remainingSec, setRemainingSec] = useState(TOTAL_SEC);
@@ -254,6 +267,11 @@ export default function BattleBoardPage() {
   const elapsedSec =
     matchStatus === "running" ? TOTAL_SEC - remainingSec : 0;
 
+  const battleCrewNames = useMemo(
+    () => parseCrewNameLines(battleCrewListText),
+    [battleCrewListText]
+  );
+
   const { primePlayback } = useBattleMusic(matchStatus, elapsedSec, {
     volume01: musicVolume01,
     muted: musicMuted,
@@ -269,6 +287,9 @@ export default function BattleBoardPage() {
       "";
     setStreamDeckKey(keyFromLs);
     setOpponentName(window.localStorage.getItem(LS_OPPONENT)?.trim() ?? "");
+    setBattleCrewListText(
+      window.localStorage.getItem(LS_BATTLE_CREW)?.trim() ?? ""
+    );
     const volRaw = window.localStorage.getItem(LS_MUSIC_VOL);
     const v = volRaw != null ? Number.parseFloat(volRaw) : NaN;
     if (Number.isFinite(v) && v >= 0 && v <= 1) {
@@ -378,11 +399,15 @@ export default function BattleBoardPage() {
       if (elapsed !== m.elapsed) continue;
       if (autoFiredRef.current.has(m.elapsed)) continue;
       autoFiredRef.current.add(m.elapsed);
-      void postBattleTrigger(bridgeUrl, m.trigger, streamDeckKey, opponentName).catch(
-        () => {
-          /* ignore auto fail */
-        }
-      );
+      void postBattleTrigger(
+        bridgeUrl,
+        m.trigger,
+        streamDeckKey,
+        opponentName,
+        pickCrewForSquawkOccasionally(battleCrewNames)
+      ).catch(() => {
+        /* ignore auto fail */
+      });
       sprinkleSecsUntilRef.current = randomInt(20, 42);
       firedMinuteCall = true;
       break;
@@ -398,7 +423,8 @@ export default function BattleBoardPage() {
         bridgeUrl,
         "battle_banter_chip",
         streamDeckKey,
-        opponentName
+        opponentName,
+        pickCrewForSquawkOccasionally(battleCrewNames)
       ).catch(() => {
         /* ignore */
       });
@@ -417,14 +443,25 @@ export default function BattleBoardPage() {
     sprinkleSecsUntilRef.current -= 1;
     if (sprinkleSecsUntilRef.current <= 0) {
       const id = pickRandomSprinkleTrigger(elapsed);
-      void postBattleTrigger(bridgeUrl, id, streamDeckKey, opponentName).catch(
-        () => {
-          /* ignore */
-        }
-      );
+      void postBattleTrigger(
+        bridgeUrl,
+        id,
+        streamDeckKey,
+        opponentName,
+        pickCrewForSquawkOccasionally(battleCrewNames)
+      ).catch(() => {
+        /* ignore */
+      });
       sprinkleSecsUntilRef.current = randomInt(28, 50);
     }
-  }, [matchStatus, remainingSec, bridgeUrl, streamDeckKey, opponentName]);
+  }, [
+    battleCrewNames,
+    matchStatus,
+    remainingSec,
+    bridgeUrl,
+    streamDeckKey,
+    opponentName,
+  ]);
 
   const fire = useCallback(
     async (triggerId: BattleTriggerId, label: string) => {
@@ -434,7 +471,8 @@ export default function BattleBoardPage() {
           bridgeUrl,
           triggerId,
           streamDeckKey,
-          opponentName
+          opponentName,
+          pickCrewForSquawkOccasionally(battleCrewNames)
         );
         setLog(`[${label}]\n${JSON.stringify(data, null, 2)}`);
       } catch (e) {
@@ -443,7 +481,7 @@ export default function BattleBoardPage() {
         setBusy(false);
       }
     },
-    [bridgeUrl, streamDeckKey, opponentName]
+    [battleCrewNames, bridgeUrl, streamDeckKey, opponentName]
   );
 
   const phaseHint = useMemo(() => {
@@ -468,7 +506,8 @@ export default function BattleBoardPage() {
       bridgeUrl,
       "battle_match_start",
       streamDeckKey,
-      opponentName
+      opponentName,
+      pickCrewForSquawkOccasionally(battleCrewNames)
     ).catch(() => {
       /* bridge offline — match still runs */
     });
@@ -674,6 +713,18 @@ export default function BattleBoardPage() {
               className="mt-1 w-full max-w-md rounded-lg border border-white/20 bg-black/40 px-3 py-2 font-body text-sm text-parchment outline-none focus:border-squawk-gold/60"
             />
           </label>
+          <label className="mt-4 block font-body text-xs font-medium text-parchment/80">
+            Your crew names (one per line — Squawk sometimes shouts them out during
+            battle lines; optional)
+            <textarea
+              value={battleCrewListText}
+              onChange={(e) => setBattleCrewListText(e.target.value)}
+              rows={3}
+              spellCheck={false}
+              placeholder={"Deckhand Alex\nNavigator Sam"}
+              className="mt-1 w-full max-w-md rounded-lg border border-white/20 bg-black/40 px-3 py-2 font-body text-sm text-parchment outline-none focus:border-squawk-gold/60"
+            />
+          </label>
         </section>
 
         <section className="rounded-xl border border-cyan-700/35 bg-black/30 p-4">
@@ -820,7 +871,8 @@ export default function BattleBoardPage() {
                           bridgeUrl,
                           "battle_phase5_we_won",
                           streamDeckKey,
-                          opponentName
+                          opponentName,
+                          pickCrewForSquawkOccasionally(battleCrewNames)
                         );
                         setPartyRemainingSec(VICTORY_PARTY_SEC);
                         setMatchStatus("victory_party");
@@ -847,7 +899,8 @@ export default function BattleBoardPage() {
                           bridgeUrl,
                           "battle_phase5_we_lost",
                           streamDeckKey,
-                          opponentName
+                          opponentName,
+                          pickCrewForSquawkOccasionally(battleCrewNames)
                         );
                         setMatchStatus("defeat");
                         setLog((prev) => `${prev}\n[We lost → softer track]`);

@@ -4,119 +4,152 @@ import { pickRandomLine } from "./personality/captain-squawks";
 
 /**
  * Battle mode — each trigger maps to a small pool; UI picks one line at random per button press.
- * Use {{OPPONENT}} in strings for opponent name substitution (see lineForBattleTrigger).
+ * Use {{OPPONENT}} and {{CREW}} in strings (see lineForBattleTrigger).
  */
 
 export const BATTLE_TRIGGERS = {
   // —— Prepare for battle ——
   battle_prepare_1: [
     "Prepare for battle, crew! Start with taps and tiny gifts — warm the deck before we trade broadsides!",
+    "{{CREW}} — ye heard the call: warm the deck with taps before we trade broadsides!",
   ],
   battle_prepare_2: [
     "Don't fire every cannon at once! Pace the fodder — small gifts first, then we stack when the time is right.",
+    "{{CREW}}, pace it pretty — small gifts first, then we stack when Cap'n says!",
   ],
   battle_prepare_3: [
     "Finger hearts, roses, light taps — tickle their board before we load the heavy shot!",
+    "{{CREW}} on the rail — hearts, roses, light taps till their board blinks!",
   ],
   battle_prepare_4: [
     "Save yer biggest gifts for the swing minutes — we need rhythm, not a one-minute dump!",
+    "{{CREW}} knows rhythm — save the heavy shot for when Squawk calls it!",
   ],
   battle_prepare_5: [
     "This is a marathon, not a sprint — taps first, then we call the targets together!",
+    "{{CREW}} — marathon energy: taps first, targets when we're hot!",
   ],
   battle_prepare_6: [
     "Eyes up! Small gifts build pressure — hold the big guns until Cap'n Maxx says load!",
+    "{{CREW}}, eyes up — small gifts build pressure till the Cap'n loads!",
   ],
   battle_prepare_7: [
     "Crew, breathe — warm up with likes and taps. We'll name prize targets when the water's hot!",
+    "{{CREW}} — breathe and tap; we name targets when the water's right!",
   ],
   battle_prepare_8: [
     "Let 'em feel us before we break the bank — light gifts now, cannons when I squawk!",
+    "{{CREW}} — light gifts now, cannons when Squawk squawks!",
   ],
 
   // —— Battle mode one (minute one) — 10 hype lines ——
   battle_phase1_1: [
     "Minute one — nice and easy! Have fun, stack light, and watch for bonus on that first gift!",
+    "{{CREW}} — minute one's yours: fun, light stacks, eyes on that first-gift bonus!",
   ],
   battle_phase1_2: [
     "We're just getting warm! Keep it friendly — look for extra on the first gift swing!",
+    "{{CREW}}, keep it friendly — first swing sometimes hides a little extra!",
   ],
   battle_phase1_3: [
     "Smooth seas, steady hands — tap, gift small, smile big. This is our warm-up lap!",
+    "{{CREW}} — smooth hands, small gifts, big smile. Warm-up lap!",
   ],
   battle_phase1_4: [
     "No stress, crew — rhythm over rush. Fun first, fireworks later!",
+    "{{CREW}} — rhythm over rush; fun first, fireworks when I say!",
   ],
   battle_phase1_5: [
     "Feel the room out — first gifts sometimes hide a little extra. Eyes open!",
+    "{{CREW}}, feel the room — first gifts hide extras sometimes!",
   ],
   battle_phase1_6: [
     "We're vibing! Keep it light, keep it loud in chat, and let the gifts flow easy!",
+    "{{CREW}} — we're vibing! Chat loud, gifts easy!",
   ],
   battle_phase1_7: [
     "Good energy only — we're building tempo. Stack with a smile!",
+    "{{CREW}} — good energy, build tempo, stack smilin'!",
   ],
   battle_phase1_8: [
     "This is the feel-out round — taps, hearts, small bags. We've got time!",
+    "{{CREW}}, feel-out round — taps, hearts, small bags. Time's on our side!",
   ],
   battle_phase1_9: [
     "Let 'em hear us cheer! First minute is about fun — the storm comes later!",
+    "{{CREW}} — cheer like they can hear ye! Fun first, storm later!",
   ],
   battle_phase1_10: [
     "Stay frosty — bonus multipliers love a calm first push. You've got this!",
+    "{{CREW}} — stay frosty; calm first push wins bonuses!",
   ],
 
   // —— Battle mode two ——
   battle_phase2_watch_3x: [
     "Watch out — 3x gifting can flip a fight! Read the board before you blast!",
+    "{{CREW}} — watch 3× close; read the board before ye blast!",
   ],
   battle_phase2_cannons: [
     "Get the cannons ready — steady stacks, call your shots, no wild broadsides!",
+    "{{CREW}} — cannons ready: steady stacks, called shots!",
   ],
   battle_phase2_fun: [
     "Time for fun — hype the chat, hit your gifts, make noise!",
+    "{{CREW}} — fun minute: hype chat, hit gifts, make noise!",
   ],
   battle_phase2_battle_on: [
     "Battle two is live — stay sharp, stay loud, stay together!",
+    "{{CREW}} — battle two live: sharp, loud, together!",
   ],
 
   // —— Battle mode three ——
   battle_phase3_chain_shot: [
     "More cannons — send some chain shot! Break their rhythm and steal the pace!",
+    "{{CREW}} — chain shot their rhythm; steal the pace!",
   ],
   battle_phase3_halfway: [
     "We're more than halfway there — positive vibes only, we're still in this fight!",
+    "{{CREW}} — past halfway, positive only, still in this!",
   ],
   battle_phase3_push: [
     "Stack with purpose — every gift counts from here. Eyes on the prize!",
+    "{{CREW}} — stack with purpose; every gift counts now!",
   ],
 
   // —— Battle four — last minute ——
   battle_phase4_snipers: [
     "Last minute! Watch for snipers — big gifts can steal at the wire. Eyes open!",
+    "{{CREW}} — snipers at the wire; eyes open for big steals!",
   ],
   battle_phase4_board: [
     "Prepare to board — final push, everyone on deck, no sleep till the clock dies!",
+    "{{CREW}} — boardin' push: all hands, no sleep till the horn!",
   ],
   battle_phase4_ahead: [
     "We're ahead — hold the line! Clean stacks, no panic gifts, finish strong!",
+    "{{CREW}} — we're ahead: hold the line, clean stacks!",
   ],
   battle_phase4_behind: [
     "We're behind — we can still catch up once we board! One big coordinated push!",
+    "{{CREW}} — we're chasin': one coordinated board push!",
   ],
 
   // —— Battle five — repair & party ——
   battle_phase5_repair_party: [
     "Repair and party — good fight either way. Breathe, cheer, and thank the room!",
+    "{{CREW}} — repair and party; breathe, cheer, thank the room!",
   ],
   battle_phase5_we_won: [
     "Victory! We won this round — huge love to the crew! Now congratulate the other side — they brought the fight!",
+    "Victory! {{CREW}} and the whole rail — ye did it! Now show love to the other side!",
   ],
   battle_phase5_we_lost: [
     "Tough seas — we lost this one, but we sailed hard! Salute the opponents and our MVPs who carried us!",
+    "Tough round — {{CREW}} and crew sailed hard! Salute the other side and our MVPs!",
   ],
   battle_phase5_mvps_prompt: [
     "First Mate Squawks wants to know — who were our MVPs tonight? Shout their names in chat!",
+    "{{CREW}} — who else was MVP? Shout names in chat!",
   ],
 
   /** Cap'n told Squawk to introduce himself — battle board button. */
@@ -132,6 +165,7 @@ export const BATTLE_TRIGGERS = {
     "We're in battle mode — Squawk's on deck! Tap it out, make noise, let 'em feel us before the heavy shot!",
     "First Mate Squawks — battle stations! Tap it out nice and easy: likes, roses, small bags. Wake the room!",
     "It's go time — battle clock is running! Tap it out, crew — rhythm first, cannons when I call it!",
+    "{{CREW}} — battle's live! Tap it out with me: hearts, taps, warm the deck!",
   ],
 
   /** Short auto lines from ~0:30 through end of minute one; keeps Squawk chatty without long speeches. */
@@ -148,6 +182,9 @@ export const BATTLE_TRIGGERS = {
     "Squawk says tap — make that board blink!",
     "Warm the deck — tiny gifts, big energy!",
     "One tap at a time — we're building!",
+    "{{CREW}} — taps light and steady!",
+    "{{CREW}} — chat loud, flock proud!",
+    "{{CREW}} — rhythm, not rush!",
   ],
 
   // —— Timer auto callouts (Squawk names the mode; random line per fire) ——
@@ -157,6 +194,7 @@ export const BATTLE_TRIGGERS = {
     "Second minute — this is where the fun really starts! Hype the room and read the board!",
     "We're in battle mode two now — eyes on 3×, voices up, make 'em feel the pressure!",
     "Two minutes down — pace yourselves, save a punch for the wire, and cheer like pirates!",
+    "{{CREW}} — minute two: eyes on 3×, stacks steady!",
   ],
   battle_auto_phase3: [
     "Third minute — we're past halfway! Chain-shot their rhythm and steal the pace!",
@@ -164,6 +202,7 @@ export const BATTLE_TRIGGERS = {
     "Battle mode three — push with purpose! Every gift from here is gold!",
     "Third minute energy — more than halfway! Stay loud, stay smart, stay together!",
     "We're sailing the middle stretch — stack clean, call targets, no panic gifts!",
+    "{{CREW}} — past halfway: push with purpose!",
   ],
   battle_auto_phase4: [
     "Fourth minute — watch for snipers and last-second steals! Eyes open at the wire!",
@@ -171,6 +210,7 @@ export const BATTLE_TRIGGERS = {
     "Last leg before the bell — hold the line if we're ahead, coordinated rush if we're chasing!",
     "Fourth minute — snipers love the chaos! Call your shots and protect the stack!",
     "We're in the deep water now — board 'em with hype, finish with heart!",
+    "{{CREW}} — sniper minute: eyes at the wire!",
   ],
   battle_auto_phase5: [
     "Final minute — this is it! Everything on the deck, nothing held back!",
@@ -178,6 +218,7 @@ export const BATTLE_TRIGGERS = {
     "Fifth minute — empty the powder if you must, but finish as a crew!",
     "Clock's almost dry — cheer like the parrot army, one last coordinated swing!",
     "Endgame — breathe, then blast! Make this minute count!",
+    "{{CREW}} — last minute: everything on deck!",
   ],
 
   // —— Hail opponent (use {{OPPONENT}}) ——
@@ -209,6 +250,7 @@ export const BATTLE_TRIGGERS = {
     "{{OPPONENT}}, did ye bring cannons or confetti? Either way we're still here!",
     "Tell {{OPPONENT}} we're stealin' their wind — fair chase!",
     "{{OPPONENT}}'s crew hits like wet paper — love ye anyway!",
+    "{{CREW}} — we're roastin' {{OPPONENT}} with love — pile on in chat!",
   ],
   battle_hail_roast_2: [
     "If {{OPPONENT}}'s gifts were any lighter they'd float away!",
@@ -216,6 +258,7 @@ export const BATTLE_TRIGGERS = {
     "We've seen scarier waves in a bathtub than {{OPPONENT}}'s last push!",
     "{{OPPONENT}}, save some energy for the sail home — ye'll need it!",
     "First Mate Squawks says {{OPPONENT}}'s chat types faster than they gift — all love!",
+    "{{CREW}} — {{OPPONENT}} heard us; keep the banter fun!",
   ],
   battle_hail_roast_3: [
     "{{OPPONENT}} — we're not sayin' yer predictable, but the parrot called that play!",
@@ -223,6 +266,7 @@ export const BATTLE_TRIGGERS = {
     "{{OPPONENT}}'s ship leaks hype — we're bailin' with victory buckets!",
     "We still love {{OPPONENT}} — even when they're feedin' us easy reads!",
     "{{OPPONENT}}, ye fight like a legend… from the kiddie pool!",
+    "{{CREW}} — all in good fun — {{OPPONENT}} knows we love 'em!",
   ],
 
   // —— Victory dance (emote-forward; same clip as Stream Deck victory-dance) ——
@@ -231,6 +275,7 @@ export const BATTLE_TRIGGERS = {
     "We won the moment — stomp with the parrot!",
     "That's the victory shuffle — crew, make noise!",
     "Spin the compass — we dance like champions!",
+    "{{CREW}} — victory shuffle with Squawks!",
   ],
 
   // —— Victory party (optional taps during 2 min celebration) ——
@@ -255,12 +300,14 @@ export const BATTLE_TRIGGERS = {
     "We didn't get the dub — still proud of every gift and every voice!",
     "Loss stings, but the crew's heart didn't — we'll be back!",
     "Shake it off — good fight, good chat, we'll run it back!",
+    "{{CREW}} — tough round, proud of ye anyway!",
   ],
   battle_party_loss_2: [
     "Lighter seas tonight — still love our MVPs who showed up!",
     "No shame in a hard loss — we showed up loud!",
     "Rest the cannons, hug the chat — we go again next time!",
     "They got the round — they don't get our spirit!",
+    "{{CREW}} — heads up; we run it back louder!",
   ],
 
   // —— Squawk cheer (any phase) ——
@@ -270,6 +317,7 @@ export const BATTLE_TRIGGERS = {
     "Squawk squawk! Let 'em feel the parrot energy — we don't quit!",
     "Cannons up, voices up — cheer like we own the tide!",
     "Cap'n Maxx is proud — keep stomping, keep gifting, keep believing!",
+    "{{CREW}} — that's the spirit! Louder!",
   ],
 } as const satisfies Record<string, readonly string[]>;
 
@@ -287,17 +335,21 @@ export const battleTriggerBodySchema = z.object({
       message: "invalid battle triggerId",
     }),
   opponentName: z.string().max(100).optional(),
+  /** From battle board crew list — lines with {{CREW}} shout them out. */
+  crewMemberName: z.string().max(80).optional(),
 });
 
 export type BattleTriggerBody = z.infer<typeof battleTriggerBodySchema>;
 
 export function lineForBattleTrigger(
   id: BattleTriggerId,
-  opts?: { opponentName?: string }
+  opts?: { opponentName?: string; crewMemberName?: string }
 ): string {
   let line = pickRandomLine(BATTLE_TRIGGERS[id]);
   const name = opts?.opponentName?.trim() || "the other crew";
   line = line.replace(/\{\{OPPONENT\}\}/g, name);
+  const crew = opts?.crewMemberName?.trim() || "mates";
+  line = line.replace(/\{\{CREW\}\}/g, crew);
   return line;
 }
 

@@ -42,6 +42,10 @@ export const testFollowBodySchema = z.object({
   username: z.string().optional(),
 });
 
+export const testSubscribeBodySchema = z.object({
+  username: z.string().optional(),
+});
+
 export const testGiftBodySchema = z.object({
   giftName: z.string().optional(),
   username: z.string().optional(),

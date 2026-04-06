@@ -56,6 +56,16 @@ export class BrainService {
         ] as const;
         return `${user} just joined the crew! ${pickRandomLine(welcomes)}`;
       }
+      case "subscribe": {
+        const thanks = [
+          "Thank ye — subscriptions keep this ship sailing!",
+          "A subscriber! Squawks is flappin' with joy!",
+          "Cap'n Maxx, we got a real one — welcome to the inner circle!",
+          "That's commitment — the crew salutes ye!",
+        ] as const;
+        const tier = detail ? ` (${detail})` : "";
+        return `${user} subscribed${tier}! ${pickRandomLine(thanks)}`;
+      }
       case "comment": {
         const line = detail || pickRandomLine(PARROT_LINES.comment);
         return `${user} says: ${line}`;
@@ -76,7 +86,14 @@ export class BrainService {
             rawPayload && typeof rawPayload.opponentName === "string"
               ? rawPayload.opponentName
               : undefined;
-          return lineForBattleTrigger(event.detail, { opponentName });
+          const crewMemberName =
+            rawPayload && typeof rawPayload.crewMemberName === "string"
+              ? rawPayload.crewMemberName
+              : undefined;
+          return lineForBattleTrigger(event.detail, {
+            opponentName,
+            crewMemberName,
+          });
         }
         if (event.detail && isSotTriggerId(event.detail)) {
           const crew =

@@ -15,6 +15,7 @@ export const captainSquawksPersonality = {
 
 export type LinePools = {
   follow: readonly string[];
+  subscribe: readonly string[];
   gift: readonly string[];
   like_milestone: readonly string[];
   share: readonly string[];
@@ -30,6 +31,11 @@ export const PARROT_LINES: LinePools = {
     "Squawk! New crew aboard, Cap'n Maxx!",
     "Another soul signs the roster — welcome, mate!",
     "The ship gains a sailor! Huzzah!",
+  ],
+  subscribe: [
+    "A subscriber flies the colors — thank ye for believin' in the voyage!",
+    "Subscription on deck — the fleet just got stronger!",
+    "Cap'n Maxx, we gained a true believer — Squawks salutes!",
   ],
   gift: [
     "A gift hits the deck! Thank ye, crew!",
@@ -82,6 +88,8 @@ export function lineForEventKind(kind: StreamEventKind): string {
   switch (kind) {
     case "follow":
       return pickRandomLine(PARROT_LINES.follow);
+    case "subscribe":
+      return pickRandomLine(PARROT_LINES.subscribe);
     case "gift":
       return pickRandomLine(PARROT_LINES.gift);
     case "like_milestone":
