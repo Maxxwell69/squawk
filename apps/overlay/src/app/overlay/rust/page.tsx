@@ -23,11 +23,13 @@ import {
   useAdventureMusicPlaylist,
   type AdventureMusicTrack,
 } from "@/hooks/useAdventureMusicPlaylist";
+import { parseCrewNameLines } from "@/lib/crew-name-lines";
 
 const LS_BRIDGE = "squawk-battle-bridge";
 const LS_DECK_KEY = "squawk-parrot-test-stream-deck-key";
 const LS_RUST_ADV_VOL = "squawk-rust-adventure-music-vol";
 const LS_RUST_ADV_MUTE = "squawk-rust-adventure-music-muted";
+const LS_RUST_CREW = "squawk-rust-crew-names";
 const RUST_PATH = "/api/rust/trigger";
 
 const STREAMING_SQUAWK_IDLE_MS = 60_000;
@@ -137,7 +139,8 @@ function bridgeUsesSecret(path: string): boolean {
 async function postRustTrigger(
   base: string,
   triggerId: RustTriggerId,
-  streamDeckKey: string
+  streamDeckKey: string,
+  crewMemberName?: string
 ): Promise<unknown> {
   const origin = normalizeBase(base);
   const url = new URL(RUST_PATH, `${origin}/`);
@@ -148,10 +151,15 @@ async function postRustTrigger(
   if (key && bridgeUsesSecret(RUST_PATH)) {
     headers["x-stream-deck-key"] = key;
   }
+  const body: { triggerId: RustTriggerId; crewMemberName?: string } = {
+    triggerId,
+  };
+  const c = crewMemberName?.trim();
+  if (c) body.crewMemberName = c;
   const res = await fetch(url.toString(), {
     method: "POST",
     headers,
-    body: JSON.stringify({ triggerId }),
+    body: JSON.stringify(body),
   });
   const text = await res.text();
   if (!res.ok) throw new Error(text || `${res.status}`);
@@ -174,6 +182,7 @@ export default function RustAdventureBoardPage() {
   const [rustTracksError, setRustTracksError] = useState<string | null>(null);
   const [rustMusicVol01, setRustMusicVol01] = useState(0.75);
   const [rustMusicMuted, setRustMusicMuted] = useState(false);
+  const [crewListText, setCrewListText] = useState("");
 
   const {
     nowPlaying,
@@ -221,7 +230,13 @@ export default function RustAdventureBoardPage() {
     if (window.localStorage.getItem(LS_RUST_ADV_MUTE) === "1") {
       setRustMusicMuted(true);
     }
+    setCrewListText(window.localStorage.getItem(LS_RUST_CREW) ?? "");
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(LS_RUST_CREW, crewListText);
+  }, [crewListText]);
 
   useEffect(() => {
     void fetch("/api/rust-adventure-music")
@@ -267,8 +282,16 @@ export default function RustAdventureBoardPage() {
   );
 
   const postTracked = useCallback(
-    async (triggerId: RustTriggerId): Promise<unknown> => {
-      const data = await postRustTrigger(bridgeUrl, triggerId, streamDeckKey);
+    async (
+      triggerId: RustTriggerId,
+      crewMemberName?: string
+    ): Promise<unknown> => {
+      const data = await postRustTrigger(
+        bridgeUrl,
+        triggerId,
+        streamDeckKey,
+        crewMemberName
+      );
       lastSquawkAtRef.current = Date.now();
       return data;
     },
@@ -276,10 +299,14 @@ export default function RustAdventureBoardPage() {
   );
 
   const fire = useCallback(
-    async (triggerId: RustTriggerId, label: string) => {
+    async (
+      triggerId: RustTriggerId,
+      label: string,
+      crewMemberName?: string
+    ) => {
       setBusy(true);
       try {
-        const data = await postTracked(triggerId);
+        const data = await postTracked(triggerId, crewMemberName);
         setLog(`[${label}]\n${JSON.stringify(data, null, 2)}`);
       } catch (e) {
         setLog(`[${label}]\n${String(e)}`);
@@ -291,9 +318,13 @@ export default function RustAdventureBoardPage() {
   );
 
   const fireQuiet = useCallback(
-    async (triggerId: RustTriggerId, label: string) => {
+    async (
+      triggerId: RustTriggerId,
+      label: string,
+      crewMemberName?: string
+    ) => {
       try {
-        const data = await postTracked(triggerId);
+        const data = await postTracked(triggerId, crewMemberName);
         setLog(`[auto: ${label}]\n${JSON.stringify(data, null, 2)}`);
       } catch (e) {
         setLog(`[auto: ${label}]\n${String(e)}`);
@@ -301,6 +332,8 @@ export default function RustAdventureBoardPage() {
     },
     [postTracked]
   );
+
+  const crewNames = parseCrewNameLines(crewListText);
 
   useEffect(() => {
     if (!streamingAssist) return;
@@ -434,6 +467,63 @@ export default function RustAdventureBoardPage() {
             </Link>
           </div>
         </header>
+
+        <section className="rounded-xl border border-amber-700/35 bg-amber-950/15 p-4">
+          <h2 className="font-display text-sm font-bold text-amber-100">
+            Team names &amp; Squawk
+          </h2>
+          <p className="mt-1 font-body text-xs text-parchment/70">
+            One teammate per line (saved in this browser). Squawk shouts them out;
+            Intro when Cap&apos;n tells him to introduce himself.
+          </p>
+          <textarea
+            value={crewListText}
+            onChange={(e) => setCrewListText(e.target.value)}
+            rows={4}
+            spellCheck={false}
+            placeholder={"Roof camper Rex\nFarmer Jo"}
+            className="mt-3 w-full max-w-lg rounded-lg border border-amber-800/40 bg-black/50 px-3 py-2 font-body text-sm text-parchment outline-none focus:border-amber-500/60"
+          />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              className={btn}
+              onClick={() => void fire("rust_squawk_intro", "Introduce Squawk")}
+            >
+              Introduce Squawk
+            </button>
+            <button
+              type="button"
+              disabled={busy || crewNames.length === 0}
+              className={btn}
+              onClick={() => {
+                const pick =
+                  crewNames[Math.floor(Math.random() * crewNames.length)]!;
+                void fire("rust_crew_praise", `Praise team — ${pick}`, pick);
+              }}
+            >
+              Praise random teammate
+            </button>
+          </div>
+          {crewNames.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {crewNames.map((name, i) => (
+                <button
+                  key={`${i}-${name}`}
+                  type="button"
+                  disabled={busy}
+                  className={btn}
+                  onClick={() =>
+                    void fire("rust_crew_praise", `Praise — ${name}`, name)
+                  }
+                >
+                  Praise {name}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </section>
 
         <section className="rounded-xl border border-white/10 bg-black/30 p-4">
           <h2 className="font-display text-sm font-bold text-amber-200/95">

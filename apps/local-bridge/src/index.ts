@@ -429,11 +429,13 @@ app.post("/api/sot/trigger", streamDeckOpts, async (req) => {
   const body = sotTriggerBodySchema.parse(req.body ?? {});
   const triggerId = body.triggerId as SotTriggerId;
   const parrotState = SOT_PARROT_STATE[triggerId];
+  const crew = body.crewMemberName?.trim();
   const ev = makeTestEvent("custom", {
     detail: body.triggerId,
     raw: {
       source: "sot_board",
       parrotState,
+      ...(crew ? { crewMemberName: crew } : {}),
     },
   });
   const message = await handleNormalizedEvent(ev);
@@ -444,11 +446,13 @@ app.post("/api/rust/trigger", streamDeckOpts, async (req) => {
   const body = rustTriggerBodySchema.parse(req.body ?? {});
   const triggerId = body.triggerId as RustTriggerId;
   const parrotState = RUST_PARROT_STATE[triggerId];
+  const crew = body.crewMemberName?.trim();
   const ev = makeTestEvent("custom", {
     detail: body.triggerId,
     raw: {
       source: "rust_board",
       parrotState,
+      ...(crew ? { crewMemberName: crew } : {}),
     },
   });
   const message = await handleNormalizedEvent(ev);

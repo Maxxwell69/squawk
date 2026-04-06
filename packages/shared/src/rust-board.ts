@@ -250,6 +250,24 @@ export const RUST_TRIGGERS = {
     "Squawks peeked — Cap'n's eyes closed, phone still glowin'. That's not AFK, that's a nap with Wi-Fi!",
     "He dozed off mid-scroll — TikTok 1, Pirate Maxx 0. Someone poke him gently!",
   ],
+
+  rust_squawk_intro: [
+    "Cap'n said introduce meself? Fine — I'm First Mate Squawks, Pirate Maxx's bird! I bark when Rust gets toxic, I cheer when ye roof-camp successfully, and I pretend I understand electricity. Let's go!",
+    "Intro time? Squawks here — hype parrot for Pirate Maxx. Wipes, raids, boat drama: if it needs a squawk, I'm on it. Now someone place a bag in chat!",
+    "Orders from the Cap'n: who am I? First Mate Squawks — part feather, part coping mechanism for this man's Rust addiction. Stick around; it gets loud!",
+    "Cap'n wants a formal hello? *adjusts imaginary hat* Squawks, First Mate. I translate panic into content. Ye're welcome!",
+  ],
+
+  /** Use {{CREW}} — name from Rust board POST body crewMemberName. */
+  rust_crew_praise: [
+    "{{CREW}} — that's the teammate who shows up with meds and a dream. Big love!",
+    "Shout {{CREW}} — ye farmed, ye built, ye probably got roof-camped anyway. Legend!",
+    "Squawks salutes {{CREW}} — real ones don't leave the team on a cold beach!",
+    "{{CREW}} carried harder than a full metal kit run. The bird sees ye!",
+    "Give {{CREW}} the flowers — that's wipe-day hero energy!",
+    "{{CREW}} — chat appreciates ye, the Cap'n appreciates ye, I appreciate ye (mostly)!",
+    "First Mate Squawks tips a wing to {{CREW}} — keep that toxic positivity flowin'!",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type RustTriggerId = keyof typeof RUST_TRIGGERS;
@@ -278,8 +296,14 @@ export function isRustTriggerId(v: string): v is RustTriggerId {
   return Object.prototype.hasOwnProperty.call(RUST_TRIGGERS, v.trim());
 }
 
-export function lineForRustTrigger(id: RustTriggerId): string {
-  return pickRandomLine(RUST_TRIGGERS[id]);
+export function lineForRustTrigger(
+  id: RustTriggerId,
+  opts?: { crewMemberName?: string }
+): string {
+  let line = pickRandomLine(RUST_TRIGGERS[id]);
+  const crew = opts?.crewMemberName?.trim() || "this legend";
+  line = line.replace(/\{\{CREW\}\}/g, crew);
+  return line;
 }
 
 export const RUST_PARROT_STATE: Record<RustTriggerId, ParrotState> = {
@@ -326,6 +350,9 @@ export const RUST_PARROT_STATE: Record<RustTriggerId, ParrotState> = {
   rust_afk_captain_banter_b: "talking",
   rust_afk_captain_banter_c: "hype",
   rust_afk_captain_banter_d: "hype",
+
+  rust_squawk_intro: "talking",
+  rust_crew_praise: "hype",
 };
 
 export const rustTriggerBodySchema = z.object({
@@ -335,6 +362,7 @@ export const rustTriggerBodySchema = z.object({
     .refine((v): v is RustTriggerId => isRustTriggerId(v), {
       message: "invalid Rust triggerId",
     }),
+  crewMemberName: z.string().max(80).optional(),
 });
 
 export type RustTriggerBody = z.infer<typeof rustTriggerBodySchema>;

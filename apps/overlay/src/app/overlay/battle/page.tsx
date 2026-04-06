@@ -676,6 +676,24 @@ export default function BattleBoardPage() {
           </label>
         </section>
 
+        <section className="rounded-xl border border-cyan-700/35 bg-black/30 p-4">
+          <h2 className="font-display text-sm font-bold text-cyan-200/90">
+            Introduce Squawk
+          </h2>
+          <p className="mt-1 max-w-xl font-body text-xs text-parchment/65">
+            As if Cap&apos;n told him to introduce himself — scripted intro on the
+            parrot overlay (same bridge as battle lines).
+          </p>
+          <button
+            type="button"
+            disabled={busy}
+            className={`${btn} mt-3`}
+            onClick={() => void fire("battle_squawk_intro", "Introduce Squawk")}
+          >
+            Introduce Squawk
+          </button>
+        </section>
+
         <section className="rounded-xl border border-white/10 bg-black/25 p-4">
           <h2 className="font-display text-sm font-bold text-squawk-gold">
             Battle music

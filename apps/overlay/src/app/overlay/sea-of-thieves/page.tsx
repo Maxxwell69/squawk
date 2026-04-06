@@ -23,12 +23,14 @@ import {
   useSotAdventureMusic,
   type SotAdventureMusicTrack,
 } from "@/hooks/useSotAdventureMusic";
+import { parseCrewNameLines } from "@/lib/crew-name-lines";
 
 /** Same keys as battle board — one bridge setup for both UIs. */
 const LS_BRIDGE = "squawk-battle-bridge";
 const LS_DECK_KEY = "squawk-parrot-test-stream-deck-key";
 const LS_SOT_ADV_VOL = "squawk-sot-adventure-music-vol";
 const LS_SOT_ADV_MUTE = "squawk-sot-adventure-music-muted";
+const LS_SOT_CREW = "squawk-sot-crew-names";
 const SOT_PATH = "/api/sot/trigger";
 
 /** Any SoT board line to overlay resets this; streaming assist nudges chat if idle longer. */
@@ -215,7 +217,8 @@ function bridgeUsesSecret(path: string): boolean {
 async function postSotTrigger(
   base: string,
   triggerId: SotTriggerId,
-  streamDeckKey: string
+  streamDeckKey: string,
+  crewMemberName?: string
 ): Promise<unknown> {
   const origin = normalizeBase(base);
   const url = new URL(SOT_PATH, `${origin}/`);
@@ -226,10 +229,15 @@ async function postSotTrigger(
   if (key && bridgeUsesSecret(SOT_PATH)) {
     headers["x-stream-deck-key"] = key;
   }
+  const body: { triggerId: SotTriggerId; crewMemberName?: string } = {
+    triggerId,
+  };
+  const c = crewMemberName?.trim();
+  if (c) body.crewMemberName = c;
   const res = await fetch(url.toString(), {
     method: "POST",
     headers,
-    body: JSON.stringify({ triggerId }),
+    body: JSON.stringify(body),
   });
   const text = await res.text();
   if (!res.ok) throw new Error(text || `${res.status}`);
@@ -258,6 +266,7 @@ export default function SeaOfThievesBoardPage() {
   );
   const [sotMusicVol01, setSotMusicVol01] = useState(0.75);
   const [sotMusicMuted, setSotMusicMuted] = useState(false);
+  const [crewListText, setCrewListText] = useState("");
 
   const {
     nowPlaying,
@@ -325,7 +334,13 @@ export default function SeaOfThievesBoardPage() {
     if (window.localStorage.getItem(LS_SOT_ADV_MUTE) === "1") {
       setSotMusicMuted(true);
     }
+    setCrewListText(window.localStorage.getItem(LS_SOT_CREW) ?? "");
   }, []);
+
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+    window.localStorage.setItem(LS_SOT_CREW, crewListText);
+  }, [crewListText]);
 
   useEffect(() => {
     void fetch("/api/sot-adventure-music")
@@ -364,8 +379,16 @@ export default function SeaOfThievesBoardPage() {
   }, []);
 
   const postTracked = useCallback(
-    async (triggerId: SotTriggerId): Promise<unknown> => {
-      const data = await postSotTrigger(bridgeUrl, triggerId, streamDeckKey);
+    async (
+      triggerId: SotTriggerId,
+      crewMemberName?: string
+    ): Promise<unknown> => {
+      const data = await postSotTrigger(
+        bridgeUrl,
+        triggerId,
+        streamDeckKey,
+        crewMemberName
+      );
       lastSquawkAtRef.current = Date.now();
       return data;
     },
@@ -373,10 +396,14 @@ export default function SeaOfThievesBoardPage() {
   );
 
   const fire = useCallback(
-    async (triggerId: SotTriggerId, label: string) => {
+    async (
+      triggerId: SotTriggerId,
+      label: string,
+      crewMemberName?: string
+    ) => {
       setBusy(true);
       try {
-        const data = await postTracked(triggerId);
+        const data = await postTracked(triggerId, crewMemberName);
         setLog(`[${label}]\n${JSON.stringify(data, null, 2)}`);
       } catch (e) {
         setLog(`[${label}]\n${String(e)}`);
@@ -388,16 +415,23 @@ export default function SeaOfThievesBoardPage() {
   );
 
   const fireQuiet = useCallback(
-    async (triggerId: SotTriggerId, label: string) => {
+    async (
+      triggerId: SotTriggerId,
+      label: string,
+      crewMemberName?: string
+    ) => {
       try {
-        const data = await postTracked(triggerId);
+        const data = await postTracked(triggerId, crewMemberName);
         setLog(`[auto: ${label}]\n${JSON.stringify(data, null, 2)}`);
+        return data;
       } catch (e) {
         setLog(`[auto: ${label}]\n${String(e)}`);
       }
     },
     [postTracked]
   );
+
+  const crewNames = parseCrewNameLines(crewListText);
 
   useEffect(() => {
     if (!streamingAssist) return;
@@ -644,6 +678,63 @@ export default function SeaOfThievesBoardPage() {
             </Link>
           </div>
         </header>
+
+        <section className="rounded-xl border border-cyan-600/35 bg-cyan-950/20 p-4">
+          <h2 className="font-display text-sm font-bold text-cyan-100">
+            Crew names &amp; Squawk
+          </h2>
+          <p className="mt-1 font-body text-xs text-parchment/70">
+            One crew name per line (saved in this browser). Squawk praises them on
+            stream; use Intro when Cap&apos;n tells him to introduce himself.
+          </p>
+          <textarea
+            value={crewListText}
+            onChange={(e) => setCrewListText(e.target.value)}
+            rows={4}
+            spellCheck={false}
+            placeholder={"Deckhand Alex\nNavigator Sam"}
+            className="mt-3 w-full max-w-lg rounded-lg border border-cyan-700/40 bg-black/50 px-3 py-2 font-body text-sm text-parchment outline-none focus:border-cyan-500/60"
+          />
+          <div className="mt-3 flex flex-wrap gap-2">
+            <button
+              type="button"
+              disabled={busy}
+              className={btn}
+              onClick={() => void fire("sot_squawk_intro", "Introduce Squawk")}
+            >
+              Introduce Squawk
+            </button>
+            <button
+              type="button"
+              disabled={busy || crewNames.length === 0}
+              className={btn}
+              onClick={() => {
+                const pick =
+                  crewNames[Math.floor(Math.random() * crewNames.length)]!;
+                void fire("sot_crew_praise", `Praise crew — ${pick}`, pick);
+              }}
+            >
+              Praise random crew
+            </button>
+          </div>
+          {crewNames.length > 0 ? (
+            <div className="mt-3 flex flex-wrap gap-2">
+              {crewNames.map((name, i) => (
+                <button
+                  key={`${i}-${name}`}
+                  type="button"
+                  disabled={busy}
+                  className={btn}
+                  onClick={() =>
+                    void fire("sot_crew_praise", `Praise — ${name}`, name)
+                  }
+                >
+                  Praise {name}
+                </button>
+              ))}
+            </div>
+          ) : null}
+        </section>
 
         <section className="rounded-xl border border-white/10 bg-black/30 p-4">
           <h2 className="font-display text-sm font-bold text-cyan-200/90">

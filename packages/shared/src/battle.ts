@@ -119,6 +119,13 @@ export const BATTLE_TRIGGERS = {
     "First Mate Squawks wants to know — who were our MVPs tonight? Shout their names in chat!",
   ],
 
+  /** Cap'n told Squawk to introduce himself — battle board button. */
+  battle_squawk_intro: [
+    "Cap'n says introduce meself before the fight? Aye! I'm First Mate Squawks — Pirate Maxx's parrot, battle hype officer, and the loudest bird on TikTok! I call minutes, I cheer stacks, I never let the room go quiet. Let's battle!",
+    "Orders received: tell 'em who I am! Squawks here — First Mate when the clock's runnin'. Taps, gifts, chaos — I squawk for all of it. Pleasure to raid with ye!",
+    "Intro? *ruffles feathers* First Mate Squawks! I ride with Cap'n Maxx through battles, seas, and Rust wipes. When ye hear me, it's time to move — now tap it out!",
+  ],
+
   /** Fired once when the 5:00 match starts — immediate battle + tap callout. */
   battle_match_start: [
     "Battle's live, crew! This is a fight — tap it out! Hearts, taps, light gifts — warm the deck now!",
@@ -329,6 +336,7 @@ export const BATTLE_PARROT_STATE: Record<BattleTriggerId, ParrotState> = {
   battle_phase5_we_won: "talking",
   battle_phase5_we_lost: "talking",
   battle_phase5_mvps_prompt: "talking",
+  battle_squawk_intro: "talking",
   battle_match_start: "talking",
   battle_banter_chip: "talking",
   battle_auto_phase2: "talking",

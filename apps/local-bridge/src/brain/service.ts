@@ -70,19 +70,27 @@ export class BrainService {
         return `${pickRandomLine(PARROT_LINES.chaos)} ${user} kicked up a storm!`;
       case "custom":
       default: {
+        const rawPayload = event.raw;
         if (event.detail && isBattleTriggerId(event.detail)) {
-          const raw = event.raw;
           const opponentName =
-            raw && typeof raw.opponentName === "string"
-              ? raw.opponentName
+            rawPayload && typeof rawPayload.opponentName === "string"
+              ? rawPayload.opponentName
               : undefined;
           return lineForBattleTrigger(event.detail, { opponentName });
         }
         if (event.detail && isSotTriggerId(event.detail)) {
-          return lineForSotTrigger(event.detail);
+          const crew =
+            rawPayload && typeof rawPayload.crewMemberName === "string"
+              ? rawPayload.crewMemberName
+              : undefined;
+          return lineForSotTrigger(event.detail, { crewMemberName: crew });
         }
         if (event.detail && isRustTriggerId(event.detail)) {
-          return lineForRustTrigger(event.detail);
+          const crew =
+            rawPayload && typeof rawPayload.crewMemberName === "string"
+              ? rawPayload.crewMemberName
+              : undefined;
+          return lineForRustTrigger(event.detail, { crewMemberName: crew });
         }
         if (event.detail && isStreamDeckTriggerId(event.detail)) {
           return (

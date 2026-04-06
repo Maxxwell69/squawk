@@ -373,6 +373,25 @@ export const SOT_TRIGGERS = {
     "Squawks peeked — Cap'n's eyes closed, phone glowin'. That's a nap with Wi-Fi, not a break!",
     "Dozed mid-scroll — TikTok one, Pirate Maxx nil. Someone ring the bell gently!",
   ],
+
+  /** Cap'n told him to introduce himself — responds in character. */
+  sot_squawk_intro: [
+    "Cap'n says introduce meself? Aye! I'm First Mate Squawks — Pirate Maxx's parrot, hype officer, and professional noise-maker! I squawk for gifts, I dance for wins, and I never let the chat go quiet. Ye've been warned!",
+    "Orders received: tell 'em who I am! I'm Squawks — First Mate to Cap'n Maxx, part parrot, part cheer squad, all trouble! When the seas get hot, I'm the bird yellin' 'stack it!' in yer ear. Pleasure to meet ye!",
+    "Cap'n wants a proper intro? *ruffles feathers* First Mate Squawks, at yer service — I translate pirate energy into TikTok chaos, I roast me own captain when he deserves it, and I hype this crew like we're takin' Athena's every night!",
+    "Introduce meself? Alright — Squawks here! I ride shotgun on Pirate Maxx's stream: battle calls, Sea of Thieves panic, Rust disasters — if it needs a squawk, I'm yer bird. Now tap somethin' pretty!",
+  ],
+
+  /** Use {{CREW}} for the name from the Voyages board (POST body crewMemberName). */
+  sot_crew_praise: [
+    "Shout to {{CREW}} — true deckhand energy! That kind of sailin' wins wars!",
+    "{{CREW}} — ye've got the heart of a pirate and the timing of a legend. The crew sees ye!",
+    "Cap'n Maxx's table salutes {{CREW}} — ye showed up, ye showed out, Squawks approves!",
+    "Big respect to {{CREW}} — without mates like ye, this ship's just wood and wishin'!",
+    "{{CREW}} — ye carried harder than a brig full of Reaper loot. Thank ye for the grind!",
+    "First Mate Squawks tips his wing to {{CREW}} — that's the spirit that keeps the flame high!",
+    "{{CREW}} — chat loves ye, the bird loves ye, now don't ye dare stop!",
+  ],
 } as const satisfies Record<string, readonly string[]>;
 
 export type SotTriggerId = keyof typeof SOT_TRIGGERS;
@@ -402,8 +421,14 @@ export function isSotTriggerId(v: string): v is SotTriggerId {
   return Object.prototype.hasOwnProperty.call(SOT_TRIGGERS, v.trim());
 }
 
-export function lineForSotTrigger(id: SotTriggerId): string {
-  return pickRandomLine(SOT_TRIGGERS[id]);
+export function lineForSotTrigger(
+  id: SotTriggerId,
+  opts?: { crewMemberName?: string }
+): string {
+  let line = pickRandomLine(SOT_TRIGGERS[id]);
+  const crew = opts?.crewMemberName?.trim() || "this legend";
+  line = line.replace(/\{\{CREW\}\}/g, crew);
+  return line;
 }
 
 /** Visual per SoT line — shanty = dance emote, victory sea = victory dance, feeding = feeding clip. */
@@ -470,6 +495,9 @@ export const SOT_PARROT_STATE: Record<SotTriggerId, ParrotState> = {
   sot_afk_captain_banter_b: "talking",
   sot_afk_captain_banter_c: "hype",
   sot_afk_captain_banter_d: "hype",
+
+  sot_squawk_intro: "talking",
+  sot_crew_praise: "hype",
 };
 
 export const sotTriggerBodySchema = z.object({
@@ -479,6 +507,8 @@ export const sotTriggerBodySchema = z.object({
     .refine((v): v is SotTriggerId => isSotTriggerId(v), {
       message: "invalid SoT triggerId",
     }),
+  /** For sot_crew_praise — crew mate name shown on the Voyages board. */
+  crewMemberName: z.string().max(80).optional(),
 });
 
 export type SotTriggerBody = z.infer<typeof sotTriggerBodySchema>;
