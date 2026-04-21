@@ -22,6 +22,13 @@ COPY packages/shared packages/shared
 ENV DOCKER_BUILD=1
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/prisma_build_placeholder
 ENV DATABASE_URL=$DATABASE_URL
+# `next build` loads auth/config; Auth.js Email provider requires EMAIL_SERVER + AUTH_SECRET.
+# These are build-only placeholders — Railway runtime variables replace them in the running container.
+ENV EMAIL_SERVER=smtp://build:build@127.0.0.1:587
+ENV EMAIL_FROM="Captain Squawks <noreply@build.invalid>"
+ENV AUTH_SECRET=docker_build_auth_secret_not_used_at_runtime
+ENV AUTH_URL=http://127.0.0.1:3001
+ENV ADMIN_EMAIL=build@example.invalid
 RUN pnpm --filter @captain-squawks/interaction exec prisma generate
 RUN pnpm --filter @captain-squawks/interaction run build
 
