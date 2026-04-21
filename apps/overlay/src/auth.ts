@@ -4,14 +4,21 @@ import Email from "next-auth/providers/email";
 import nodemailer from "nodemailer";
 import { prisma } from "@/lib/prisma";
 
+/** Dummy SMTP URL so Auth.js accepts config during `next build` when env vars are absent. Production must set EMAIL_SERVER. */
+const emailServerFallback = "smtp://127.0.0.1:587";
+
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   trustHost: true,
-  secret: process.env.AUTH_SECRET,
+  secret:
+    process.env.AUTH_SECRET ??
+    (process.env.NODE_ENV === "production"
+      ? undefined
+      : "development-auth-secret-change-me"),
   session: { strategy: "database" },
   providers: [
     Email({
-      server: process.env.EMAIL_SERVER,
+      server: process.env.EMAIL_SERVER ?? emailServerFallback,
       from:
         process.env.EMAIL_FROM ?? "Captain Squawks <noreply@piratemaxx.com>",
       async sendVerificationRequest({ identifier, url, provider }) {
@@ -27,11 +34,12 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
           );
         }
 
-        const server = provider.server;
-        if (!server) {
-          throw new Error("EMAIL_SERVER is not configured.");
+        if (!process.env.EMAIL_SERVER?.trim()) {
+          throw new Error(
+            "EMAIL_SERVER is not configured for production SMTP."
+          );
         }
-        const transport = nodemailer.createTransport(server);
+        const transport = nodemailer.createTransport(provider.server);
         const from = (provider.from as string) ?? "Captain Squawks";
         const { host } = new URL(url);
         await transport.sendMail({
@@ -79,7 +87,7 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     },
   },
   pages: {
-    signIn: "/login",
-    verifyRequest: "/login/verify",
+    signIn: "/crew/login",
+    verifyRequest: "/crew/login/verify",
   },
 });

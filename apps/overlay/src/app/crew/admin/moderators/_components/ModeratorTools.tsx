@@ -52,8 +52,8 @@ export function ModeratorTools({ initial }: { initial: Row[] }) {
       <section>
         <h2 className="font-display text-xl text-parchment">Add moderator</h2>
         <p className="mt-1 text-sm text-parchment/65">
-          Enter their email. When they sign in with that address, they&apos;ll have
-          moderator access.
+          Enter their email. When they sign in with that address, they&apos;ll
+          have moderator access.
         </p>
         <form onSubmit={addModerator} className="mt-4 flex flex-col gap-3 sm:flex-row">
           <input

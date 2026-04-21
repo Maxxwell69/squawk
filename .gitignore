@@ -13,3 +13,5 @@ apps/interaction/prisma/*.db
 apps/interaction/prisma/*.db-journal
 apps/interaction/prisma/**/*.db
 apps/interaction/prisma/**/*.db-journal
+apps/overlay/prisma/**/*.db
+apps/overlay/prisma/**/*.db-journal

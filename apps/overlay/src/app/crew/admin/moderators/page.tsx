@@ -1,7 +1,7 @@
 import { prisma } from "@/lib/prisma";
 import { ModeratorTools } from "./_components/ModeratorTools";
 
-export default async function ModeratorsAdminPage() {
+export default async function CrewModeratorsPage() {
   const moderators = await prisma.user.findMany({
     where: { role: "MODERATOR" },
     select: { id: true, email: true },

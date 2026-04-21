@@ -1,6 +1,6 @@
 import Link from "next/link";
 
-export default function VerifyPage() {
+export default function CrewVerifyPage() {
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col justify-center px-6 py-16">
       <div className="rounded-2xl border border-squawk-gold/30 bg-squawk-ink/60 p-8 shadow-panel backdrop-blur text-center">
@@ -10,7 +10,7 @@ export default function VerifyPage() {
         </p>
         <p className="mt-8">
           <Link
-            href="/login"
+            href="/crew/login"
             className="text-squawk-gold underline-offset-4 hover:underline"
           >
             Use a different email

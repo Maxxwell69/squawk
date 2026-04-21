@@ -1,8 +1,8 @@
 import Link from "next/link";
 import { auth } from "@/auth";
-import { SignOutButton } from "./_components/SignOutButton";
+import { SignOutButton } from "@/app/_components/SignOutButton";
 
-export default async function HomePage() {
+export default async function CrewHomePage() {
   const session = await auth();
 
   return (
@@ -28,13 +28,12 @@ export default async function HomePage() {
               </p>
               {session.user.role === "MODERATOR" && (
                 <p className="text-sm text-parchment/75">
-                  You are a moderator. More crew tools can plug into this role
-                  later.
+                  You are a moderator.
                 </p>
               )}
               {session.user.role === "ADMIN" && (
                 <Link
-                  href="/admin"
+                  href="/crew/admin"
                   className="inline-flex justify-center rounded-lg bg-squawk-gold px-4 py-3 font-medium text-squawk-ink transition hover:bg-parchment"
                 >
                   Admin — manage moderators
@@ -44,13 +43,19 @@ export default async function HomePage() {
             </>
           ) : (
             <Link
-              href="/login"
+              href="/crew/login"
               className="inline-flex justify-center rounded-lg bg-squawk-gold px-4 py-3 font-medium text-squawk-ink transition hover:bg-parchment"
             >
               Sign in with email
             </Link>
           )}
         </div>
+
+        <p className="mt-8 text-center text-sm">
+          <Link href="/" className="text-squawk-gold underline-offset-4 hover:underline">
+            ← Overlay & tools home
+          </Link>
+        </p>
       </div>
     </main>
   );

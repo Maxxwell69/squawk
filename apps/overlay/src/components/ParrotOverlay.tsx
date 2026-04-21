@@ -74,6 +74,11 @@ type Props = {
   variant?: ParrotOverlayVariant;
 };
 
+/**
+ * Stream / OBS parrot (widget, bubble, or bird-only). Intentionally no Squawk voice
+ * slider here — volume is set from the Battle, Sea of Thieves, or Rust board
+ * (localStorage `squawk-overlay-tts-vol` + `squawk-tts-volume` event).
+ */
 export function ParrotOverlay({ variant = "widget" }: Props) {
   const {
     connected,

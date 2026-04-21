@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Cinzel, DM_Sans } from "next/font/google";
 import "./globals.css";
+import { Providers } from "./providers";
 
 const display = Cinzel({
   subsets: ["latin"],
@@ -27,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en" className={`${display.variable} ${body.variable}`}>
       <body className="min-h-screen bg-transparent font-body antialiased">
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );

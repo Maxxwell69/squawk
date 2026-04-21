@@ -7,7 +7,7 @@ TikTok and other tools need a **public HTTPS URL** for the overlay — `localhos
 Your repo **Maxxwell69/squawk** is the source of truth. To **deploy on Railway**:
 
 1. Log in at [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo** → authorize and select **`squawk`**.
-2. Add services from the same repo: **bridge** (§2), **overlay** (§3), optional **crew portal** (§4), or start with one.
+2. Add services from the same repo: **bridge** (§2), **overlay** (§3), or start with one. Crew login lives on the **overlay** URL (`/crew`) — no third app.
 3. Set **environment variables** as below; **redeploy** the overlay after the bridge has a public URL (so `NEXT_PUBLIC_WS_URL` and `AUDIO_PUBLIC_BASE_URL` are correct).
 
 Railway redeploys on every **push to `main`** once the project is linked.
@@ -90,6 +90,26 @@ https://YOUR-OVERLAY-UP-RAILWAY-APP.up.railway.app/overlay/parrot
 
 Use that in **OBS** and anywhere you need a **public** link (not TikTok’s localhost).
 
+### Crew portal — same overlay service (`/crew`)
+
+Email login and moderators are built into the **overlay** app (no separate Railway service).
+
+1. Add **PostgreSQL** to the project and link **`DATABASE_URL`** to the **overlay** service (same service as `squawk.piratemaxx.com`).
+2. On that **overlay** service, set:
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | From Postgres (usually auto-injected when linked) |
+| `AUTH_SECRET` | Random secret (`openssl rand -base64 32`) |
+| `AUTH_URL` | **Exact public origin** of this app, e.g. `https://squawk.piratemaxx.com` (no path) |
+| `ADMIN_EMAIL` | Your email — first successful sign-in becomes ADMIN |
+| `EMAIL_SERVER` | SMTP URL for magic links |
+| `EMAIL_FROM` | From address for email |
+
+3. Redeploy. Open **`https://YOUR-OVERLAY-DOMAIN/crew/login`**. Admin UI: **`/crew/admin/moderators`**.
+
+Template: [`apps/overlay/.env.example`](./apps/overlay/.env.example).
+
 ### How Cursor / AI can help (Railway cannot be logged in via chat)
 
 Railway deployment still requires **your** clicks: connect GitHub, create services, paste secrets, attach Postgres. Neither Cursor nor another agent can authenticate to your Railway account or run those steps for you.
@@ -101,32 +121,6 @@ What you **can** ask here in this repo:
 - Ask for a **sanity check** before you click Deploy.
 
 Workflow: push to **`main`** → Railway builds → if it fails, copy the error into chat.
-
----
-
-## 4. Crew portal — email login & moderators (`apps/interaction`)
-
-A **third** Next.js service: magic-link sign-in, admin invites moderators. Separate from overlay and bridge.
-
-1. Same GitHub repo → **Add service** → deploy from Dockerfile.
-2. **Settings** → **Config-as-code** (Railway config file path) → **`railway.interaction.toml`**.  
-   Alternatively: **Build** → Dockerfile path **`apps/interaction/Dockerfile`**, repo root unchanged.
-3. Add **PostgreSQL** (Railway plugin) and link it — **`DATABASE_URL`** should appear automatically on this service.
-4. **Variables** on the **interaction** service:
-
-| Variable | Purpose |
-|----------|---------|
-| `DATABASE_URL` | Usually set by Postgres plugin |
-| `AUTH_SECRET` | Random secret (e.g. `openssl rand -base64 32`) |
-| `AUTH_URL` | Public URL of **this** app only, e.g. `https://YOUR-crew-subdomain.piratemaxx.com` (**no** path — just origin) |
-| `ADMIN_EMAIL` | Your exact email — first login becomes ADMIN |
-| `EMAIL_SERVER` | SMTP connection string for sending magic links |
-| `EMAIL_FROM` | From header, e.g. `Captain Squawks <noreply@piratemaxx.com>` |
-
-5. **Networking** → generate domain or attach custom domain for the portal (often a **different** subdomain than `squawk.piratemaxx.com`, which usually points at the overlay).
-6. Deploy. Startup runs **`prisma migrate deploy`** then the Next.js server — check logs if migrations fail (wrong DB or permissions).
-
-Templates: [`apps/interaction/.env.example`](./apps/interaction/.env.example).
 
 ---
 
@@ -157,4 +151,4 @@ When you tap a level or banner, the page **POSTs** `https://YOUR-BRIDGE…/api/b
 
 ## 7. Costs
 
-- One Railway project can host **three** services (bridge + overlay + crew portal). Free tier limits change; check Railway’s pricing.
+- One Railway project can host **two** services (bridge + overlay). Crew login uses the overlay. Free tier limits change; check Railway’s pricing.

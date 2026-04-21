@@ -17,7 +17,7 @@ export function EmailSignInForm() {
     const result = await signIn("email", {
       email: email.trim(),
       redirect: false,
-      callbackUrl: "/",
+      callbackUrl: "/crew",
     });
     setBusy(false);
     if (result?.error) {
@@ -26,7 +26,7 @@ export function EmailSignInForm() {
       );
       return;
     }
-    router.push("/login/verify");
+    router.push("/crew/login/verify");
   }
 
   return (

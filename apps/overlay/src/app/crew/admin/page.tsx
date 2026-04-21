@@ -1,6 +1,6 @@
 import { prisma } from "@/lib/prisma";
 
-export default async function AdminHomePage() {
+export default async function CrewAdminOverviewPage() {
   const [mods, members] = await Promise.all([
     prisma.user.count({ where: { role: "MODERATOR" } }),
     prisma.user.count({ where: { role: "MEMBER" } }),

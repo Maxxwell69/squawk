@@ -12,6 +12,11 @@ export default function HomePage() {
         </p>
         <ul className="list-inside list-disc space-y-2 font-body text-sm">
           <li>
+            <Link className="text-squawk-gold underline" href="/crew">
+              Crew portal — email login & moderators
+            </Link>
+          </li>
+          <li>
             <Link className="text-squawk-gold underline" href="/overlay/parrot">
               Overlay — full widget (browser source)
             </Link>
