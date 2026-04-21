@@ -12,6 +12,8 @@ COPY packages/shared/package.json packages/shared/
 COPY apps/overlay/package.json apps/overlay/
 COPY apps/local-bridge/package.json apps/local-bridge/
 COPY apps/interaction/package.json apps/interaction/
+# postinstall runs `prisma generate`; schema must exist before `pnpm install`
+COPY apps/interaction/prisma/schema.prisma apps/interaction/prisma/schema.prisma
 RUN pnpm install --frozen-lockfile
 
 FROM deps AS build
