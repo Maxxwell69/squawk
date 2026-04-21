@@ -7,6 +7,6 @@ builder = "dockerfile"
 dockerfilePath = "Dockerfile"
 
 [deploy]
-# Standalone Next image has no pnpm — run Node directly (do not use "pnpm start" in Railway UI)
-startCommand = "node apps/overlay/server.js"
+# Must match Dockerfile CMD: migrations before Next (Railway overrides Docker CMD when set here).
+startCommand = "sh -c 'prisma migrate deploy --schema=./apps/overlay/prisma/schema.prisma && exec node apps/overlay/server.js'"
 restartPolicyType = "on_failure"

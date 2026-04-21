@@ -142,6 +142,7 @@ When you tap a level or banner, the page **POSTs** `https://YOUR-BRIDGE…/api/b
 
 | Issue | What to check |
 |-------|----------------|
+| **`passwordHash` / register 503 — migrations never ran** | Root [`railway.toml`](./railway.toml) **`startCommand`** must run `prisma migrate deploy` **before** `node apps/overlay/server.js`. If the Railway **service** has a custom start command in the UI, it overrides this file — remove it or paste the same `sh -c 'prisma migrate deploy … && exec node …'`. |
 | Overlay shows OFFLINE | `NEXT_PUBLIC_WS_URL` must match the bridge’s **public** `wss://…/ws` URL; redeploy overlay after changing it. |
 | Title display never changes from battle buttons | Control the battle board from the **same deployed overlay URL** (not localhost) so POSTs go to your Railway bridge; OBS source must use the same overlay + `NEXT_PUBLIC_*` bridge vars. |
 | **404** on `/api/test/follow` | The hostname in `NEXT_PUBLIC_BRIDGE_HTTP` is **not** running the bridge. Root `railway.toml` builds the **Next.js overlay** only. The **bridge** service must use Dockerfile path **`apps/local-bridge/Dockerfile`**. Open `https://YOUR-BRIDGE/health` — expect JSON with `"service":"captain-squawks-bridge"`. |
