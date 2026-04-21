@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import bcrypt from "bcryptjs";
+import { Prisma } from "@prisma/client";
 import { z } from "zod";
 import { prisma } from "@/lib/prisma";
 
@@ -27,47 +28,79 @@ export async function POST(req: Request) {
   const email = parsed.data.email.trim().toLowerCase();
   const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
 
-  const existing = await prisma.user.findUnique({
-    where: { email },
-  });
-
-  if (existing?.passwordHash) {
-    return NextResponse.json(
-      { error: "already_registered" },
-      { status: 409 }
-    );
-  }
-
-  const invited = !!existing;
-  const isCaptainBootstrap = email === adminEmail && !existing;
-
-  if (!isCaptainBootstrap && !invited) {
-    return NextResponse.json(
-      { error: "not_invited" },
-      { status: 403 }
-    );
-  }
-
-  const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-
-  if (isCaptainBootstrap && adminEmail) {
-    await prisma.user.create({
-      data: {
-        email,
-        passwordHash,
-        role: "ADMIN",
-      },
-    });
-    return NextResponse.json({ ok: true });
-  }
-
-  if (existing) {
-    await prisma.user.update({
+  try {
+    const existing = await prisma.user.findUnique({
       where: { email },
-      data: { passwordHash },
     });
-    return NextResponse.json({ ok: true });
-  }
 
-  return NextResponse.json({ error: "unexpected" }, { status: 500 });
+    if (existing?.passwordHash) {
+      return NextResponse.json(
+        { error: "already_registered" },
+        { status: 409 }
+      );
+    }
+
+    const invited = !!existing;
+    const isCaptainBootstrap = Boolean(
+      adminEmail && email === adminEmail && !existing
+    );
+
+    if (!isCaptainBootstrap && !invited) {
+      return NextResponse.json(
+        { error: "not_invited" },
+        { status: 403 }
+      );
+    }
+
+    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
+
+    if (isCaptainBootstrap) {
+      await prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          role: "ADMIN",
+        },
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    if (existing) {
+      await prisma.user.update({
+        where: { email },
+        data: { passwordHash },
+      });
+      return NextResponse.json({ ok: true });
+    }
+
+    return NextResponse.json({ error: "unexpected" }, { status: 500 });
+  } catch (err) {
+    console.error("[crew/register]", err);
+
+    if (err instanceof Prisma.PrismaClientKnownRequestError) {
+      // P2022 etc. often means migrations not applied (missing column).
+      return NextResponse.json(
+        {
+          error: "database_error",
+          code: err.code,
+          hint:
+            process.env.NODE_ENV !== "production"
+              ? err.message
+              : "Ensure DATABASE_URL works and prisma migrate deploy has run.",
+        },
+        { status: 503 }
+      );
+    }
+
+    return NextResponse.json(
+      {
+        error: "server_error",
+        hint:
+          process.env.NODE_ENV !== "production" && err instanceof Error
+            ? err.message
+            : undefined,
+      },
+      { status: 500 }
+    );
+  }
 }

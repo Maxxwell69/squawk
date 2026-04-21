@@ -22,17 +22,24 @@ export function CrewRegisterForm() {
     });
     const data = (await res.json().catch(() => ({}))) as {
       error?: string;
+      hint?: string;
     };
     setBusy(false);
     if (!res.ok) {
       if (data.error === "not_invited") {
         setError(
-          "This email is not on the crew list. Ask the captain to add you as a moderator first."
+          "This email is not on the crew list, or you are the first captain and ADMIN_EMAIL in Railway does not match this address. Check the server has ADMIN_EMAIL set to this exact email, or ask the captain to add you as a moderator first."
         );
       } else if (data.error === "already_registered") {
         setError("That email already has an account — sign in instead.");
+      } else if (data.error === "database_error" && data.hint) {
+        setError(
+          `Server database issue: ${data.hint} (if you just deployed, run migrations: add "passwordHash" to the users table).`
+        );
+      } else if (data.hint) {
+        setError(data.hint);
       } else {
-        setError("Could not register. Try again.");
+        setError("Could not register. Check deploy logs or try again.");
       }
       return;
     }
