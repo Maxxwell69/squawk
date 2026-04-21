@@ -3,13 +3,15 @@
   "private": true,
   "packageManager": "pnpm@9.15.0",
   "scripts": {
-    "build": "pnpm run build:shared && pnpm run build:bridge && pnpm run build:overlay",
+    "build": "pnpm run build:shared && pnpm run build:bridge && pnpm run build:overlay && pnpm run build:interaction",
     "build:shared": "pnpm --filter @captain-squawks/shared run build",
     "build:bridge": "pnpm --filter @captain-squawks/local-bridge run build",
     "build:overlay": "pnpm --filter @captain-squawks/overlay run build",
+    "build:interaction": "pnpm --filter @captain-squawks/interaction run build",
     "dev": "pnpm --parallel --filter \"./apps/*\" dev",
     "dev:overlay": "pnpm --filter @captain-squawks/overlay dev",
     "dev:bridge": "pnpm --filter @captain-squawks/local-bridge dev",
+    "dev:interaction": "pnpm --filter @captain-squawks/interaction dev",
     "lint": "pnpm -r run lint"
   },
   "engines": {

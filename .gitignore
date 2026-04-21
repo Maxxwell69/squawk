@@ -9,3 +9,7 @@ dist
 coverage
 *.tsbuildinfo
 apps/local-bridge/tmp/
+apps/interaction/prisma/*.db
+apps/interaction/prisma/*.db-journal
+apps/interaction/prisma/**/*.db
+apps/interaction/prisma/**/*.db-journal

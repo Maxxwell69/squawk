@@ -7,7 +7,7 @@ TikTok and other tools need a **public HTTPS URL** for the overlay — `localhos
 Your repo **Maxxwell69/squawk** is the source of truth. To **deploy on Railway**:
 
 1. Log in at [railway.app](https://railway.app) → **New Project** → **Deploy from GitHub repo** → authorize and select **`squawk`**.
-2. Add **two services** from the same repo (see §2 bridge, §3 overlay), or start with one.
+2. Add services from the same repo: **bridge** (§2), **overlay** (§3), optional **crew portal** (§4), or start with one.
 3. Set **environment variables** as below; **redeploy** the overlay after the bridge has a public URL (so `NEXT_PUBLIC_WS_URL` and `AUDIO_PUBLIC_BASE_URL` are correct).
 
 Railway redeploys on every **push to `main`** once the project is linked.
@@ -90,7 +90,47 @@ https://YOUR-OVERLAY-UP-RAILWAY-APP.up.railway.app/overlay/parrot
 
 Use that in **OBS** and anywhere you need a **public** link (not TikTok’s localhost).
 
-## 4. TikTok / browser source
+### How Cursor / AI can help (Railway cannot be logged in via chat)
+
+Railway deployment still requires **your** clicks: connect GitHub, create services, paste secrets, attach Postgres. Neither Cursor nor another agent can authenticate to your Railway account or run those steps for you.
+
+What you **can** ask here in this repo:
+
+- Paste **deploy logs**, **build errors**, or variable names Railway shows → we fix **Dockerfiles**, **`railway.*.toml`**, env expectations, or Next/Prisma errors in code.
+- Say **“here’s my bridge URL”** so we spell out exact `NEXT_PUBLIC_*` strings.
+- Ask for a **sanity check** before you click Deploy.
+
+Workflow: push to **`main`** → Railway builds → if it fails, copy the error into chat.
+
+---
+
+## 4. Crew portal — email login & moderators (`apps/interaction`)
+
+A **third** Next.js service: magic-link sign-in, admin invites moderators. Separate from overlay and bridge.
+
+1. Same GitHub repo → **Add service** → deploy from Dockerfile.
+2. **Settings** → **Config-as-code** (Railway config file path) → **`railway.interaction.toml`**.  
+   Alternatively: **Build** → Dockerfile path **`apps/interaction/Dockerfile`**, repo root unchanged.
+3. Add **PostgreSQL** (Railway plugin) and link it — **`DATABASE_URL`** should appear automatically on this service.
+4. **Variables** on the **interaction** service:
+
+| Variable | Purpose |
+|----------|---------|
+| `DATABASE_URL` | Usually set by Postgres plugin |
+| `AUTH_SECRET` | Random secret (e.g. `openssl rand -base64 32`) |
+| `AUTH_URL` | Public URL of **this** app only, e.g. `https://YOUR-crew-subdomain.piratemaxx.com` (**no** path — just origin) |
+| `ADMIN_EMAIL` | Your exact email — first login becomes ADMIN |
+| `EMAIL_SERVER` | SMTP connection string for sending magic links |
+| `EMAIL_FROM` | From header, e.g. `Captain Squawks <noreply@piratemaxx.com>` |
+
+5. **Networking** → generate domain or attach custom domain for the portal (often a **different** subdomain than `squawk.piratemaxx.com`, which usually points at the overlay).
+6. Deploy. Startup runs **`prisma migrate deploy`** then the Next.js server — check logs if migrations fail (wrong DB or permissions).
+
+Templates: [`apps/interaction/.env.example`](./apps/interaction/.env.example).
+
+---
+
+## 5. TikTok / browser source
 
 - Paste the **overlay** HTTPS URL above (path `/overlay/parrot`).
 - The **bridge** must be **reachable** from the browser at the `wss://` URL you set in `NEXT_PUBLIC_WS_URL`.
@@ -105,7 +145,7 @@ The **TikTok battle board** (`/overlay/battle`) and the **title display** (`/ove
 
 When you tap a level or banner, the page **POSTs** `https://YOUR-BRIDGE…/api/battle-board/scene` with `{ "slug": "win" }` (same `x-stream-deck-key` as other bridge routes when `STREAM_DECK_SECRET` is set). The bridge **broadcasts** `BATTLE_BOARD_SCENE` on `/ws`, and the OBS display updates.
 
-## 5. Troubleshooting
+## 6. Troubleshooting
 
 | Issue | What to check |
 |-------|----------------|
@@ -115,6 +155,6 @@ When you tap a level or banner, the page **POSTs** `https://YOUR-BRIDGE…/api/b
 | Bridge 502 | Check Railway logs; ensure `PORT` is used (already wired). |
 | CORS | Bridge allows `origin: true` for MVP. |
 
-## 6. Costs
+## 7. Costs
 
-- One Railway project can host **two** services (bridge + overlay). Free tier limits change; check Railway’s pricing.
+- One Railway project can host **three** services (bridge + overlay + crew portal). Free tier limits change; check Railway’s pricing.
