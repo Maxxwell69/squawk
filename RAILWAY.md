@@ -101,12 +101,11 @@ Email login and moderators are built into the **overlay** app (no separate Railw
 |----------|---------|
 | `DATABASE_URL` | From Postgres (usually auto-injected when linked) |
 | `AUTH_SECRET` | Random secret (`openssl rand -base64 32`) |
-| `AUTH_URL` | **Exact public origin** of this app, e.g. `https://squawk.piratemaxx.com` (no path) |
-| `ADMIN_EMAIL` | Your email — first successful sign-in becomes ADMIN |
-| `EMAIL_SERVER` | SMTP URL for magic links |
-| `EMAIL_FROM` | From address for email |
+| `ADMIN_EMAIL` | Same email you use for the **first** captain account at **`/crew/register`** (must match exactly) |
 
-3. Redeploy. Open **`https://YOUR-OVERLAY-DOMAIN/crew/login`**. Admin UI: **`/crew/admin/moderators`**.
+Crew auth uses **email + password** (bcrypt hashes in Postgres). No SMTP variables.
+
+3. Redeploy. Open **`https://YOUR-OVERLAY-DOMAIN/crew/register`** to set the captain password, then **`/crew/login`**. Admin UI: **`/crew/admin/moderators`**.
 
 Template: [`apps/overlay/.env.example`](./apps/overlay/.env.example).
 

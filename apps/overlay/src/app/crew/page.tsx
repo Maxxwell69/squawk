@@ -12,8 +12,10 @@ export default async function CrewHomePage() {
           Captain Squawks — crew portal
         </h1>
         <p className="mt-3 text-parchment/90">
-          Sign in with email. The captain adds moderator emails from the admin
-          dashboard; only invited addresses receive a login link.
+          Sign in with email and password. The captain adds moderator emails from
+          the admin dashboard first; then each person creates their password on
+          the register page (or use <strong>ADMIN_EMAIL</strong> for the first
+          captain account).
         </p>
 
         <div className="mt-8 flex flex-col gap-3">
@@ -42,12 +44,20 @@ export default async function CrewHomePage() {
               <SignOutButton />
             </>
           ) : (
-            <Link
-              href="/crew/login"
-              className="inline-flex justify-center rounded-lg bg-squawk-gold px-4 py-3 font-medium text-squawk-ink transition hover:bg-parchment"
-            >
-              Sign in with email
-            </Link>
+            <>
+              <Link
+                href="/crew/login"
+                className="inline-flex justify-center rounded-lg bg-squawk-gold px-4 py-3 font-medium text-squawk-ink transition hover:bg-parchment"
+              >
+                Sign in
+              </Link>
+              <Link
+                href="/crew/register"
+                className="inline-flex justify-center rounded-lg border border-parchment/25 px-4 py-3 text-parchment transition hover:bg-white/5"
+              >
+                Register / set password
+              </Link>
+            </>
           )}
         </div>
 

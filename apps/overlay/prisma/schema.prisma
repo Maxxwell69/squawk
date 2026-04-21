@@ -19,6 +19,8 @@ model User {
   email         String    @unique
   emailVerified DateTime?
   image         String?
+  /** bcrypt hash; null until the user completes registration */
+  passwordHash  String?
   role          Role      @default(MEMBER)
   accounts      Account[]
   sessions      Session[]

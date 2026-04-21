@@ -1,93 +1,71 @@
 import NextAuth from "next-auth";
-import { PrismaAdapter } from "@auth/prisma-adapter";
-import Email from "next-auth/providers/email";
-import nodemailer from "nodemailer";
+import Credentials from "next-auth/providers/credentials";
+import bcrypt from "bcryptjs";
+import type { Role } from "@prisma/client";
 import { prisma } from "@/lib/prisma";
 
-/** Dummy SMTP URL so Auth.js accepts config during `next build` when env vars are absent. Production must set EMAIL_SERVER. */
-const emailServerFallback = "smtp://127.0.0.1:587";
-
 export const { handlers, auth, signIn, signOut } = NextAuth({
-  adapter: PrismaAdapter(prisma),
   trustHost: true,
   secret:
     process.env.AUTH_SECRET ??
     (process.env.NODE_ENV === "production"
       ? undefined
       : "development-auth-secret-change-me"),
-  session: { strategy: "database" },
+  session: { strategy: "jwt", maxAge: 30 * 24 * 60 * 60 },
   providers: [
-    Email({
-      server: process.env.EMAIL_SERVER ?? emailServerFallback,
-      from:
-        process.env.EMAIL_FROM ?? "Captain Squawks <noreply@piratemaxx.com>",
-      async sendVerificationRequest({ identifier, url, provider }) {
-        const email = identifier.trim().toLowerCase();
-        const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-        const invited = await prisma.user.findUnique({
+    Credentials({
+      name: "credentials",
+      credentials: {
+        email: { label: "Email", type: "email" },
+        password: { label: "Password", type: "password" },
+      },
+      async authorize(credentials) {
+        const emailRaw = credentials?.email;
+        const password = credentials?.password;
+        if (
+          typeof emailRaw !== "string" ||
+          typeof password !== "string" ||
+          !emailRaw.trim() ||
+          !password
+        ) {
+          return null;
+        }
+        const email = emailRaw.trim().toLowerCase();
+        const user = await prisma.user.findUnique({
           where: { email },
-          select: { id: true },
         });
-        if (email !== adminEmail && !invited) {
-          throw new Error(
-            "This email is not on the crew list. Ask the captain to add you as a moderator."
-          );
-        }
-
-        if (!process.env.EMAIL_SERVER?.trim()) {
-          throw new Error(
-            "EMAIL_SERVER is not configured for production SMTP."
-          );
-        }
-        const transport = nodemailer.createTransport(provider.server);
-        const from = (provider.from as string) ?? "Captain Squawks";
-        const { host } = new URL(url);
-        await transport.sendMail({
-          to: identifier,
-          from,
-          subject: `Sign in to Captain Squawks (${host})`,
-          text: `Sign in to Captain Squawks\n${url}\n\n`,
-          html: `<body><p>Sign in to <strong>Captain Squawks</strong></p><p><a href="${url}">Click here to sign in</a></p><p style="color:#666;font-size:12px">If you did not request this email, you can ignore it.</p></body>`,
-        });
+        if (!user?.passwordHash) return null;
+        const ok = await bcrypt.compare(password, user.passwordHash);
+        if (!ok) return null;
+        return {
+          id: user.id,
+          email: user.email ?? undefined,
+          name: user.name ?? undefined,
+        };
       },
     }),
   ],
-  events: {
-    async createUser({ user }) {
-      const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-      if (!adminEmail || !user.email) return;
-      if (user.email.toLowerCase() === adminEmail) {
-        await prisma.user.update({
-          where: { id: user.id },
-          data: { role: "ADMIN" },
-        });
-      }
-    },
-  },
   callbacks: {
-    async signIn({ user }) {
-      const email = user.email?.trim().toLowerCase();
-      if (!email) return false;
-      const adminEmail = process.env.ADMIN_EMAIL?.trim().toLowerCase();
-      if (email === adminEmail) return true;
-      const row = await prisma.user.findUnique({
-        where: { email },
-        select: { id: true },
-      });
-      return !!row;
+    async jwt({ token, user }) {
+      if (user?.id) {
+        token.sub = user.id;
+        const row = await prisma.user.findUnique({
+          where: { id: user.id },
+          select: { role: true },
+        });
+        token.role = row?.role ?? "MEMBER";
+      }
+      return token;
     },
-    async session({ session, user }) {
-      session.user.id = user.id;
-      const row = await prisma.user.findUnique({
-        where: { id: user.id },
-        select: { role: true },
-      });
-      session.user.role = row?.role ?? "MEMBER";
+    async session({ session, token }) {
+      if (session.user) {
+        session.user.id = token.sub ?? "";
+        session.user.role = (token.role as Role) ?? "MEMBER";
+      }
       return session;
     },
   },
   pages: {
     signIn: "/crew/login",
-    verifyRequest: "/crew/login/verify",
   },
 });

@@ -24,10 +24,7 @@ ENV NEXT_PUBLIC_BRIDGE_HTTP=$NEXT_PUBLIC_BRIDGE_HTTP
 # Auth + Prisma run during `next build`; placeholders only for compile (runtime uses Railway variables).
 ARG DATABASE_URL=postgresql://postgres:postgres@127.0.0.1:5432/prisma_build_placeholder
 ENV DATABASE_URL=$DATABASE_URL
-ENV EMAIL_SERVER=smtp://build:build@127.0.0.1:587
-ENV EMAIL_FROM="Captain Squawks <noreply@build.invalid>"
 ENV AUTH_SECRET=docker_build_auth_secret_not_used_at_runtime
-ENV AUTH_URL=http://127.0.0.1:3000
 ENV ADMIN_EMAIL=build@example.invalid
 # Overlay resolves @captain-squawks/shared via next.config webpack alias → packages/shared/src (pnpm Docker-safe)
 RUN pnpm --filter @captain-squawks/overlay build

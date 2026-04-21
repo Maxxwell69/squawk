@@ -1,12 +1,14 @@
 "use client";
 
+import Link from "next/link";
 import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function EmailSignInForm() {
+export function CrewLoginForm() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -14,19 +16,19 @@ export function EmailSignInForm() {
     e.preventDefault();
     setBusy(true);
     setError(null);
-    const result = await signIn("email", {
+    const result = await signIn("credentials", {
       email: email.trim(),
+      password,
       redirect: false,
       callbackUrl: "/crew",
     });
     setBusy(false);
     if (result?.error) {
-      setError(
-        "Could not start sign-in. If you are not on the crew list yet, ask the captain to add your email as a moderator. If you were invited, check EMAIL_SERVER and EMAIL_FROM."
-      );
+      setError("Wrong email or password.");
       return;
     }
-    router.push("/crew/login/verify");
+    router.push("/crew");
+    router.refresh();
   }
 
   return (
@@ -44,6 +46,18 @@ export function EmailSignInForm() {
           placeholder="you@example.com"
         />
       </label>
+      <label className="block">
+        <span className="mb-1 block text-sm text-parchment/80">Password</span>
+        <input
+          type="password"
+          name="password"
+          autoComplete="current-password"
+          required
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          className="w-full rounded-lg border border-parchment/25 bg-black/25 px-4 py-3 text-parchment outline-none ring-squawk-gold/40 focus:ring-2"
+        />
+      </label>
       {error ? (
         <p className="text-sm text-squawk-rust">{error}</p>
       ) : null}
@@ -52,8 +66,17 @@ export function EmailSignInForm() {
         disabled={busy}
         className="rounded-lg bg-squawk-gold px-4 py-3 font-medium text-squawk-ink transition hover:bg-parchment disabled:opacity-60"
       >
-        {busy ? "Sending…" : "Email me a login link"}
+        {busy ? "Signing in…" : "Sign in"}
       </button>
+      <p className="text-center text-sm text-parchment/70">
+        First time?{" "}
+        <Link
+          href="/crew/register"
+          className="text-squawk-gold underline-offset-4 hover:underline"
+        >
+          Create your password
+        </Link>
+      </p>
     </form>
   );
 }
