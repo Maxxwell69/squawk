@@ -28,7 +28,15 @@ export function CrewRegisterForm() {
     if (!res.ok) {
       if (data.error === "not_invited") {
         setError(
-          "This email is not on the crew list, or you are the first captain and ADMIN_EMAIL in Railway does not match this address. Check the server has ADMIN_EMAIL set to this exact email, or ask the captain to add you as a moderator first."
+          "This email is not approved yet. Ask the captain to add you under Admin → Approvals (or as a moderator), or ensure ADMIN_EMAIL on the server matches this address for the first captain account."
+        );
+      } else if (data.error === "pending_approval") {
+        setError(
+          "Your email is on the list but not approved yet. The captain must approve you in Admin → Approvals before you can set a password."
+        );
+      } else if (data.error === "invite_revoked") {
+        setError(
+          "This invite was revoked. Contact the captain if you still need access."
         );
       } else if (data.error === "already_registered") {
         setError("That email already has an account — sign in instead.");

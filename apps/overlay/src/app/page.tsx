@@ -20,7 +20,7 @@ const SECTIONS: MenuSection[] = [
     id: "crew",
     heading: "Crew & admin",
     subheading:
-      "Email + password accounts. Moderators must be invited before they register.",
+      "Email + password accounts. New members need an approved invite; moderators can be pre-added.",
     items: [
       {
         href: "/crew",
@@ -30,7 +30,7 @@ const SECTIONS: MenuSection[] = [
       {
         href: "/crew/register",
         title: "Register / set password",
-        detail: "First captain (ADMIN_EMAIL) or invited moderator completes signup.",
+        detail: "After captain approval, moderator invite, or ADMIN_EMAIL captain bootstrap.",
       },
       {
         href: "/crew/login",
@@ -43,9 +43,19 @@ const SECTIONS: MenuSection[] = [
         detail: "Counts — requires ADMIN role.",
       },
       {
+        href: "/crew/admin/approvals",
+        title: "Approvals queue",
+        detail: "Add emails, approve, then they can register — ADMIN only.",
+      },
+      {
         href: "/crew/admin/moderators",
         title: "Manage moderators",
         detail: "Add or remove moderator emails — requires ADMIN.",
+      },
+      {
+        href: "/admin/login",
+        title: "Admin login",
+        detail: "Shortcut to sign in and land in the admin area if you are ADMIN.",
       },
     ],
   },

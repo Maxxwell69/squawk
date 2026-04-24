@@ -8,7 +8,9 @@ export default async function CrewAdminLayout({
   children: React.ReactNode;
 }) {
   const session = await auth();
-  if (!session?.user) redirect("/crew/login");
+  if (!session?.user) {
+    redirect("/crew/login?callbackUrl=%2Fcrew%2Fadmin");
+  }
   if (session.user.role !== "ADMIN") redirect("/crew");
 
   return (
@@ -21,6 +23,12 @@ export default async function CrewAdminLayout({
           <nav className="flex gap-6 text-sm">
             <Link href="/crew/admin" className="text-parchment hover:text-squawk-gold">
               Overview
+            </Link>
+            <Link
+              href="/crew/admin/approvals"
+              className="text-parchment hover:text-squawk-gold"
+            >
+              Approvals
             </Link>
             <Link
               href="/crew/admin/moderators"

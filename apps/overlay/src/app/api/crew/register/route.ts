@@ -40,21 +40,16 @@ export async function POST(req: Request) {
       );
     }
 
-    const invited = !!existing;
+    const invite = await prisma.crewInvite.findUnique({
+      where: { email },
+    });
+
     const isCaptainBootstrap = Boolean(
       adminEmail && email === adminEmail && !existing
     );
 
-    if (!isCaptainBootstrap && !invited) {
-      return NextResponse.json(
-        { error: "not_invited" },
-        { status: 403 }
-      );
-    }
-
-    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
-
     if (isCaptainBootstrap) {
+      const passwordHash = await bcrypt.hash(parsed.data.password, 12);
       await prisma.user.create({
         data: {
           email,
@@ -62,23 +57,65 @@ export async function POST(req: Request) {
           role: "ADMIN",
         },
       });
+      if (invite) {
+        await prisma.crewInvite.update({
+          where: { email },
+          data: { status: "REGISTERED" },
+        });
+      }
       return NextResponse.json({ ok: true });
     }
+
+    const modOrIncompleteUser = Boolean(existing && !existing.passwordHash);
+
+    if (invite?.status === "PENDING" && !modOrIncompleteUser) {
+      return NextResponse.json(
+        { error: "pending_approval" },
+        { status: 403 }
+      );
+    }
+    if (invite?.status === "REVOKED" && !modOrIncompleteUser) {
+      return NextResponse.json({ error: "invite_revoked" }, { status: 403 });
+    }
+
+    const invitedStubUser = modOrIncompleteUser;
+    const approvedInvite =
+      invite?.status === "APPROVED" &&
+      (!existing || !existing.passwordHash);
+
+    if (!invitedStubUser && !approvedInvite) {
+      return NextResponse.json({ error: "not_invited" }, { status: 403 });
+    }
+
+    const passwordHash = await bcrypt.hash(parsed.data.password, 12);
 
     if (existing) {
       await prisma.user.update({
         where: { email },
         data: { passwordHash },
       });
-      return NextResponse.json({ ok: true });
+    } else {
+      await prisma.user.create({
+        data: {
+          email,
+          passwordHash,
+          role: "MEMBER",
+        },
+      });
     }
 
-    return NextResponse.json({ error: "unexpected" }, { status: 500 });
+    if (invite?.status === "APPROVED") {
+      await prisma.crewInvite.update({
+        where: { email },
+        data: { status: "REGISTERED" },
+      });
+    }
+
+    return NextResponse.json({ ok: true });
   } catch (err) {
     console.error("[crew/register]", err);
 
     if (err instanceof Prisma.PrismaClientKnownRequestError) {
-      // P2022 etc. often means migrations not applied (missing column).
       return NextResponse.json(
         {
           error: "database_error",

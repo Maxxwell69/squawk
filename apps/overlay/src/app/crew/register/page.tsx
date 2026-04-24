@@ -14,9 +14,10 @@ export default async function CrewRegisterPage() {
           Join the crew
         </h1>
         <p className="mt-2 text-sm text-parchment/75">
-          Set a password for your email. The captain must add your email as a
-          moderator first (or use <strong>ADMIN_EMAIL</strong> for the first
-          captain account).
+          Set a password for your email after the captain has{" "}
+          <strong>approved</strong> you on Approvals, added you as a moderator,
+          or set <strong>ADMIN_EMAIL</strong> to this address for the first
+          captain account.
         </p>
         <div className="mt-8">
           <CrewRegisterForm />
