@@ -5,7 +5,12 @@ import { signIn } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 
-export function CrewLoginForm() {
+type Props = {
+  /** Internal path only; validated on the server before passing here. */
+  afterLoginPath?: string;
+};
+
+export function CrewLoginForm({ afterLoginPath = "/crew" }: Props) {
   const router = useRouter();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -20,14 +25,14 @@ export function CrewLoginForm() {
       email: email.trim(),
       password,
       redirect: false,
-      callbackUrl: "/crew",
+      callbackUrl: afterLoginPath,
     });
     setBusy(false);
     if (result?.error) {
       setError("Wrong email or password.");
       return;
     }
-    router.push("/crew");
+    router.push(afterLoginPath);
     router.refresh();
   }
 

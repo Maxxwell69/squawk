@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
 type MenuItem = {
@@ -128,6 +129,9 @@ const SECTIONS: MenuSection[] = [
 
 export default async function HomePage() {
   const session = await auth();
+  if (!session?.user) {
+    redirect("/crew/login?callbackUrl=%2F");
+  }
 
   return (
     <main className="min-h-screen bg-gradient-to-b from-squawk-ink via-[#151020] to-squawk-ink pb-16 pt-10 text-parchment">
@@ -146,45 +150,26 @@ export default async function HomePage() {
           </p>
 
           <div className="mt-6 flex flex-wrap items-center gap-3">
-            {session?.user ? (
-              <>
-                <span className="rounded-full border border-squawk-gold/35 bg-black/30 px-4 py-2 text-sm text-parchment">
-                  Crew:{" "}
-                  <span className="text-squawk-gold">{session.user.email}</span>
-                  <span className="ml-2 rounded bg-squawk-sea/50 px-2 py-0.5 text-xs uppercase text-parchment/90">
-                    {session.user.role}
-                  </span>
-                </span>
-                <Link
-                  href="/crew"
-                  className="rounded-full bg-squawk-gold px-4 py-2 text-sm font-medium text-squawk-ink transition hover:bg-parchment"
-                >
-                  Crew portal
-                </Link>
-                {session.user.role === "ADMIN" && (
-                  <Link
-                    href="/crew/admin/moderators"
-                    className="rounded-full border border-parchment/30 px-4 py-2 text-sm text-parchment transition hover:bg-white/5"
-                  >
-                    Admin — moderators
-                  </Link>
-                )}
-              </>
-            ) : (
-              <>
-                <Link
-                  href="/crew/login"
-                  className="rounded-full bg-squawk-gold px-4 py-2 text-sm font-medium text-squawk-ink transition hover:bg-parchment"
-                >
-                  Crew sign in
-                </Link>
-                <Link
-                  href="/crew/register"
-                  className="rounded-full border border-parchment/30 px-4 py-2 text-sm text-parchment transition hover:bg-white/5"
-                >
-                  Register
-                </Link>
-              </>
+            <span className="rounded-full border border-squawk-gold/35 bg-black/30 px-4 py-2 text-sm text-parchment">
+              Crew:{" "}
+              <span className="text-squawk-gold">{session.user.email}</span>
+              <span className="ml-2 rounded bg-squawk-sea/50 px-2 py-0.5 text-xs uppercase text-parchment/90">
+                {session.user.role}
+              </span>
+            </span>
+            <Link
+              href="/crew"
+              className="rounded-full bg-squawk-gold px-4 py-2 text-sm font-medium text-squawk-ink transition hover:bg-parchment"
+            >
+              Crew portal
+            </Link>
+            {session.user.role === "ADMIN" && (
+              <Link
+                href="/crew/admin/moderators"
+                className="rounded-full border border-parchment/30 px-4 py-2 text-sm text-parchment transition hover:bg-white/5"
+              >
+                Admin — moderators
+              </Link>
             )}
           </div>
         </header>

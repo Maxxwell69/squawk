@@ -1,17 +1,20 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
+import { safeCallbackUrl } from "@/lib/safe-callback-url";
 import { CrewLoginForm } from "./_components/CrewLoginForm";
 
 export default async function CrewLoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ registered?: string }>;
+  searchParams: Promise<{ registered?: string; callbackUrl?: string }>;
 }) {
-  const session = await auth();
-  if (session?.user) redirect("/crew");
-
   const sp = await searchParams;
+  const afterLoginPath = safeCallbackUrl(sp.callbackUrl, "/crew");
+
+  const session = await auth();
+  if (session?.user) redirect(afterLoginPath);
+
   const showRegistered = sp.registered === "1";
 
   return (
@@ -27,7 +30,7 @@ export default async function CrewLoginPage({
           </p>
         ) : null}
         <div className="mt-8">
-          <CrewLoginForm />
+          <CrewLoginForm afterLoginPath={afterLoginPath} />
         </div>
         <p className="mt-8 text-center text-sm">
           <Link href="/" className="text-squawk-gold underline-offset-4 hover:underline">
