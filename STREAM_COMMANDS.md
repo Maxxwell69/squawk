@@ -374,6 +374,11 @@ curl -X POST -H "Content-Type: application/json" \
 
 Body: TikFinity-style JSON (see bridge normalize heuristics in repo).
 
+Windrose-specific hooks:
+
+- `POST /api/webhooks/windrose/gift-praise`
+- `POST /api/webhooks/windrose/crew-praise`
+
 ---
 
 ## Health & WebSocket
@@ -392,3 +397,5 @@ Body: TikFinity-style JSON (see bridge normalize heuristics in repo).
 - Line pools + trigger ids: `packages/shared/src/stream-deck.ts`  
 - Battle triggers + emote map: `packages/shared/src/battle.ts` (`BATTLE_TRIGGERS`, `BATTLE_PARROT_STATE`)
 - Sea of Thieves triggers: `packages/shared/src/sot-board.ts` (`SOT_TRIGGERS`, `SOT_PARROT_STATE`)
+- Rust triggers: `packages/shared/src/rust-board.ts` (`RUST_TRIGGERS`, `RUST_PARROT_STATE`)
+- Windrose triggers: `packages/shared/src/windrose-board.ts` (`WINDROSE_TRIGGERS`, `WINDROSE_PARROT_STATE`)

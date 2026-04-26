@@ -589,6 +589,12 @@ export default function BattleBoardPage() {
               Rust board
             </Link>
             <Link
+              href="/overlay/windrose"
+              className="rounded-lg border border-teal-500/40 px-3 py-1.5 text-sm text-teal-100/95 hover:bg-teal-950/40"
+            >
+              Windrose board
+            </Link>
+            <Link
               href="/overlay/parrot-with-bubble"
               className="rounded-lg border border-parchment/40 px-3 py-1.5 text-sm text-squawk-gold hover:bg-white/5"
             >

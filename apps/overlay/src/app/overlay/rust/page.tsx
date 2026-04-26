@@ -465,6 +465,12 @@ export default function RustAdventureBoardPage() {
             >
               Parrot overlay
             </Link>
+            <Link
+              href="/overlay/windrose"
+              className="rounded-lg border border-teal-500/40 px-3 py-1.5 text-sm text-teal-100/95 hover:bg-teal-950/40"
+            >
+              Windrose board
+            </Link>
           </div>
         </header>
 

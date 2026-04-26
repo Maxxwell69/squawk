@@ -7,16 +7,19 @@ import {
   isRustTriggerId,
   isSotTriggerId,
   isStreamDeckTriggerId,
+  isWindroseTriggerId,
   lineForBattleTrigger,
   lineForRustTrigger,
   lineForSotTrigger,
   lineForStreamDeckTrigger,
+  lineForWindroseTrigger,
   parrotStateForEventKind,
   pickRandomLine,
   PARROT_LINES,
   RUST_PARROT_STATE,
   SOT_PARROT_STATE,
   STREAM_DECK_PARROT_STATE,
+  WINDROSE_PARROT_STATE,
   type NormalizedStreamEvent,
   type ParrotOverlayPayload,
   type ParrotState,
@@ -109,6 +112,20 @@ export class BrainService {
               : undefined;
           return lineForRustTrigger(event.detail, { crewMemberName: crew });
         }
+        if (event.detail && isWindroseTriggerId(event.detail)) {
+          const crew =
+            rawPayload && typeof rawPayload.crewMemberName === "string"
+              ? rawPayload.crewMemberName
+              : undefined;
+          const gift =
+            rawPayload && typeof rawPayload.giftName === "string"
+              ? rawPayload.giftName
+              : undefined;
+          return lineForWindroseTrigger(event.detail, {
+            crewMemberName: crew,
+            giftName: gift,
+          });
+        }
         if (event.detail && isStreamDeckTriggerId(event.detail)) {
           return (
             lineForStreamDeckTrigger(event.detail) ??
@@ -139,6 +156,13 @@ export class BrainService {
     if (event.kind === "custom" && event.detail && isRustTriggerId(event.detail)) {
       return RUST_PARROT_STATE[event.detail];
     }
+    if (
+      event.kind === "custom" &&
+      event.detail &&
+      isWindroseTriggerId(event.detail)
+    ) {
+      return WINDROSE_PARROT_STATE[event.detail];
+    }
     if (event.kind === "custom" && event.detail && isStreamDeckTriggerId(event.detail)) {
       return STREAM_DECK_PARROT_STATE[event.detail];
     }
@@ -151,12 +175,13 @@ export class BrainService {
     const baseHoldMs = holdMsForState(state);
     let holdMs = baseHoldMs;
     if (event.kind === "custom" && event.detail) {
-      const battleOrDeckOrSotOrRust =
+      const boardOrDeckTrigger =
         isBattleTriggerId(event.detail) ||
         isStreamDeckTriggerId(event.detail) ||
         isSotTriggerId(event.detail) ||
-        isRustTriggerId(event.detail);
-      if (battleOrDeckOrSotOrRust && subtitle.trim()) {
+        isRustTriggerId(event.detail) ||
+        isWindroseTriggerId(event.detail);
+      if (boardOrDeckTrigger && subtitle.trim()) {
         // Don't let subtitle-based estimates undercut clip/TTS floors from holdMsForState.
         holdMs = Math.max(baseHoldMs, estimateHoldMsFromText(subtitle));
       }

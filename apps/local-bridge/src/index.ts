@@ -13,6 +13,7 @@ import {
   sotTriggerBodySchema,
   type RustTriggerId,
   type SotTriggerId,
+  tikfinityWebhookSchema,
   testChaosBodySchema,
   testCommentBodySchema,
   testFollowBodySchema,
@@ -22,10 +23,15 @@ import {
   testShareBodySchema,
   battleBoardScenePostBodySchema,
   type BattleBoardSceneSlug,
+  WINDROSE_PARROT_STATE,
+  windroseTriggerBodySchema,
+  type WindroseTriggerId,
 } from "@captain-squawks/shared";
 import { loadConfig } from "./config.js";
 import { BrainService } from "./brain/service.js";
 import {
+  extractActorFromTikfinityPayload,
+  extractGiftFromTikfinityPayload,
   makeTestEvent,
   normalizeTikfinityPayload,
   normalizeWebhookAsKind,
@@ -120,6 +126,49 @@ function coerceWebhookBody(raw: unknown): unknown {
   }
 }
 
+function pickWebhookString(
+  obj: Record<string, unknown>,
+  keys: readonly string[]
+): string | undefined {
+  for (const key of keys) {
+    const value = obj[key];
+    if (typeof value === "string" && value.trim()) return value.trim();
+    if (typeof value === "number") return String(value);
+  }
+  return undefined;
+}
+
+function parseWindroseWebhookFields(
+  raw: unknown
+): { actorLabel?: string; giftName?: string } | null {
+  const body =
+    raw && typeof raw === "object" && !Array.isArray(raw) ? raw : {};
+  const parsed = tikfinityWebhookSchema.safeParse(body);
+  if (!parsed.success) return null;
+  const payload = parsed.data;
+  const rawObj = payload as unknown as Record<string, unknown>;
+  const nestedData =
+    rawObj.data && typeof rawObj.data === "object"
+      ? (rawObj.data as Record<string, unknown>)
+      : {};
+
+  return {
+    actorLabel:
+      pickWebhookString(rawObj, ["crewMemberName", "displayName", "name"]) ??
+      pickWebhookString(nestedData, ["crewMemberName", "displayName", "name"]) ??
+      extractActorFromTikfinityPayload(payload),
+    giftName:
+      pickWebhookString(rawObj, ["giftName", "giftname", "gift", "gift_name"]) ??
+      pickWebhookString(nestedData, [
+        "giftName",
+        "giftname",
+        "gift",
+        "gift_name",
+      ]) ??
+      extractGiftFromTikfinityPayload(payload),
+  };
+}
+
 /** Public origin as seen by clients (Railway sets x-forwarded-*). */
 function bridgePublicOrigin(req: FastifyRequest): string {
   const xfProto = req.headers["x-forwarded-proto"];
@@ -191,8 +240,10 @@ ${overlayBlock}
 <p><strong>Battle UI:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "battle_prepare_1", opponentName: "optional", crewMemberName: "optional" }))}</code> — <code>opponentName</code> / <code>crewMemberName</code> fill <code>{{OPPONENT}}</code> / <code>{{CREW}}</code> in lines (same auth as Stream Deck when a secret is set).</p>
 <p><strong>Sea of Thieves board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/sot/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "sot_island_arrival_1" }))}</code> (same auth).</p>
 <p><strong>Rust adventure board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/rust/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "rust_roam_1" }))}</code> (same auth).</p>
+<p><strong>Windrose board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/windrose/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "windrose_game_hook_1", crewMemberName: "optional", giftName: "optional" }))}</code> (same auth).</p>
 <p><strong>Battle title display:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle-board/scene</code> with JSON <code>${escapeHtml(JSON.stringify({ slug: "prepare" }))}</code> — broadcasts <code>BATTLE_BOARD_SCENE</code> on <code>/ws</code> for the 9:16 overlay (same auth when secret is set).</p>
 <p><strong>Webhooks (TikFinity-style body):</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/webhooks/tikfinity</code> (auto-detect), or <code>${escapeHtml(origin)}/api/webhooks/follow</code> / <code>${escapeHtml(origin)}/api/webhooks/subscribe</code> — JSON, <code>text/plain</code> JSON, or form fields; username fields: <code>username</code>, <code>user</code>, <code>nickname</code>, or nested under <code>data</code>. Optional <code>tier</code> / <code>level</code> on subscribe.</p>
+<p><strong>Windrose TikFinity hooks:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/webhooks/windrose/gift-praise</code> or <code>${escapeHtml(origin)}/api/webhooks/windrose/crew-praise</code> — same flexible body formats; gift hook also reads <code>giftName</code> / <code>gift</code>.</p>
 </body>
 </html>`;
 });
@@ -467,6 +518,25 @@ app.post("/api/rust/trigger", streamDeckOpts, async (req) => {
   return { ok: true, message };
 });
 
+app.post("/api/windrose/trigger", streamDeckOpts, async (req) => {
+  const body = windroseTriggerBodySchema.parse(req.body ?? {});
+  const triggerId = body.triggerId as WindroseTriggerId;
+  const parrotState = WINDROSE_PARROT_STATE[triggerId];
+  const crew = body.crewMemberName?.trim();
+  const gift = body.giftName?.trim();
+  const ev = makeTestEvent("custom", {
+    detail: body.triggerId,
+    raw: {
+      source: "windrose_board",
+      parrotState,
+      ...(crew ? { crewMemberName: crew } : {}),
+      ...(gift ? { giftName: gift } : {}),
+    },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
 app.post("/api/webhooks/tikfinity", async (req, reply) => {
   const normalized = normalizeTikfinityPayload(coerceWebhookBody(req.body));
   if (!normalized) {
@@ -499,6 +569,39 @@ app.post("/api/webhooks/subscribe", async (req, reply) => {
     return reply.code(400).send({ ok: false, error: "invalid_payload" });
   }
   const message = await handleNormalizedEvent(normalized);
+  return { ok: true, message };
+});
+
+app.post("/api/webhooks/windrose/gift-praise", async (req, reply) => {
+  const fields = parseWindroseWebhookFields(coerceWebhookBody(req.body));
+  if (!fields) {
+    return reply.code(400).send({ ok: false, error: "invalid_payload" });
+  }
+  const ev = makeTestEvent("custom", {
+    detail: "windrose_gift_praise",
+    raw: {
+      source: "windrose_webhook",
+      ...(fields.actorLabel ? { crewMemberName: fields.actorLabel } : {}),
+      ...(fields.giftName ? { giftName: fields.giftName } : {}),
+    },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/webhooks/windrose/crew-praise", async (req, reply) => {
+  const fields = parseWindroseWebhookFields(coerceWebhookBody(req.body));
+  if (!fields) {
+    return reply.code(400).send({ ok: false, error: "invalid_payload" });
+  }
+  const ev = makeTestEvent("custom", {
+    detail: "windrose_crew_praise",
+    raw: {
+      source: "windrose_webhook",
+      ...(fields.actorLabel ? { crewMemberName: fields.actorLabel } : {}),
+    },
+  });
+  const message = await handleNormalizedEvent(ev);
   return { ok: true, message };
 });
 

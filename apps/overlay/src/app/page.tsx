@@ -122,6 +122,11 @@ const SECTIONS: MenuSection[] = [
         title: "Rust",
         detail: "Rust adventure board.",
       },
+      {
+        href: "/overlay/windrose",
+        title: "Windrose",
+        detail: "Windrose banter board with crew praise and TikFinity hooks.",
+      },
     ],
   },
   {

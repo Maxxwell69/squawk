@@ -34,7 +34,7 @@ function pickString(
   return undefined;
 }
 
-function extractActorFromTikfinityPayload(
+export function extractActorFromTikfinityPayload(
   p: TikFinityWebhookPayload
 ): string | undefined {
   const rawObj = p as unknown as Record<string, unknown>;
@@ -45,6 +45,20 @@ function extractActorFromTikfinityPayload(
   return (
     pickString(rawObj, ["username", "user", "nickname", "uniqueId"]) ??
     pickString(nestedData, ["username", "user", "nickname", "uniqueId"])
+  );
+}
+
+export function extractGiftFromTikfinityPayload(
+  p: TikFinityWebhookPayload
+): string | undefined {
+  const rawObj = p as unknown as Record<string, unknown>;
+  const nestedData =
+    rawObj.data && typeof rawObj.data === "object"
+      ? (rawObj.data as Record<string, unknown>)
+      : {};
+  return (
+    pickString(rawObj, ["giftName", "giftname", "gift", "gift_name"]) ??
+    pickString(nestedData, ["giftName", "giftname", "gift", "gift_name"])
   );
 }
 
@@ -97,9 +111,7 @@ export function normalizeTikfinityPayload(
       : {};
 
   const actorLabel = extractActorFromTikfinityPayload(p);
-  const gift =
-    pickString(rawObj, ["giftName", "giftname", "gift", "gift_name"]) ??
-    pickString(nestedData, ["giftName", "giftname", "gift", "gift_name"]);
+  const gift = extractGiftFromTikfinityPayload(p);
   const commentText =
     pickString(rawObj, ["comment", "text", "message", "chat"]) ??
     pickString(nestedData, ["comment", "text", "message", "chat"]);
