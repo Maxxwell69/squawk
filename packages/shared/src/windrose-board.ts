@@ -48,6 +48,11 @@ export const WINDROSE_TRIGGERS = {
     "Introduce meself for Windrose? Squawks here — first mate, feathered analyst, and full-time Pirate Maxx instigator. If there's sailing, bosses, and pirate nonsense, I'm clocked in!",
     "Windrose watch begins with proper manners: I'm First Mate Squawks, Pirate Maxx's parrot. I keep the banter movin', the praise flowin', and the sea legally unquiet!",
   ],
+  windrose_feeding_time: [
+    "Feeding time on the Windrose run — Squawks gets crumbs, Pirate Maxx gets company, and chat gets the full bird ceremony!",
+    "Galley call for the first mate — feed the bird before he starts review-bombin' the voyage!",
+    "Windrose snack break: Squawks is eatin', the crew's vibin', and the Cap'n is absolutely expected to narrate the crumbs!",
+  ],
   windrose_crew_praise: [
     "{{CREW}} — that's fleet energy right there. Squawks salutes ye for keepin' this Windrose voyage lively!",
     "Big respect to {{CREW}} — dependable deckhand behavior, and the bird absolutely notices it!",
@@ -89,6 +94,7 @@ export const WINDROSE_PARROT_STATE: Record<WindroseTriggerId, ParrotState> = {
   windrose_solo_coop_1: "talking",
   windrose_why_watch_1: "hype",
   windrose_squawk_intro: "talking",
+  windrose_feeding_time: "feeding_time",
   windrose_crew_praise: "hype",
   windrose_gift_praise: "hype",
 };

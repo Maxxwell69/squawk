@@ -256,6 +256,16 @@ export default function WindroseBoardPage() {
             </button>
             <button
               type="button"
+              disabled={busy}
+              className={btn}
+              onClick={() =>
+                void fire("windrose_feeding_time", "Feed Squawk")
+              }
+            >
+              Feed Squawk
+            </button>
+            <button
+              type="button"
               disabled={busy || crewNames.length === 0}
               className={btn}
               onClick={() => {
