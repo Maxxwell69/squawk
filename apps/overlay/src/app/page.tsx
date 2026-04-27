@@ -1,3 +1,4 @@
+import Image from "next/image";
 import Link from "next/link";
 import { auth } from "@/auth";
 
@@ -212,7 +213,7 @@ export default async function HomePage() {
           </nav>
         </header>
 
-        <section className="grid gap-6 pb-12 pt-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+        <section className="grid gap-6 pb-12 pt-10 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
           <div>
             <p className="text-sm uppercase tracking-[0.2em] text-squawk-gold/75">
               Stream companion website
@@ -241,21 +242,46 @@ export default async function HomePage() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-squawk-gold/20 bg-black/25 p-6 shadow-panel backdrop-blur">
-            <p className="text-sm uppercase tracking-[0.2em] text-squawk-gold/75">
-              What this site does
-            </p>
-            <ul className="mt-5 space-y-4 text-sm leading-6 text-parchment/80">
-              <li className="rounded-2xl border border-parchment/10 bg-white/[0.03] p-4">
-                Presents Squawk as a real website instead of a hidden internal menu.
-              </li>
-              <li className="rounded-2xl border border-parchment/10 bg-white/[0.03] p-4">
-                Gives moderators and admins a clear sign-in path and dashboard entry.
-              </li>
-              <li className="rounded-2xl border border-parchment/10 bg-white/[0.03] p-4">
-                Keeps admin control for moderator management and access approvals.
-              </li>
-            </ul>
+          <div className="space-y-5">
+            <div className="overflow-hidden rounded-3xl border border-squawk-gold/20 bg-black/25 shadow-panel backdrop-blur">
+              <Image
+                src="/home/pirate-maxx-hero.png"
+                alt="Pirate Maxx and First Mate Squawk artwork on stormy seas."
+                width={1024}
+                height={768}
+                priority
+                className="h-auto w-full object-cover"
+              />
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-[0.85fr_1.15fr] lg:grid-cols-[0.8fr_1.2fr]">
+              <div className="flex items-center justify-center rounded-3xl border border-squawk-gold/20 bg-black/25 p-5 shadow-panel backdrop-blur">
+                <Image
+                  src="/home/squawk-logo.png"
+                  alt="Captain Squawks logo."
+                  width={600}
+                  height={600}
+                  className="h-auto w-full max-w-[240px]"
+                />
+              </div>
+
+              <div className="rounded-3xl border border-squawk-gold/20 bg-black/25 p-6 shadow-panel backdrop-blur">
+                <p className="text-sm uppercase tracking-[0.2em] text-squawk-gold/75">
+                  What this site does
+                </p>
+                <ul className="mt-5 space-y-4 text-sm leading-6 text-parchment/80">
+                  <li className="rounded-2xl border border-parchment/10 bg-white/[0.03] p-4">
+                    Uses your Pirate Maxx and Squawk artwork as the main website branding.
+                  </li>
+                  <li className="rounded-2xl border border-parchment/10 bg-white/[0.03] p-4">
+                    Gives moderators and admins a clear sign-in path and dashboard entry.
+                  </li>
+                  <li className="rounded-2xl border border-parchment/10 bg-white/[0.03] p-4">
+                    Keeps overlays, boards, and moderator tools together in one place.
+                  </li>
+                </ul>
+              </div>
+            </div>
           </div>
         </section>
 
