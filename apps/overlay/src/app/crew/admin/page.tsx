@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { prisma } from "@/lib/prisma";
 
 export default async function CrewAdminOverviewPage() {
@@ -30,6 +31,38 @@ export default async function CrewAdminOverviewPage() {
           <dd className="mt-1 font-display text-3xl text-parchment">{members}</dd>
         </div>
       </dl>
+
+      <div className="mt-10 grid gap-4 md:grid-cols-3">
+        <Link
+          href="/crew/admin/approvals"
+          className="rounded-xl border border-parchment/20 bg-squawk-ink/50 p-5 transition hover:border-squawk-gold/35 hover:bg-white/[0.04]"
+        >
+          <h2 className="font-display text-xl text-squawk-gold">Approvals</h2>
+          <p className="mt-2 text-sm text-parchment/75">
+            Review pending crew access and approve registrations.
+          </p>
+        </Link>
+
+        <Link
+          href="/crew/admin/moderators"
+          className="rounded-xl border border-parchment/20 bg-squawk-ink/50 p-5 transition hover:border-squawk-gold/35 hover:bg-white/[0.04]"
+        >
+          <h2 className="font-display text-xl text-squawk-gold">Moderators</h2>
+          <p className="mt-2 text-sm text-parchment/75">
+            Add moderators for board access or remove them when needed.
+          </p>
+        </Link>
+
+        <Link
+          href="/crew"
+          className="rounded-xl border border-parchment/20 bg-squawk-ink/50 p-5 transition hover:border-squawk-gold/35 hover:bg-white/[0.04]"
+        >
+          <h2 className="font-display text-xl text-squawk-gold">Dashboard</h2>
+          <p className="mt-2 text-sm text-parchment/75">
+            Return to the main working dashboard for overlays and boards.
+          </p>
+        </Link>
+      </div>
     </div>
   );
 }

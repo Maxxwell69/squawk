@@ -1,235 +1,323 @@
 import Link from "next/link";
-import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 
-type MenuItem = {
+type FeatureCard = {
+  title: string;
+  detail: string;
+};
+
+type RouteCard = {
   href: string;
   title: string;
   detail: string;
 };
 
-type MenuSection = {
-  id: string;
-  heading: string;
-  subheading?: string;
-  items: MenuItem[];
-};
-
-const SECTIONS: MenuSection[] = [
+const FEATURE_CARDS: FeatureCard[] = [
   {
-    id: "crew",
-    heading: "Crew & admin",
-    subheading:
-      "Email + password accounts. New members need an approved invite; moderators can be pre-added.",
-    items: [
-      {
-        href: "/crew",
-        title: "Crew portal",
-        detail: "Home after sign-in — role and shortcuts.",
-      },
-      {
-        href: "/crew/register",
-        title: "Register / set password",
-        detail: "After captain approval, moderator invite, or ADMIN_EMAIL captain bootstrap.",
-      },
-      {
-        href: "/crew/login",
-        title: "Sign in",
-        detail: "Returning crew members.",
-      },
-      {
-        href: "/crew/admin",
-        title: "Admin overview",
-        detail: "Counts — requires ADMIN role.",
-      },
-      {
-        href: "/crew/admin/approvals",
-        title: "Approvals queue",
-        detail: "Add emails, approve, then they can register — ADMIN only.",
-      },
-      {
-        href: "/crew/admin/moderators",
-        title: "Manage moderators",
-        detail: "Add or remove moderator emails — requires ADMIN.",
-      },
-      {
-        href: "/admin/login",
-        title: "Admin login",
-        detail: "Shortcut to sign in and land in the admin area if you are ADMIN.",
-      },
-    ],
+    title: "Overlay system",
+    detail:
+      "Run the Squawks parrot, subtitles, and browser-source widgets directly in OBS with hosted URLs.",
   },
   {
-    id: "parrot",
-    heading: "Parrot overlay (OBS browser source)",
-    subheading:
-      "Transparent backgrounds — size the browser source in OBS to fit your layout.",
-    items: [
-      {
-        href: "/overlay/parrot",
-        title: "Full widget",
-        detail: "Parrot, subtitles, status — main browser source.",
-      },
-      {
-        href: "/overlay/parrot-with-bubble",
-        title: "Parrot + speech bubble",
-        detail: "Bubble variant for dialogue-style lines.",
-      },
-      {
-        href: "/overlay/parrot-only",
-        title: "Parrot only",
-        detail: "Bird only — no panel chrome.",
-      },
-    ],
+    title: "Boards and battle tools",
+    detail:
+      "Use themed boards for battles, Windrose banter, Sea of Thieves, and Rust without juggling separate tools.",
   },
   {
-    id: "battle",
-    heading: "TikTok battle & title board",
-    items: [
-      {
-        href: "/overlay/battle",
-        title: "Battle control board",
-        detail: "Drive scenes and levels — use the hosted URL so OBS stays in sync.",
-      },
-      {
-        href: "/overlay/battle-board/display",
-        title: "Title display (9:16)",
-        detail: "OBS single source for on-stream titles.",
-      },
-      {
-        href: "/overlay/battle-board",
-        title: "Battle board notes",
-        detail: "Reference / notes page linked from battle flows.",
-      },
-      {
-        href: "/overlay/battle-board/prepare",
-        title: "Battle board — scene shortcut",
-        detail: "Legacy path per scene (redirects to title display with that scene).",
-      },
-    ],
-  },
-  {
-    id: "games",
-    heading: "Game boards",
-    items: [
-      {
-        href: "/overlay/sea-of-thieves",
-        title: "Sea of Thieves",
-        detail: "Voyages / adventure board styling.",
-      },
-      {
-        href: "/overlay/rust",
-        title: "Rust",
-        detail: "Rust adventure board.",
-      },
-      {
-        href: "/overlay/windrose",
-        title: "Windrose",
-        detail: "Windrose banter board with crew praise and TikFinity hooks.",
-      },
-    ],
-  },
-  {
-    id: "dev",
-    heading: "Developer",
-    items: [
-      {
-        href: "/dev/parrot-test",
-        title: "Parrot test panel",
-        detail: "Trigger mock events against your bridge — local or tunneled.",
-      },
-    ],
+    title: "Crew access control",
+    detail:
+      "Admins manage who gets in, moderators get a working dashboard, and everyone signs in with email and password.",
   },
 ];
 
+const OVERLAY_ROUTES: RouteCard[] = [
+  {
+    href: "/overlay/parrot",
+    title: "Parrot overlay",
+    detail: "Main OBS browser source with the Squawks character, status, and subtitles.",
+  },
+  {
+    href: "/overlay/battle",
+    title: "Battle controls",
+    detail: "Drive the battle scene flow and keep the broadcast layout in sync.",
+  },
+  {
+    href: "/overlay/battle-board/display",
+    title: "Battle board display",
+    detail: "Dedicated 9:16 title board output for stream scenes.",
+  },
+  {
+    href: "/overlay/windrose",
+    title: "Windrose board",
+    detail: "On-stream banter board for the crew and audience interaction moments.",
+  },
+];
+
+const ACCESS_ROUTES: RouteCard[] = [
+  {
+    href: "/crew/login",
+    title: "Log in",
+    detail: "Crew members, moderators, and admins sign in here.",
+  },
+  {
+    href: "/crew/register",
+    title: "Create password",
+    detail: "Finish account setup after approval or moderator assignment.",
+  },
+  {
+    href: "/admin/login",
+    title: "Admin shortcut",
+    detail: "Send admins directly toward the admin controls after sign-in.",
+  },
+];
+
+const ROLE_CARDS: FeatureCard[] = [
+  {
+    title: "Admins",
+    detail:
+      "Get the full dashboard, approve crew access, and add or remove moderators from the admin tools.",
+  },
+  {
+    title: "Moderators",
+    detail:
+      "Get a clean dashboard with quick links to the boards and overlays needed during the show.",
+  },
+  {
+    title: "Crew members",
+    detail:
+      "Can sign in securely and use the shared crew workspace without needing admin-only controls.",
+  },
+];
+
+function CardGrid({
+  cards,
+  className = "sm:grid-cols-2",
+}: {
+  cards: FeatureCard[];
+  className?: string;
+}) {
+  return (
+    <div className={`grid gap-4 ${className}`}>
+      {cards.map((card) => (
+        <article
+          key={card.title}
+          className="rounded-2xl border border-parchment/15 bg-black/25 p-6 shadow-panel backdrop-blur"
+        >
+          <h3 className="font-display text-xl text-squawk-gold">{card.title}</h3>
+          <p className="mt-3 text-sm leading-6 text-parchment/80">{card.detail}</p>
+        </article>
+      ))}
+    </div>
+  );
+}
+
+function LinkGrid({
+  cards,
+  className = "sm:grid-cols-2",
+}: {
+  cards: RouteCard[];
+  className?: string;
+}) {
+  return (
+    <div className={`grid gap-4 ${className}`}>
+      {cards.map((card) => (
+        <Link
+          key={card.href}
+          href={card.href}
+          className="group rounded-2xl border border-parchment/15 bg-black/25 p-6 shadow-panel backdrop-blur transition hover:border-squawk-gold/35 hover:bg-white/[0.04]"
+        >
+          <h3 className="font-display text-xl text-parchment group-hover:text-squawk-gold">
+            {card.title}
+          </h3>
+          <p className="mt-3 text-sm leading-6 text-parchment/75">{card.detail}</p>
+          <p className="mt-4 font-mono text-xs text-parchment/40">{card.href}</p>
+        </Link>
+      ))}
+    </div>
+  );
+}
+
 export default async function HomePage() {
   const session = await auth();
-  if (!session?.user) {
-    redirect("/crew/login?callbackUrl=%2F");
-  }
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-squawk-ink via-[#151020] to-squawk-ink pb-16 pt-10 text-parchment">
-      <div className="mx-auto max-w-3xl px-5">
-        <header className="mb-10 border-b border-parchment/15 pb-8">
-          <p className="font-body text-xs uppercase tracking-[0.2em] text-squawk-gold/80">
-            Pirate Maxx
-          </p>
-          <h1 className="mt-2 font-display text-4xl font-bold text-squawk-gold md:text-5xl">
-            Captain Squawks
-          </h1>
-          <p className="mt-3 max-w-2xl font-body text-lg text-parchment/90">
-            First Mate Squawks — stream overlays, battle boards, and crew tools.
-            Use hosted URLs in OBS; connect the local bridge on your stream PC for
-            TikFinity-style events.
-          </p>
+    <main className="min-h-screen bg-gradient-to-b from-squawk-ink via-[#151020] to-squawk-ink pb-16 text-parchment">
+      <div className="mx-auto max-w-6xl px-5 py-6 sm:px-6 lg:px-8">
+        <header className="rounded-3xl border border-parchment/15 bg-black/25 px-6 py-5 shadow-panel backdrop-blur">
+          <div className="flex flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+            <div>
+              <p className="text-xs uppercase tracking-[0.2em] text-squawk-gold/80">
+                Pirate Maxx
+              </p>
+              <h1 className="mt-2 font-display text-3xl font-bold text-squawk-gold sm:text-4xl">
+                Captain Squawks
+              </h1>
+              <p className="mt-2 max-w-2xl text-sm text-parchment/80 sm:text-base">
+                A website-style home for the Squawk stream system: overlays,
+                battle boards, crew access, and role-based dashboard tools.
+              </p>
+            </div>
 
-          <div className="mt-6 flex flex-wrap items-center gap-3">
-            <span className="rounded-full border border-squawk-gold/35 bg-black/30 px-4 py-2 text-sm text-parchment">
-              Crew:{" "}
-              <span className="text-squawk-gold">{session.user.email}</span>
-              <span className="ml-2 rounded bg-squawk-sea/50 px-2 py-0.5 text-xs uppercase text-parchment/90">
-                {session.user.role}
-              </span>
-            </span>
-            <Link
-              href="/crew"
-              className="rounded-full bg-squawk-gold px-4 py-2 text-sm font-medium text-squawk-ink transition hover:bg-parchment"
-            >
-              Crew portal
-            </Link>
-            {session.user.role === "ADMIN" && (
-              <Link
-                href="/crew/admin/moderators"
-                className="rounded-full border border-parchment/30 px-4 py-2 text-sm text-parchment transition hover:bg-white/5"
-              >
-                Admin — moderators
-              </Link>
-            )}
+            <div className="flex flex-wrap items-center gap-3">
+              {session?.user ? (
+                <>
+                  <span className="rounded-full border border-squawk-gold/35 bg-black/30 px-4 py-2 text-sm">
+                    {session.user.email}
+                    <span className="ml-2 rounded bg-squawk-sea/50 px-2 py-0.5 text-xs uppercase text-parchment/90">
+                      {session.user.role}
+                    </span>
+                  </span>
+                  <Link
+                    href="/crew"
+                    className="rounded-full bg-squawk-gold px-4 py-2 text-sm font-medium text-squawk-ink transition hover:bg-parchment"
+                  >
+                    Open dashboard
+                  </Link>
+                </>
+              ) : (
+                <>
+                  <Link
+                    href="/crew/login"
+                    className="rounded-full bg-squawk-gold px-4 py-2 text-sm font-medium text-squawk-ink transition hover:bg-parchment"
+                  >
+                    Log in
+                  </Link>
+                  <Link
+                    href="/crew/register"
+                    className="rounded-full border border-parchment/30 px-4 py-2 text-sm text-parchment transition hover:bg-white/5"
+                  >
+                    Create password
+                  </Link>
+                </>
+              )}
+            </div>
           </div>
+
+          <nav
+            aria-label="Home menu"
+            className="mt-5 flex flex-wrap gap-3 text-sm text-parchment/75"
+          >
+            <a href="#features" className="rounded-full border border-parchment/15 px-3 py-1.5 hover:text-squawk-gold">
+              Features
+            </a>
+            <a href="#workspace" className="rounded-full border border-parchment/15 px-3 py-1.5 hover:text-squawk-gold">
+              Workspace
+            </a>
+            <a href="#roles" className="rounded-full border border-parchment/15 px-3 py-1.5 hover:text-squawk-gold">
+              Roles
+            </a>
+            <a href="#access" className="rounded-full border border-parchment/15 px-3 py-1.5 hover:text-squawk-gold">
+              Login
+            </a>
+          </nav>
         </header>
 
-        <nav className="space-y-10" aria-label="Squawk site menu">
-          {SECTIONS.map((section) => (
-            <section
-              key={section.id}
-              id={section.id}
-              className="rounded-2xl border border-parchment/15 bg-black/25 p-6 shadow-panel backdrop-blur sm:p-8"
-            >
-              <h2 className="font-display text-xl text-squawk-gold md:text-2xl">
-                {section.heading}
-              </h2>
-              {section.subheading ? (
-                <p className="mt-2 text-sm text-parchment/70">
-                  {section.subheading}
-                </p>
-              ) : null}
-              <ul className="mt-6 space-y-4">
-                {section.items.map((item) => (
-                  <li key={item.href}>
-                    <Link
-                      href={item.href}
-                      className="group block rounded-xl border border-transparent px-3 py-3 transition hover:border-squawk-gold/25 hover:bg-white/[0.04]"
-                    >
-                      <span className="font-medium text-parchment group-hover:text-squawk-gold">
-                        {item.title}
-                      </span>
-                      <span className="mt-1 block text-sm text-parchment/65">
-                        {item.detail}
-                      </span>
-                      <span className="mt-2 font-mono text-xs text-parchment/40">
-                        {item.href}
-                      </span>
-                    </Link>
-                  </li>
-                ))}
-              </ul>
-            </section>
-          ))}
-        </nav>
+        <section className="grid gap-6 pb-12 pt-10 lg:grid-cols-[1.2fr_0.8fr] lg:items-center">
+          <div>
+            <p className="text-sm uppercase tracking-[0.2em] text-squawk-gold/75">
+              Stream companion website
+            </p>
+            <h2 className="mt-3 font-display text-4xl text-parchment sm:text-5xl">
+              Squawk keeps the show tools, crew access, and overlays in one place.
+            </h2>
+            <p className="mt-5 max-w-2xl text-base leading-7 text-parchment/80">
+              Use the public home page to explain the system, then let moderators
+              and admins sign in to a dashboard built for operating the boards and
+              overlays during the stream.
+            </p>
+            <div className="mt-7 flex flex-wrap gap-3">
+              <Link
+                href={session?.user ? "/crew" : "/crew/login"}
+                className="rounded-full bg-squawk-gold px-5 py-3 text-sm font-medium text-squawk-ink transition hover:bg-parchment"
+              >
+                {session?.user ? "Go to dashboard" : "Log in to the dashboard"}
+              </Link>
+              <a
+                href="#workspace"
+                className="rounded-full border border-parchment/30 px-5 py-3 text-sm text-parchment transition hover:bg-white/5"
+              >
+                View feature menu
+              </a>
+            </div>
+          </div>
 
-        <footer className="mt-12 border-t border-parchment/10 pt-8 text-center text-xs text-parchment/45">
-          Captain Squawks · Pirate Maxx stream companion
+          <div className="rounded-3xl border border-squawk-gold/20 bg-black/25 p-6 shadow-panel backdrop-blur">
+            <p className="text-sm uppercase tracking-[0.2em] text-squawk-gold/75">
+              What this site does
+            </p>
+            <ul className="mt-5 space-y-4 text-sm leading-6 text-parchment/80">
+              <li className="rounded-2xl border border-parchment/10 bg-white/[0.03] p-4">
+                Presents Squawk as a real website instead of a hidden internal menu.
+              </li>
+              <li className="rounded-2xl border border-parchment/10 bg-white/[0.03] p-4">
+                Gives moderators and admins a clear sign-in path and dashboard entry.
+              </li>
+              <li className="rounded-2xl border border-parchment/10 bg-white/[0.03] p-4">
+                Keeps admin control for moderator management and access approvals.
+              </li>
+            </ul>
+          </div>
+        </section>
+
+        <section id="features" className="pt-4">
+          <div className="mb-6">
+            <p className="text-sm uppercase tracking-[0.2em] text-squawk-gold/75">
+              Feature system
+            </p>
+            <h2 className="mt-2 font-display text-3xl text-squawk-gold">
+              What Squawk is built around
+            </h2>
+          </div>
+          <CardGrid cards={FEATURE_CARDS} className="lg:grid-cols-3" />
+        </section>
+
+        <section id="workspace" className="pt-14">
+          <div className="mb-6">
+            <p className="text-sm uppercase tracking-[0.2em] text-squawk-gold/75">
+              Menu
+            </p>
+            <h2 className="mt-2 font-display text-3xl text-squawk-gold">
+              Main Squawk workspace
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-parchment/75">
+              These are the primary feature areas inside Squawk, covering the
+              broadcast overlays and on-stream board tools.
+            </p>
+          </div>
+          <LinkGrid cards={OVERLAY_ROUTES} />
+        </section>
+
+        <section id="roles" className="pt-14">
+          <div className="mb-6">
+            <p className="text-sm uppercase tracking-[0.2em] text-squawk-gold/75">
+              Dashboard roles
+            </p>
+            <h2 className="mt-2 font-display text-3xl text-squawk-gold">
+              Access is organized by role
+            </h2>
+          </div>
+          <CardGrid cards={ROLE_CARDS} className="lg:grid-cols-3" />
+        </section>
+
+        <section id="access" className="pt-14">
+          <div className="mb-6">
+            <p className="text-sm uppercase tracking-[0.2em] text-squawk-gold/75">
+              Login system
+            </p>
+            <h2 className="mt-2 font-display text-3xl text-squawk-gold">
+              Secure crew access
+            </h2>
+            <p className="mt-2 max-w-3xl text-sm leading-6 text-parchment/75">
+              Crew members sign in with email and password. Admins control access,
+              moderators can be added or removed by admins, and approved users can
+              finish setup by creating a password.
+            </p>
+          </div>
+          <LinkGrid cards={ACCESS_ROUTES} className="lg:grid-cols-3" />
+        </section>
+
+        <footer className="mt-16 border-t border-parchment/10 pt-8 text-center text-xs text-parchment/45">
+          Captain Squawks · Pirate Maxx stream companion website
         </footer>
       </div>
     </main>

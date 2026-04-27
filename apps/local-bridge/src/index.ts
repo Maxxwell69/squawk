@@ -243,7 +243,7 @@ ${overlayBlock}
 <p><strong>Windrose board:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/windrose/trigger</code> with JSON <code>${escapeHtml(JSON.stringify({ triggerId: "windrose_game_hook_1", crewMemberName: "optional", giftName: "optional" }))}</code> (same auth).</p>
 <p><strong>Battle title display:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/battle-board/scene</code> with JSON <code>${escapeHtml(JSON.stringify({ slug: "prepare" }))}</code> — broadcasts <code>BATTLE_BOARD_SCENE</code> on <code>/ws</code> for the 9:16 overlay (same auth when secret is set).</p>
 <p><strong>Webhooks (TikFinity-style body):</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/webhooks/tikfinity</code> (auto-detect), or <code>${escapeHtml(origin)}/api/webhooks/follow</code> / <code>${escapeHtml(origin)}/api/webhooks/subscribe</code> — JSON, <code>text/plain</code> JSON, or form fields; username fields: <code>username</code>, <code>user</code>, <code>nickname</code>, or nested under <code>data</code>. Optional <code>tier</code> / <code>level</code> on subscribe.</p>
-<p><strong>Windrose TikFinity hooks:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/webhooks/windrose/gift-praise</code> or <code>${escapeHtml(origin)}/api/webhooks/windrose/crew-praise</code> — same flexible body formats; gift hook also reads <code>giftName</code> / <code>gift</code>.</p>
+<p><strong>Windrose TikFinity hooks:</strong> <code>POST</code> <code>${escapeHtml(origin)}/api/webhooks/windrose/gift-praise</code>, <code>${escapeHtml(origin)}/api/webhooks/windrose/crew-praise</code>, or <code>${escapeHtml(origin)}/api/webhooks/windrose/feed-squawk</code> — same flexible body formats; gift hook also reads <code>giftName</code> / <code>gift</code>.</p>
 </body>
 </html>`;
 });
@@ -599,6 +599,17 @@ app.post("/api/webhooks/windrose/crew-praise", async (req, reply) => {
     raw: {
       source: "windrose_webhook",
       ...(fields.actorLabel ? { crewMemberName: fields.actorLabel } : {}),
+    },
+  });
+  const message = await handleNormalizedEvent(ev);
+  return { ok: true, message };
+});
+
+app.post("/api/webhooks/windrose/feed-squawk", async () => {
+  const ev = makeTestEvent("custom", {
+    detail: "windrose_feeding_time",
+    raw: {
+      source: "windrose_webhook",
     },
   });
   const message = await handleNormalizedEvent(ev);

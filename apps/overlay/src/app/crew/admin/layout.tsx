@@ -37,7 +37,10 @@ export default async function CrewAdminLayout({
               Moderators
             </Link>
             <Link href="/crew" className="text-parchment/70 hover:text-parchment">
-              Crew portal
+              Dashboard
+            </Link>
+            <Link href="/" className="text-parchment/70 hover:text-parchment">
+              Site home
             </Link>
           </nav>
         </div>

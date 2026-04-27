@@ -170,6 +170,7 @@ export default function WindroseBoardPage() {
   const webhookBase = useMemo(() => normalizeBase(bridgeUrl), [bridgeUrl]);
   const windroseGiftWebhook = `${webhookBase}/api/webhooks/windrose/gift-praise`;
   const windroseCrewWebhook = `${webhookBase}/api/webhooks/windrose/crew-praise`;
+  const windroseFeedWebhook = `${webhookBase}/api/webhooks/windrose/feed-squawk`;
 
   const btn =
     "rounded-lg border border-white/15 bg-black/40 px-3 py-2.5 font-body text-xs font-semibold text-parchment transition hover:bg-white/10 hover:border-white/25 disabled:opacity-45 sm:text-sm";
@@ -329,9 +330,18 @@ export default function WindroseBoardPage() {
             <code className="px-1 text-parchment/90">nickname</code>, or nested
             <code className="px-1 text-parchment/90">data</code>. Gift hook also reads
             <code className="px-1 text-parchment/90">giftName</code> /
-            <code className="px-1 text-parchment/90">gift</code>.
+            <code className="px-1 text-parchment/90">gift</code>. Feed hook needs no
+            body at all.
           </p>
-          <div className="mt-3 grid gap-3 lg:grid-cols-2">
+          <div className="mt-3 grid gap-3 lg:grid-cols-3">
+            <div className="rounded-lg border border-fuchsia-500/25 bg-black/35 p-3">
+              <h3 className="font-display text-sm font-bold text-parchment">
+                Feed Squawk
+              </h3>
+              <p className="mt-1 break-all font-mono text-[11px] text-fuchsia-100/90">
+                {windroseFeedWebhook}
+              </p>
+            </div>
             <div className="rounded-lg border border-fuchsia-500/25 bg-black/35 p-3">
               <h3 className="font-display text-sm font-bold text-parchment">
                 Gift praise

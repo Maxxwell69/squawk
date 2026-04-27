@@ -376,6 +376,7 @@ Body: TikFinity-style JSON (see bridge normalize heuristics in repo).
 
 Windrose-specific hooks:
 
+- `POST /api/webhooks/windrose/feed-squawk`
 - `POST /api/webhooks/windrose/gift-praise`
 - `POST /api/webhooks/windrose/crew-praise`
 
