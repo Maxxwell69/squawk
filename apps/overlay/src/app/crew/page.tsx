@@ -11,9 +11,9 @@ type DashboardLink = {
 
 const WORKSPACE_LINKS: DashboardLink[] = [
   {
-    href: "/overlay/parrot",
+    href: "/overlay/parrot-with-bubble",
     title: "Parrot overlay",
-    detail: "Main on-stream Squawks browser source.",
+    detail: "Squawks overlay with the speech bubble used on stream.",
   },
   {
     href: "/overlay/battle",
