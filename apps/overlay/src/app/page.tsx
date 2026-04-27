@@ -162,12 +162,15 @@ export default async function HomePage() {
             <div className="flex flex-wrap items-center gap-3">
               {session?.user ? (
                 <>
-                  <span className="rounded-full border border-squawk-gold/35 bg-black/30 px-4 py-2 text-sm">
-                    {session.user.email}
+                  <Link
+                    href="/crew/account"
+                    className="rounded-full border border-squawk-gold/35 bg-black/30 px-4 py-2 text-sm transition hover:bg-white/5"
+                  >
+                    Account
                     <span className="ml-2 rounded bg-squawk-sea/50 px-2 py-0.5 text-xs uppercase text-parchment/90">
                       {session.user.role}
                     </span>
-                  </span>
+                  </Link>
                   <Link
                     href="/crew"
                     className="rounded-full bg-squawk-gold px-4 py-2 text-sm font-medium text-squawk-ink transition hover:bg-parchment"

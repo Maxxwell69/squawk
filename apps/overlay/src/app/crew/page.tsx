@@ -123,6 +123,12 @@ export default async function CrewHomePage() {
               </div>
               <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-1">
                 <Link
+                  href="/crew/account"
+                  className="inline-flex justify-center rounded-lg border border-parchment/25 px-4 py-3 text-sm text-parchment transition hover:bg-white/5"
+                >
+                  Account
+                </Link>
+                <Link
                   href="/"
                   className="inline-flex justify-center rounded-lg border border-parchment/25 px-4 py-3 text-sm text-parchment transition hover:bg-white/5"
                 >
