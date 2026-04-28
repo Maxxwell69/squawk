@@ -330,8 +330,8 @@ export default function WindroseBoardPage() {
             <code className="px-1 text-parchment/90">nickname</code>, or nested
             <code className="px-1 text-parchment/90">data</code>. Gift hook also reads
             <code className="px-1 text-parchment/90">giftName</code> /
-            <code className="px-1 text-parchment/90">gift</code>. Feed hook needs no
-            body at all.
+            <code className="px-1 text-parchment/90">gift</code>. Feed hook can be
+            empty, or include a username so Squawks can thank the sender.
           </p>
           <div className="mt-3 grid gap-3 lg:grid-cols-3">
             <div className="rounded-lg border border-fuchsia-500/25 bg-black/35 p-3">

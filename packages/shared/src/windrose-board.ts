@@ -49,9 +49,9 @@ export const WINDROSE_TRIGGERS = {
     "Windrose watch begins with proper manners: I'm First Mate Squawks, Pirate Maxx's parrot. I keep the banter movin', the praise flowin', and the sea legally unquiet!",
   ],
   windrose_feeding_time: [
-    "Feeding time on the Windrose run — Squawks gets crumbs, Pirate Maxx gets company, and chat gets the full bird ceremony!",
-    "Galley call for the first mate — feed the bird before he starts review-bombin' the voyage!",
-    "Windrose snack break: Squawks is eatin', the crew's vibin', and the Cap'n is absolutely expected to narrate the crumbs!",
+    "{{CREW}} just fed Squawks on the Windrose run — now that's premium bird-support behavior!",
+    "Big thanks to {{CREW}} for the snack drop! Feed the bird before he starts review-bombin' the voyage!",
+    "Windrose snack break courtesy of {{CREW}} — Squawks is eatin', the crew's vibin', and the Cap'n is expected to honor the crumbs!",
   ],
   windrose_crew_praise: [
     "{{CREW}} — that's fleet energy right there. Squawks salutes ye for keepin' this Windrose voyage lively!",

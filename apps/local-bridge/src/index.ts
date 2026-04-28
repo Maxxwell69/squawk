@@ -605,11 +605,13 @@ app.post("/api/webhooks/windrose/crew-praise", async (req, reply) => {
   return { ok: true, message };
 });
 
-app.post("/api/webhooks/windrose/feed-squawk", async () => {
+app.post("/api/webhooks/windrose/feed-squawk", async (req) => {
+  const fields = parseWindroseWebhookFields(coerceWebhookBody(req.body)) ?? {};
   const ev = makeTestEvent("custom", {
     detail: "windrose_feeding_time",
     raw: {
       source: "windrose_webhook",
+      ...(fields.actorLabel ? { crewMemberName: fields.actorLabel } : {}),
     },
   });
   const message = await handleNormalizedEvent(ev);
